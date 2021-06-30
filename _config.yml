@@ -30,8 +30,7 @@ twitter_username: oracle
 github_username:  oracle-devrel
 
 # Build settings
-theme: minimal-mistakes-jekyll
-minimal_mistakes_skin: "contrast"
+# minimal_mistakes_skin: "contrast"
 
 plugins:
   - jekyll-feed
