@@ -1,6 +1,10 @@
 ---
-# Feel free to add content and custom Front Matter to this file.
-# To modify the layout, see https://jekyllrb.com/docs/themes/#overriding-theme-defaults
-
 layout: home
+classes:
+    - landing
+    - dark-theme
 ---
+# Welcome to DevO.Build!
+
+This will be the publishing platform for Oracle DevRel projects.
+
