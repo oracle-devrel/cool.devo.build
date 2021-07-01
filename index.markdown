@@ -3,6 +3,8 @@ layout: home
 classes:
     - landing
     - dark-theme
+pagination:
+    enabled: true
 ---
 # Welcome to DevO.Build!
 

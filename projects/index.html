@@ -1,0 +1,16 @@
+---
+layout: archive
+---
+<section id="projects">
+<h3>Projects</h3>
+<div class="cards">
+  {% for pg in site.pages %}
+  {% if pg.project %}
+  <div>
+    <a href="{{ site.baseurl }}{{ pg.url }}"><h4>{{ pg.title }}</h4></a>
+    <p>{{ pg.description }}</p>
+  </div>
+  {% endif %}
+  {% endfor %}
+</div>
+</section>

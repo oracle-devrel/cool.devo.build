@@ -2,8 +2,23 @@
 layout: archive
 ---
 
-{{ content }}
+{{ content | markdownify }}
 
+<section id="projects">
+<h3>Projects</h3>
+<div class="cards">
+  {% for pg in site.pages %}
+  {% if pg.project %}
+  <div>
+    <a href="{{ site.baseurl }}{{ pg.url }}"><h4>{{ pg.title }}</h4></a>
+    <p>{{ pg.description }}</p>
+  </div>
+  {% endif %}
+  {% endfor %}
+</div>
+</section>
+
+<section id="posts">
 <h3 class="archive__subtitle">{{ site.data.ui-text[site.locale].recent_posts | default: "Recent Posts" }}</h3>
 
 {% if paginator %}
@@ -20,3 +35,4 @@ layout: archive
 </div>
 
 {% include paginator.html %}
+</section>

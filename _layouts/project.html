@@ -1,0 +1,16 @@
+---
+layout: archive
+---
+
+{{ content | markdownify }}
+
+<div class="cards">
+    {% for pg in site.pages %}
+    {% if pg.parent == page.project %}
+    <div class="card">
+        <h4><a href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
+        <p>{{ pg.description }}</p>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
