@@ -28,7 +28,7 @@ module Jekyll
     def render(context)
       context.environments.first['page']['youtube'] = @videoid
       if @videoid
-        emu = "http://www.youtube.com/embed/#{@videoid}?autoplay=0"
+        emu = "https://www.youtube.com/embed/#{@videoid}?autoplay=0"
         video = %(<iframe width="#{@width}" height="#{@height}" style="vertical-align:top;" src="#{emu}" frameborder="0" allowfullscreen></iframe>)
 
         %(<figure class="yt-video-container">#{video}#{@caption}</figure>)
