@@ -9,17 +9,22 @@
   {% assign path_type = nil %}
   {% assign crumb_path = '/' %}
 {% else %}
-  {% assign crumb_path = site.category_archive.path %}
+  {% if page.parent != '' %}
+    {% assign crumb_path = 'projects' %}
+  {% else %}
+    {% assign crumb_path = site.category_archive.path %}
+  {% endif %}
 {% endif %}
 
 <nav class="breadcrumbs">
   <ol itemscope itemtype="https://schema.org/BreadcrumbList">
     {% assign crumbs = page.url | split: '/' %}
     {% assign i = 1 %}
+    {% assign cumulus = site.baseurl %}
     {% for crumb in crumbs offset: 1 %}
       {% if forloop.first %}
         <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-          <a href="{{ site.url }}{{ site.baseurl }}/" itemprop="item"><span itemprop="name">{{ site.data.ui-text[site.locale].breadcrumb_home_label | default: "Home" }}</span></a>
+          <a href="{{ cumulus }}" itemprop="item"><span itemprop="name">{{ site.data.ui-text[site.locale].breadcrumb_home_label | default: "Dev.O" }}</span></a>
           <meta itemprop="position" content="{{ i }}" />
         </li>
         <span class="sep">{{ site.data.ui-text[site.locale].breadcrumb_separator | default: "/" }}</span>
@@ -28,8 +33,9 @@
         <li class="current">{{ page.title }}</li>
       {% else %}
         {% assign i = i | plus: 1 %}
+        {% assign cumulus = cumulus | append: "/" | append: crumb %}
         <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-          <a href="{{ crumb | downcase | replace: '%20', '-' | prepend: path_type | prepend: crumb_path | relative_url }}" itemprop="item"><span itemprop="name">{{ crumb | replace: '-', ' ' | replace: '%20', ' ' | capitalize }}</span></a>
+          <a href="{{ cumulus }}" itemprop="item"><span itemprop="name">{{ crumb | replace: '-', ' ' | replace: '%20', ' ' | capitalize }}</span></a>
           <meta itemprop="position" content="{{ i }}" />
         </li>
         <span class="sep">{{ site.data.ui-text[site.locale].breadcrumb_separator | default: "/" }}</span>
