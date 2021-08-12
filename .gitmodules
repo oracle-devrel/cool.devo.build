@@ -1,0 +1,3 @@
+[submodule "projects/wedo"]
+	path = projects/wedo
+	url = git@github.com:oracle-devrel/devo-wedo.git
