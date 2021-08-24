@@ -57,11 +57,12 @@ Optional front matter:
     To specify author data in the front matter, use a block like this. Most fields are optional, fill out what's appropriate and leave out what's not:
 
     ```yaml
-    name: Brett Terpstra
-    bio: Oracle DevRel Writer, developer, blogger, podcaster
-    home: https://brettterpstra.com
-    twitter: ttscoff
-    github: ttscoff
+    author:
+      name: Brett Terpstra
+      bio: Oracle DevRel Writer, developer, blogger, podcaster
+      home: https://brettterpstra.com
+      twitter: ttscoff
+      github: ttscoff
     ```
 
 - `toc: true` will enable a sidebar table of contents, automatically generated from headers in the page
