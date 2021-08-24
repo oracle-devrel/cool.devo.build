@@ -4,4 +4,4 @@ title: About
 permalink: /about/
 ---
 
-About DevO/DevRel
+About DevO/DevRel.
