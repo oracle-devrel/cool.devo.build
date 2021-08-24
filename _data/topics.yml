@@ -1,5 +1,45 @@
-- oci
-- java
-- ruby
-- python
-- nodejs
+topics:
+  - hardware
+  - oci
+  - pytorch
+personas:
+  - fullstack
+  - frontend
+  - devops
+  - backend
+  - architect
+  - robotics
+  - arvr
+  - datascience
+  - gamedev
+  - dbre
+languages:
+  - python
+  - javascript
+  - typescript
+  - go
+  - ruby
+  - terraform
+frameworks:
+  - tensorflow
+  - micronaut
+  - nodejs
+  - spark
+  - flask
+cases:
+  - title: Build and Run Cloud Native Apps
+    tag: cloudapps
+  - title: Cloud-Native Software Development on OCI
+    tag: coulddev
+  - title: Build, Move, and Modernize Applications
+    tag: modernize
+  - title: Java, GraalVM, and Helidon
+    tag: java
+  - title: Enterprise Cloud Native Development
+    tag: enterprise
+  - title: Personal Cloud Services
+    tag: personal
+  - title: Video Games, Servers, and Development
+    tag: games
+  - title: Top Frameworks for Top Languages
+    tag: frameworks

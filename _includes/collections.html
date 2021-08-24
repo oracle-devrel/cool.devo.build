@@ -1,0 +1,18 @@
+<section class="collections">
+  <h3>Collections</h3>
+
+  <div class="collections__cards cards">
+    {% for pg in site.pages %}
+    {% if pg.project %}
+    <div class="collections__cards--card card">
+
+        <h4><a class="animated-link" href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
+        <figure><a href="{{ site.baseurl }}{{ pg.url }}"><img class="center-cropped" src="{% if pg.thumbnail %}{{ pg.thumbnail }}{% elsif pg.image %}{{ page.image }}{% endif %}"></a></figure>
+        <p>{{ pg.description }}</p>
+      </a>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+
+</section>

@@ -1,28 +1,104 @@
 ---
-layout: archive
+layout: default
 ---
-
 {{ content }}
+{% assign topics = site.data.topics.topics %}
+{% assign personas = site.data.topics.personas %}
+{% assign languages = site.data.topics.languages %}
+{% assign frameworks = site.data.topics.frameworks %}
+{% assign all_topics = topics | concat: personas %}
+{% assign all_topics = all_topics | concat: languages %}
+{% assign all_topics = all_topics | concat: frameworks %}
 
-{% assign topics = site.data.topics | sort_natural %}
+<div class="archive topics-grid">
+  <h1>{{ page.title }}</h1>
 
-<div id="taglist">
-<h2>Tags</h2>
+  <nav class="classifications__nav">
+    <a href="#projects">Projects</a>
+    <a href="#personas">Personas</a>
+    <a href="#languages">Languages</a>
+    <a href="#frameworks">Frameworks</a>
+    <a href="#topics">Topics</a>
+  </nav>
 
-<ul>
-{% for tag in topics %}
-  <li><a href="#{{ tag | slugify }}">{{ tag }}</a></li>
-{% endfor %}
-</ul>
+  <div class="classifications">
+    <section id="projects" class="topics active">
+        {% for pg in site.pages %}
+        {% if pg.project %}
+        <ul class="topics__list">
+            <li class="topics__tag"><a href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></li>
+        </ul>
+        {% endif %}
+        {% endfor %}
+    </section>
+
+    <section id="personas" class="topics">
+      <h2>Personas</h2>
+      <ul class="topics__list">
+        {% for tag in personas %}
+          {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
+          <!-- if tagged_pages.size > 0  -->
+          <li class="topics__tag tag-{{ tag | slugify }}"><a href="#{{ tag | slugify }}">{{ tag }} <span class="topics__tag-count">{{ tagged_pages | size }}</span></a></li>
+          <!-- endif  -->
+        {% endfor %}
+      </ul>
+    </section>
+    <section id="languages" class="topics">
+      <h2>Languages</h2>
+      <ul class="topics__list">
+        {% for tag in languages %}
+          {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
+          <!-- if tagged_pages.size > 0  -->
+          <li class="topics__tag tag-{{ tag | slugify }}"><a href="#{{ tag | slugify }}">{{ tag }} <span class="topics__tag-count">{{ tagged_pages | size }}</span></a></li>
+          <!-- endif  -->
+        {% endfor %}
+      </ul>
+    </section>
+    <section id="frameworks" class="topics">
+      <h2>Frameworks</h2>
+      <ul class="topics__list">
+        {% for tag in frameworks %}
+          {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
+           <!-- if tagged_pages.size > 0  -->
+            <li class="topics__tag tag-{{ tag | slugify }}"><a href="#{{ tag | slugify }}">{{ tag }} <span class="topics__tag-count">{{ tagged_pages | size }}</span></a></li>
+           <!-- endif  -->
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section id="topics" class="topics">
+      <h2>Tags</h2>
+      <ul class="topics__list">
+        {% for tag in topics %}
+          {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
+           <!-- if tagged_pages.size > 0  -->
+            <li class="topics__tag tag-{{ tag | slugify }}"><a href="#{{ tag | slugify }}">{{ tag }} <span class="topics__tag-count">{{ tagged_pages | size }}</span></a></li>
+           <!-- endif  -->
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+
+  <section class="tagposts">
+    <div class="tagposts__tag active" id="all-posts">
+      <ul class="tagposts__posts">
+        {% assign tagged_pages = site.pages | where_exp:"item", "item.parent" %}
+        {% for page in tagged_pages | sort_natural %}
+          <li class="tagposts__post"><a href="{{ site.baseurl }}/{{ page.url }}">{{ page.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    {% for tag in all_topics %}
+      {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
+      <div class="tagposts__tag" id="{{ tag | slugify }}">
+        <h3 class="tagposts__title">{{ tag }} <span class="topics__tag-count">{{ tagged_pages | size }}</span></h3>
+        <ul class="tagposts__posts">
+          {% for page in tagged_pages %}
+            <li class="tagposts__post"><a href="{{ site.baseurl }}/{{ page.url }}">{{ page.title }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endfor %}
+  </section>
 </div>
-
-{% for tag in topics %}
-<h3 id="{{ tag | slugify }}">{{ tag }}</h2>
-<ul>
-  {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
-
-  {% for page in tagged_pages %}
-    <li><a href="{{ page.url }}">{{ page.title }}</a></li>
-  {% endfor %}
-</ul>
-{% endfor %}

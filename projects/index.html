@@ -1,31 +1,16 @@
 ---
 layout: archive
 ---
-<section id="projects">
-  <h3>Projects</h3>
+{% include collections.html %}
 
-  <div class="cards">
-    {% for pg in site.pages %}
-    {% if pg.project %}
-    <div class="card">
-        <h4><a href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
-        <a href="{{ site.baseurl }}{{ pg.url }}"><figure><img class="center-cropped" src="{% if pg.thumbnail %}{{ pg.thumbnail }}{% elsif pg.image %}{{ page.image }}{% endif %}"></figure></a>
-        <p>{{ pg.description }}</p>
-    </div>
-    {% endif %}
-    {% endfor %}
-  </div>
-
-</section>
-
-<section id="all">
+<section class="all-projects">
   <h3>All Projects</h3>
 
-  <div class="cards">
+  <div class="all-projects__cards cards">
       {% for pg in site.pages %}
       {% if pg.parent %}
-      <div class="card {{ pg.tags | tag_classes }}" data-category="{{ pg.categories | join: ' ' }}" data-tags="{{ pg.tags | join: ' ' }}">
-          <h4><a href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
+      <div class="all-projects__cards--card card {{ pg.tags | tag_classes }}" data-category="{{ pg.categories | join: ' ' }}" data-tags="{{ pg.tags | join: ' ' }}">
+          <h4><a class="animated-link" href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
           <a href="{{ site.baseurl }}{{ pg.url }}"><figure><img class="center-cropped" src="{% if pg.thumbnail %}{{ pg.thumbnail }}{% elsif pg.image %}{{ page.image }}{% endif %}"></figure></a>
           <p>{{ pg.description }}</p>
           <footer><span class="project"><a href="{{ site.baseurl }}/projects/{{ pg.parent | slugify }}">{{ pg.parent }}</a></span>: {% for tag in pg.tags %}<span class="tag"><a href="{{ site.baseurl }}/tag/{{ tag | slugify }}">{{ tag }}</a></span>{% endfor %}</footer>

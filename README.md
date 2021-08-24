@@ -1,4 +1,4 @@
-[Special Tags]: LINK_TBD
+[Plugins]: LINK_TBD
 
 ## Repos
 
@@ -37,6 +37,35 @@ Each project repo (and the root repo) can contain pages written in Markdown. The
 
 Within a project repo, directories become parts of the url (permalink) for the page. Submodule repos are created within the `/projects` directory, and the base URL for any project is `devo.build/projects/PROJECT-SLUG`. The slug will be assigned by the maintainers when the submodule is added.
 
+Required front matter:
+
+```yaml
+---
+title: PAGE TITLE
+categories: [CATEGORIES]
+tags: [TAGS]
+thumbnail: https://via.placeholder.com/350x400?text=DevOps+Thumbnail
+---
+```
+
+See [Tagging Posts and Pages](#tags)
+
+Optional front matter:
+
+- `author:` can be a block of YAML data, or if the author has been permanently added to the site, the author's slug can be used.
+    
+    To specify author data in the front matter, use a block like this. Most fields are optional, fill out what's appropriate and leave out what's not:
+
+    ```yaml
+    name: Brett Terpstra
+    bio: Oracle DevRel Writer, developer, blogger, podcaster
+    home: https://brettterpstra.com
+    twitter: ttscoff
+    github: ttscoff
+    ```
+
+- `toc: true` will enable a sidebar table of contents, automatically generated from headers in the page
+
 ## Posts
 
 Posts must be placed in the `_posts` directory of the main repository. When a new page is added to a project, a blog post should be created to announce and link to it. This will allow a date-based way to surface/spotlight new content.
@@ -54,40 +83,41 @@ Required front matter:
 - `categories: [CATEGORIES]`
 - `tags: [TAGS]`
 
+
+## Tagging Posts and Pages
+
+Tags and categories should be chosen from available options. If you need a tag or category that does not exist yet, add it to your post but specify in the pull request that you'd like the new tag added to the site.
+
 Available Categories, use all that apply. Only include the short version (after the colon below):
 
-- Build & Run Cloud Native Apps: build
-- Cloud Development on OCI: oci
-- Build, Move & Modernize Applications: modernize
-- AI/ML and Data Science: ai
-- Java, including GraalVM and Helidon: java
-- Enterprise Cloud Native Development: enterprise
-- Personal Cloud Services: personal
-- Video Games, Servers & Development: games
+- __Build and Run Cloud Native Apps__
+  
+    slug: `cloudapps`
+- __Cloud-Native Software Development on OCI__
 
-Available Tags, use all that apply:
+    slug: `coulddev`
+- __Build, Move, and Modernize Applications__
 
-Language:
+    slug: `modernize`
+- __Java, GraalVM, and Helidon__
 
-- java
-- python
-- oci
-- javascript
-- typescript
-- go
-- ruby
-- terraform
+    slug: `java`
+- __Enterprise Cloud Native Development__
 
-Frameworks:
+    slug: `enterprise`
+- __Personal Cloud Services__
 
-- tensorflow
-- pytorch
-- micronaut
-- nodejs
-- spark
-- flask
+    slug: `personal`
+- __Video Games, Servers, and Development__
 
-Persona:
+    slug: `games`
+- __Top Frameworks for Top Languages__
+
+    slug: `frameworks`
+
+Available Tags, use at least one of each type. If no appropriate tag exists in a section, you can add a new tag to your post. In the pull request, please specify the new tag and to which type it belongs.
+
+__personas:__
 
 - fullstack
 - frontend
@@ -95,15 +125,34 @@ Persona:
 - backend
 - architect
 - robotics
-- ar
-- vr
+- arvr
 - datascience
-- gaming
+- gamedev
 - dbre
 
-Topic:
+__languages:__
+
+- python
+- javascript
+- typescript
+- go
+- ruby
+- terraform
+
+__frameworks:__
+
+- tensorflow
+- micronaut
+- nodejs
+- spark
+- flask
+
+__topics:__ (optional, create new ones as needed)
 
 - hardware
+- oci
+- pytorch
+
 
 
 ## Assets
@@ -120,11 +169,11 @@ Ideally, though, multiple versions of the image should be available. The 1x vers
 
 When providing multiple versions of the same image, please use the liquid tag `{% img BASE_NAME{.jpg,@2x.jpg,.webp,@2x.webp} %}`, which will allow our Jekyll plugins to build out a picture tag with multiple sources.
 
-See [Special Tags][] for more info on the img tag.
+See [Plugins][] for more info on the img tag.
 
 ### Video/Animated GIF
 
-Animated gifs can be used in your Markdown, but instead of embedding them with `![](movie.gif)` Markdown formatting, please use the `{% gif movie.gif %}` Liquid tag. See [Special Tags][].
+Animated gifs can be used in your Markdown, but instead of embedding them with `![](movie.gif)` Markdown formatting, please use the `{% gif movie.gif %}` Liquid tag. See [Plugins][].
 
 In general, videos over one minute in length should be linked to from an external hosting platform like YouTube or Vimeo. Maintaining repositories with large video files is not ideal.
 
