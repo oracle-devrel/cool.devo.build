@@ -1,3 +1,7 @@
+# This is not currently used
 - title: Wedo
   description: Stuff We Do
   folder: wedo
+- title: Unnamed
+  description: A dummy project
+  folder: none

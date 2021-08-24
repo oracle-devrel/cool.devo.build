@@ -1,0 +1,28 @@
+---
+layout: archive
+---
+
+{{ content }}
+
+{% assign topics = site.data.topics | sort_natural %}
+
+<div id="taglist">
+<h2>Tags</h2>
+
+<ul>
+{% for tag in topics %}
+  <li><a href="#{{ tag | slugify }}">{{ tag }}</a></li>
+{% endfor %}
+</ul>
+</div>
+
+{% for tag in topics %}
+<h3 id="{{ tag | slugify }}">{{ tag }}</h2>
+<ul>
+  {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
+
+  {% for page in tagged_pages %}
+    <li><a href="{{ page.url }}">{{ page.title }}</a></li>
+  {% endfor %}
+</ul>
+{% endfor %}

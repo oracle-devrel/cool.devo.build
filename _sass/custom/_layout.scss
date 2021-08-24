@@ -1,0 +1,48 @@
+.center-cropped {
+	object-fit: cover;
+	object-position: center;
+	height: 100%;
+	width: 100%;
+}
+
+.cards {
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+}
+
+.card {
+	width: 48%;
+	margin: 1%;
+	border: solid 1px #ccc;
+	border-radius: 4px;
+	padding: 0.5em;
+	display: grid;
+	grid-template-rows: 3.5em 150px auto;
+
+	figure {
+		height: 150px;
+		overflow: hidden;
+		margin: 0;
+
+		img {
+			margin: 0;
+		}
+	}
+
+	h4 {
+		margin: 0;
+	}
+
+	a {
+		border-bottom: none;
+		text-decoration: none;
+	}
+
+	.tag {
+		border: solid 1px #ddd;
+		border-radius: 4px;
+		margin: 0 2px;
+		padding: 0 2px;
+	}
+}
