@@ -1,0 +1,96 @@
+---
+layout: default
+title: Topics
+---
+
+{% assign min_matches = 0 %}
+{% assign topics = site.data.topics.topics %}
+{% assign personas = site.data.topics.personas %}
+{% assign languages = site.data.topics.languages %}
+{% assign frameworks = site.data.topics.frameworks %}
+{% assign all_topics = topics | concat: personas %}
+{% assign all_topics = all_topics | concat: languages %}
+{% assign all_topics = all_topics | concat: frameworks %}
+{% assign all_topics = all_topics | sort_natural %}
+
+<div class="archive topics-grid">
+  <h1>{{ page.title }}</h1>
+
+  <nav class="classifications__nav">
+    <a href="#alltopics">All Tags</a>
+    <a href="#projects">Projects</a>
+    <a href="#personas">Personas</a>
+    <a href="#languages">Languages</a>
+    <a href="#frameworks">Frameworks</a>
+    <a href="#topics">Topics</a>
+  </nav>
+
+  <div class="classifications">
+    <section id="alltopics" class="topics active">
+      <ul class="topics__list">
+        {% for tag in all_topics %}
+        {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
+        {% if tagged_pages.size >= min_matches %}
+        <li class="topics__tag tag-{{ tag | slugify }}"><a href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }} <span class="topics__tag-count">{{ tagged_pages | size }}</span></a></li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section id="projects" class="topics">
+        {% for pg in site.pages %}
+        {% if pg.project %}
+        <ul class="topics__list">
+            <li class="topics__tag"><a href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></li>
+        </ul>
+        {% endif %}
+        {% endfor %}
+    </section>
+
+    <section id="personas" class="topics">
+      <h2>Personas</h2>
+      <ul class="topics__list">
+        {% for tag in personas %}
+          {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
+          {% if tagged_pages.size >= min_matches %}
+          <li class="topics__tag tag-{{ tag | slugify }}"><a href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }} <span class="topics__tag-count">{{ tagged_pages | size }}</span></a></li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </section>
+    <section id="languages" class="topics">
+      <h2>Languages</h2>
+      <ul class="topics__list">
+        {% for tag in languages %}
+          {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
+          {% if tagged_pages.size >= min_matches %}
+          <li class="topics__tag tag-{{ tag | slugify }}"><a href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }} <span class="topics__tag-count">{{ tagged_pages | size }}</span></a></li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </section>
+    <section id="frameworks" class="topics">
+      <h2>Frameworks</h2>
+      <ul class="topics__list">
+        {% for tag in frameworks %}
+          {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
+           {% if tagged_pages.size >= min_matches %}
+            <li class="topics__tag tag-{{ tag | slugify }}"><a href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }} <span class="topics__tag-count">{{ tagged_pages | size }}</span></a></li>
+           {% endif %}
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section id="topics" class="topics">
+      <h2>Tags</h2>
+      <ul class="topics__list">
+        {% for tag in topics %}
+          {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
+           {% if tagged_pages.size >= min_matches %}
+            <li class="topics__tag tag-{{ tag | slugify }}"><a href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }} <span class="topics__tag-count">{{ tagged_pages | size }}</span></a></li>
+           {% endif %}
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+</div>

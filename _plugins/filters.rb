@@ -19,6 +19,18 @@ module BTLiquidFilters
     end
   end
 
+  def dirname(input)
+    File.dirname(input)
+  end
+
+  def relative_to(input, page)
+    return input if input =~ /^(\/|http)/
+
+    dir = File.dirname(page)
+    baseurl = Jekyll.sites.first.baseurl
+    File.join(baseurl, dir, input)
+  end
+
   # remove all HTML tags and smart quotes
   def strip_tags(html,decode=true)
     begin

@@ -3,6 +3,6 @@
 ---
 
 @charset "utf-8";
-
+$asset-url: "{{ site.baseurl }}/assets";
 @import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}"; // skin
 @import "minimal-mistakes"; // main partials

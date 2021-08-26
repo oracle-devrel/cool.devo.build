@@ -1,5 +1,6 @@
 ---
 layout: archive
+title: Oracle Developer Projects
 ---
 {% include collections.html %}
 
@@ -11,7 +12,7 @@ layout: archive
       {% if pg.parent %}
       <div class="all-projects__cards--card card {{ pg.tags | tag_classes }}" data-category="{{ pg.categories | join: ' ' }}" data-tags="{{ pg.tags | join: ' ' }}">
           <h4><a class="animated-link" href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
-          <a href="{{ site.baseurl }}{{ pg.url }}"><figure><img class="center-cropped" src="{% if pg.thumbnail %}{{ pg.thumbnail }}{% elsif pg.image %}{{ page.image }}{% endif %}"></figure></a>
+          <figure class="thumbnail"><a href="{{ site.baseurl }}{{ pg.url }}"><img class="center-cropped" src="{% if pg.thumbnail %}{{ pg.thumbnail | relative_to: pg.url }}{% elsif pg.image %}{{ page.image | relative_to: pg.url }}{% endif %}"></a></figure>
           <p>{{ pg.description }}</p>
           <footer><span class="project"><a href="{{ site.baseurl }}/projects/{{ pg.parent | slugify }}">{{ pg.parent }}</a></span>: {% for tag in pg.tags %}<span class="tag"><a href="{{ site.baseurl }}/tag/{{ tag | slugify }}">{{ tag }}</a></span>{% endfor %}</footer>
       </div>

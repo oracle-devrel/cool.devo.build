@@ -1,1 +1,179 @@
 $link-color: #2f7d95;
+$sans: "Oracle Sans", "Noto Sans Hebrew", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+$sans-serif: $sans;
+$caption-font-family: $sans;
+$sans-normal: "OracleSansVF", "OracleSansVFCyGr", "Noto Sans Hebrew", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+$sans-ar: "Oracle Sans", "Noto Sans Arabic", "Noto Sans Arabic UI", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+$sans-ar-normal: "OracleSansVF", "OracleSansVFCyGr", "Noto Sans Arabic", "Noto Sans Arabic UI", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+
+/* ==========================================================================
+   Variables
+   ========================================================================== */
+
+/*
+   Typography
+   ========================================================================== */
+
+$doc-font-size: 18;
+
+/* paragraph indention */
+$paragraph-indent: false; // true, false (default)
+$indent-var: 1.3em;
+
+/* system typefaces */
+$serif: Georgia, Times, serif;
+$monospace: Monaco, Consolas, "Lucida Console", monospace;
+
+/* sans serif typefaces */
+$sans-serif-narrow: $sans-serif;
+$helvetica: Helvetica, "Helvetica Neue", Arial, sans-serif;
+
+/* serif typefaces */
+$georgia: Georgia, serif;
+$times: Times, serif;
+$bodoni: "Bodoni MT", serif;
+$calisto: "Calisto MT", serif;
+$garamond: Garamond, serif;
+
+$global-font-family: $sans-serif;
+$header-font-family: $sans-serif;
+$caption-font-family: $sans-serif;
+
+/* type scale */
+$type-size-1: 2.441em; // ~39.056px
+$type-size-2: 1.953em; // ~31.248px
+$type-size-3: 1.563em; // ~25.008px
+$type-size-4: 1.25em; // ~20px
+$type-size-5: 1em; // ~16px
+$type-size-6: 0.75em; // ~12px
+$type-size-7: 0.6875em; // ~11px
+$type-size-8: 0.625em; // ~10px
+
+/* headline scale */
+$h-size-1: 1.563em; // ~25.008px
+$h-size-2: 1.25em; // ~20px
+$h-size-3: 1.125em; // ~18px
+$h-size-4: 1.0625em; // ~17px
+$h-size-5: 1.03125em; // ~16.5px
+$h-size-6: 1em; // ~16px
+
+/*
+   Colors
+   ========================================================================== */
+
+$gray: #7a8288;
+$dark-gray: mix(#000, $gray, 50%);
+$darker-gray: mix(#000, $gray, 60%);
+$light-gray: mix(#fff, $gray, 50%);
+$lighter-gray: mix(#fff, $gray, 90%);
+
+$background-color: #fff;
+$code-background-color: #fafafa;
+$code-background-color-dark: $light-gray;
+$text-color: $dark-gray;
+$muted-text-color: mix(#fff, $text-color, 20%);
+$border-color: $lighter-gray;
+$form-background-color: $lighter-gray;
+$footer-background-color: $lighter-gray;
+
+$primary-color: #6f777d;
+$success-color: #3fa63f;
+$warning-color: #d67f05;
+$danger-color: #ee5f5b;
+$info-color: #2f7d95;
+$focus-color: $primary-color;
+$active-color: mix(#fff, $primary-color, 80%);
+
+/* YIQ color contrast */
+$yiq-contrasted-dark-default: $dark-gray;
+$yiq-contrasted-light-default: #fff;
+$yiq-contrasted-threshold: 175;
+$yiq-debug: false;
+
+/* brands */
+$behance-color: #1769ff;
+$bitbucket-color: #205081;
+$dribbble-color: #ea4c89;
+$facebook-color: #3b5998;
+$flickr-color: #ff0084;
+$foursquare-color: #0072b1;
+$github-color: #171516;
+$gitlab-color: #e24329;
+$instagram-color: #517fa4;
+$keybase-color: #ef7639;
+$lastfm-color: #d51007;
+$linkedin-color: #007bb6;
+$mastodon-color: #2b90d9;
+$pinterest-color: #cb2027;
+$reddit-color: #ff4500;
+$rss-color: #fa9b39;
+$soundcloud-color: #ff3300;
+$stackoverflow-color: #fe7a15;
+$tumblr-color: #32506d;
+$twitter-color: #55acee;
+$vimeo-color: #1ab7ea;
+$vine-color: #00bf8f;
+$youtube-color: #bb0000;
+$xing-color: #006567;
+
+/* links */
+$link-color: mix(#000, $info-color, 20%);
+$link-color-hover: mix(#000, $link-color, 25%);
+$link-color-visited: mix(#fff, $link-color, 15%);
+$masthead-link-color: $primary-color;
+$masthead-link-color-hover: mix(#000, $primary-color, 25%);
+$navicon-link-color-hover: mix(#fff, $primary-color, 75%);
+
+/* notices */
+$notice-background-mix: 80%;
+$code-notice-background-mix: 90%;
+
+/* syntax highlighting (base16) */
+$base00: #263238;
+$base01: #2e3c43;
+$base02: #314549;
+$base03: #546e7a;
+$base04: #b2ccd6;
+$base05: #eeffff;
+$base06: #eeffff;
+$base07: #ffffff;
+$base08: #f07178;
+$base09: #f78c6c;
+$base0a: #ffcb6b;
+$base0b: #c3e88d;
+$base0c: #89ddff;
+$base0d: #82aaff;
+$base0e: #c792ea;
+$base0f: #ff5370;
+
+/*
+   Breakpoints
+   ========================================================================== */
+
+$small: 600px;
+$medium: 768px;
+$medium-wide: 900px;
+$large: 1024px;
+$x-large: 1280px;
+$max-width: $x-large;
+
+/*
+   Grid
+   ========================================================================== */
+
+$right-sidebar-width-narrow: 200px;
+$right-sidebar-width: 300px;
+$right-sidebar-width-wide: 400px;
+
+/*
+   Other
+   ========================================================================== */
+
+$border-radius: 4px;
+$box-shadow: 0 1px 1px rgba(0, 0, 0, 0.125);
+$nav-height: 2em;
+$nav-toggle-height: 2rem;
+$navicon-width: 1.5rem;
+$navicon-height: 0.25rem;
+$global-transition: all 0.2s ease-in-out;
+$intro-transition: intro 0.3s both;

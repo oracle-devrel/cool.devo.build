@@ -1,10 +1,9 @@
-#main {
-  padding-left: 0;
-}
 
 .archive {
   float: none;
-  margin: 1em 2em 2em 2em;
+  // margin: 1em 2em 2em 2em;
+  width: 100%;
+  padding-right: 2em;
 
   @media (min-width: 80em) {
     max-width: 80vw;
@@ -29,41 +28,46 @@
 }
 
 .cards {
+  align-content: flex-start;
   display: flex;
   flex-wrap: wrap;
-  align-content: flex-start;
 }
 
 .card {
-  width: 48%;
-  margin: 1%;
-  border: solid 1px #ccc;
-  border-radius: 4px;
-  padding: 0.5em;
   display: grid;
-  grid-template-rows: 3.5em 150px auto;
-
-  figure {
-    height: 150px;
-    overflow: hidden;
-    margin: 0;
-
-    img {
-      margin: 0;
-    }
-  }
-
-  h4 {
-    margin: 0;
-
-    a {
-      display: block;
-    }
-  }
+  border-radius: 4px;
+  border: solid 1px #ccc;
+  padding: 0.5em;
+  position: relative;
+  width: 100%;
+  margin-bottom: 1em;
 
   a {
     border-bottom: none;
     text-decoration: none;
+  }
+
+  h4 {
+    margin-top: 0;
+  }
+
+  figure {
+    display: none;
+  }
+
+  .project {
+    border: solid 1px #ddd;
+    background: #666;
+    border-radius: 4px;
+    margin: 0 2px;
+    padding: 0 4px;
+
+    a {
+      font-weight: 600;
+      color: #fafafa;
+      text-transform: uppercase;
+      font-size: .8em;
+    }
   }
 
   .tag {
@@ -75,20 +79,44 @@
 
   footer {
     align-self: flex-end;
+    display: flex;
+    flex-wrap: wrap;
   }
+
+  @media screen and (min-width: $medium) {
+    grid-template-rows: 3em 150px auto;
+    margin: 1%;
+    width: 48%;
+
+    figure {
+      display: block;
+      box-sizing: content-box;
+      margin: 0;
+      overflow: hidden;
+      height: 150px;
+
+      img {
+        margin: 0;
+      }
+    }
+
+    h4 {
+      margin: 0 0 .25em 0;
+
+      a {
+        display: inline-block;
+      }
+    }
+  }
+
 }
 
 // tags page
 .topics-grid {
   display: grid;
-  grid-template-areas: "title title" "categories tags" "posts posts";
-  grid-template-columns: 180px 1fr;
+  grid-template-areas: "title ." "categories tags";
+  grid-template-columns: 150px  auto;
   padding: 1em;
-
-  @media screen and (min-width: 900px) {
-    grid-template-areas: "title . ." "categories tags posts";
-    grid-template-columns: 180px 200px 1fr;
-  }
 
   h1 {
     grid-area: title;
@@ -135,25 +163,40 @@
   flex-direction: column;
   margin: 0;
   padding: 0;
+  max-height: 70vh;
+  overflow: hidden auto;
+  width: 100%;
+
+  @media screen and (min-width: 480px) {
+    flex-direction: column;
+    overflow: auto visible;
+    flex-wrap: wrap;
+  }
 }
 
 .topics__tag {
   list-style: none;
   width: 100%;
+  margin-right: .5em;
+
+  @media screen and (min-width: 480px) {
+    width: auto;
+  }
 
   a {
     display: inline-block;
     text-decoration: none;
-    border: solid 1px #ccc;
+    border: solid 1px lighten($primary-color, 25%);
     padding: .4rem;
     border-radius: 4px;
     width: 100%;
     background-image: linear-gradient(#fff 95%, lighten($link-color, 35%) 95%);
     position: relative;
+    padding-right: 3.5ch;
   }
 
   .topics__tag-count {
-    background: darken($link-color, 5%);
+    background: lighten($link-color, 40%);
     border-left: 1px solid darken($link-color, 10%);
     border-radius: 0 4px 4px 0;
     bottom: 0;
@@ -173,9 +216,14 @@
 
 .tagposts {
   grid-area: posts;
+  border: solid 1px lighten($primary-color, 25%);
+  border-radius: 4px;
+  padding: .5em;
+  margin-top: 1em;
 
-  @media screen and (min-width: 900px) {
+  @media screen and (min-width: $medium-wide) {
     margin-left: 1em;
+    margin-top: 0;
   }
 
   h3 {
@@ -204,7 +252,7 @@
       text-decoration: none;
       padding: .4rem 0;
       width: 100%;
-      background-image: linear-gradient(#fff 99%, lighten($link-color, 35%) 99%);
+      border-bottom: solid 1px $link-color;
       position: relative;
     }
   }

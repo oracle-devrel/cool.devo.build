@@ -1,3 +1,37 @@
+
+html, input, button, textarea, select {
+  font-family: $sans;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #161513;
+
+  @supports (font-variation-settings:normal) {
+    font-family: $sans-normal;
+  }
+}
+
+html[lang^="ar"], html[lang^="ar"] input, html[lang^="ar"] button, html[lang^="ar"] textarea, html[lang^="ar"] select {
+  font-family: $sans-ar;
+
+  @supports (font-variation-settings:normal) {
+    font-family: $sans-ar-normal;
+  }
+}
+
+html[lang^="he"], html[lang^="he"] input, html[lang^="he"] button, html[lang^="he"] textarea, html[lang^="he"] select {
+  font-family: $sans;
+
+  @supports (font-variation-settings:normal) {
+    font-family: $sans-normal;
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: $sans;
+  font-weight: 600
+}
+
 .animated-link {
   position: relative;
   display: inline-block;

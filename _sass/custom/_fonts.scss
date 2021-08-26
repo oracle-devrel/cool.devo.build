@@ -1,0 +1,837 @@
+@font-face {
+	font-family: 'redwoodicons';
+	src: url("#{$asset-url}/fonts/redwoodicons-v7.woff2") format("woff2"), url("#{$asset-url}/fonts/redwoodicons-v7.woff") format("woff");
+	font-weight: normal !important;
+	font-style: normal !important
+}
+
+@font-face {
+	font-family: 'oracleicons';
+	src: url("#{$asset-url}/fonts/oracleicons-v41.woff2") format("woff2"), url("#{$asset-url}/fonts/oracleicons-v41.woff") format("woff");
+	font-weight: normal;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "OracleSansVF";
+	src: url("#{$asset-url}/fonts/oraclesansvf.woff2") format("woff2");
+	font-weight: 275 800;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "OracleSansVF";
+	src: url("#{$asset-url}/fonts/oraclesansvf-cond.woff2") format("woff2");
+	font-weight: 300 700;
+	font-style: normal;
+	font-stretch: 75% 99%
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "OracleSansVFCyGr";
+	src: url("#{$asset-url}/fonts/oraclesansvf-cygr.woff2") format("woff2");
+	font-weight: 275 800;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "OracleSansVF";
+	src: url("#{$asset-url}/fonts/oraclesansvf-it.woff2") format("woff2");
+	font-weight: 275 800;
+	font-style: italic
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "OracleSansVF";
+	src: url("#{$asset-url}/fonts/oraclesansvf-cond-it.woff2") format("woff2");
+	font-weight: 300 700;
+	font-style: italic;
+	font-stretch: 75% 99%
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "OracleSansVFCyGr";
+	src: url("#{$asset-url}/fonts/oraclesansvf-cygr-it.woff2") format("woff2");
+	font-weight: 275 800;
+	font-style: italic
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-ult.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-ult.woff") format("woff");
+	font-weight: 100;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-ult.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-ult.woff") format("woff");
+	font-weight: 200;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-lt.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-lt.woff") format("woff");
+	font-weight: 300;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-rg.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-rg.woff") format("woff");
+	font-weight: 400;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-rg.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-rg.woff") format("woff");
+	font-weight: 500;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-sbd.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-sbd.woff") format("woff");
+	font-weight: 600;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-bd.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-bd.woff") format("woff");
+	font-weight: 700;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-xbd.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-xbd.woff") format("woff");
+	font-weight: 800;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-xbd.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-xbd.woff") format("woff");
+	font-weight: 900;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-ultit.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-ultit.woff") format("woff");
+	font-weight: 100;
+	font-style: italic
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-ultit.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-ultit.woff") format("woff");
+	font-weight: 200;
+	font-style: italic
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-ltit.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-ltit.woff") format("woff");
+	font-weight: 300;
+	font-style: italic
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-it.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-it.woff") format("woff");
+	font-weight: 400;
+	font-style: italic
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-it.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-it.woff") format("woff");
+	font-weight: 500;
+	font-style: italic
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-sbdit.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-sbdit.woff") format("woff");
+	font-weight: 600;
+	font-style: italic
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-bdit.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-bdit.woff") format("woff");
+	font-weight: 700;
+	font-style: italic
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-xbdit.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-xbdit.woff") format("woff");
+	font-weight: 800;
+	font-style: italic
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	src: url("#{$asset-url}/fonts/oraclesans-xbdit.woff2") format("woff2"), url("#{$asset-url}/fonts/oraclesans-xbdit.woff") format("woff");
+	font-weight: 900;
+	font-style: italic
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 100;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-lt.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-lt.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 200;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-lt.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-lt.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 300;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-lt.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-lt.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 400;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-rg.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-rg.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 500;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-rg.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-rg.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 600;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-rg.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-rg.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 700;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-bd.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-bd.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 800;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-bd.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-bd.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 900;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-bd.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-bd.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 100;
+	font-style: italic;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-ltit.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-ltit.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 200;
+	font-style: italic;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-ltit.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-ltit.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 300;
+	font-style: italic;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-ltit.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-ltit.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 400;
+	font-style: italic;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-it.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-it.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 500;
+	font-style: italic;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-it.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-it.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 600;
+	font-style: italic;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-it.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-it.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 700;
+	font-style: italic;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-bdit.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-bdit.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 800;
+	font-style: italic;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-bdit.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-bdit.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Oracle Sans";
+	font-weight: 900;
+	font-style: italic;
+	font-stretch: condensed;
+	src: url("#{$asset-url}/fonts/oraclesanscd-bdit.woff2") format("woff2");
+	src: url("#{$asset-url}/fonts/oraclesanscd-bdit.woff") format("woff")
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-extralight.ttf") format("truetype");
+	font-weight: 100;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-extralight.ttf") format("truetype");
+	font-weight: 200;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-light.ttf") format("truetype");
+	font-weight: 300;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-regular.ttf") format("truetype");
+	font-weight: 400;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-regular.ttf") format("truetype");
+	font-weight: 500;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-semibold.ttf") format("truetype");
+	font-weight: 600;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-bold.ttf") format("truetype");
+	font-weight: 700;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-extrabold.ttf") format("truetype");
+	font-weight: 800;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-extrabold.ttf") format("truetype");
+	font-weight: 900;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-condensedlight.ttf") format("truetype");
+	font-weight: 100;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-condensedlight.ttf") format("truetype");
+	font-weight: 200;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-condensedlight.ttf") format("truetype");
+	font-weight: 300;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-condensed.ttf") format("truetype");
+	font-weight: 400;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-condensed.ttf") format("truetype");
+	font-weight: 500;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-condensed.ttf") format("truetype");
+	font-weight: 600;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-condensedbold.ttf") format("truetype");
+	font-weight: 700;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-condensedbold.ttf") format("truetype");
+	font-weight: 800;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic";
+	src: url("#{$asset-url}/fonts/notosansarabic-condensedbold.ttf") format("truetype");
+	font-weight: 900;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-extralight.ttf") format("truetype");
+	font-weight: 100;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-extralight.ttf") format("truetype");
+	font-weight: 200;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-light.ttf") format("truetype");
+	font-weight: 300;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-regular.ttf") format("truetype");
+	font-weight: 400;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-regular.ttf") format("truetype");
+	font-weight: 500;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-semibold.ttf") format("truetype");
+	font-weight: 600;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-bold.ttf") format("truetype");
+	font-weight: 700;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-extrabold.ttf") format("truetype");
+	font-weight: 800;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-extrabold.ttf") format("truetype");
+	font-weight: 900;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-condensedlight.ttf") format("truetype");
+	font-weight: 100;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-condensedlight.ttf") format("truetype");
+	font-weight: 200;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-condensedlight.ttf") format("truetype");
+	font-weight: 300;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-condensed.ttf") format("truetype");
+	font-weight: 400;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-condensed.ttf") format("truetype");
+	font-weight: 500;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-condensed.ttf") format("truetype");
+	font-weight: 600;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-condensedbold.ttf") format("truetype");
+	font-weight: 700;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-condensedbold.ttf") format("truetype");
+	font-weight: 800;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Arabic UI";
+	src: url("#{$asset-url}/fonts/notosansarabicui-condensedbold.ttf") format("truetype");
+	font-weight: 900;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-extralight.ttf") format("truetype");
+	font-weight: 100;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-extralight.ttf") format("truetype");
+	font-weight: 200;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-light.ttf") format("truetype");
+	font-weight: 300;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-regular.ttf") format("truetype");
+	font-weight: 400;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-regular.ttf") format("truetype");
+	font-weight: 500;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-semibold.ttf") format("truetype");
+	font-weight: 600;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-bold.ttf") format("truetype");
+	font-weight: 700;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-extrabold.ttf") format("truetype");
+	font-weight: 800;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-extrabold.ttf") format("truetype");
+	font-weight: 900;
+	font-style: normal
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-condensedlight.ttf") format("truetype");
+	font-weight: 100;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-condensedlight.ttf") format("truetype");
+	font-weight: 200;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-condensedlight.ttf") format("truetype");
+	font-weight: 300;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-condensed.ttf") format("truetype");
+	font-weight: 400;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-condensed.ttf") format("truetype");
+	font-weight: 500;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-condensed.ttf") format("truetype");
+	font-weight: 600;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-condensedbold.ttf") format("truetype");
+	font-weight: 700;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-condensedbold.ttf") format("truetype");
+	font-weight: 800;
+	font-style: normal;
+	font-stretch: condensed
+}
+
+@font-face {
+	font-display: fallback;
+	font-family: "Noto Sans Hebrew";
+	src: url("#{$asset-url}/fonts/notosanshebrew-condensedbold.ttf") format("truetype");
+	font-weight: 900;
+	font-style: normal;
+	font-stretch: condensed
+}
