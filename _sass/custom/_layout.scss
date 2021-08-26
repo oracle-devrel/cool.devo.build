@@ -118,7 +118,7 @@
 .topics-grid {
   display: grid;
   grid-template-areas: "title ." "categories tags";
-  grid-template-columns: 150px  auto;
+  grid-template-columns: minmax(calc(15vw + 1em), 150px) auto;
   padding: 1em;
 
   h1 {
