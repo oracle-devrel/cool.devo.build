@@ -180,3 +180,34 @@ In general, videos over one minute in length should be linked to from an externa
 
 Short, silent videos can be used instead of animated GIFS, and in most cases take up significantly less space than a GIF. These can be embedded with the gif tag using `{% gif FILENAME{.mp4,.webm} %}`, which will detect the movie format and generate an appropriate video tag, replicating the autoplay/looping of an animated GIF. At minimum an mp4 version must be provided, additional formats (webm, ogv) with the same base name and different extensions are optional.
 
+## Style
+
+- The title front matter will be used as an h1 at the top of the page, don't repeat it in the content
+- Avoid using "smart quotes" (curly quotes). Use straight single and double quotes
+- Divide long pieces up with headers, starting with level two (`##`), and increasing for sub-sections in sequence
+    - Don't jump from a level two to a level four
+- Title case headlines (<https://brettterpstra.com/titlecase/test>)
+- Use fenced code blocks for multi-line code, or commands that wrap to multiple lines (allows better formatting and syntax highlighting)
+    - Start a code block with triple backticks (`\`\`\``)
+    - include language specifier when possible, e.g. `\`\`\`ruby`. Use `sh` for shell commands
+- Include a newline after headlines
+- Use numbered lists when it represents a sequence
+- First letter of items should be capitalized unless the list items each finish a sentence preceding the list
+- One-sentence list items should not end in a period. If a list item contains multiple sentences, periods are optional. If you use a period on one, though, use a period on every item in that list
+- When showing shell commands in fenced code, use a single `$` at the beginning of the line to represent the prompt
+- File names, paths, and commands in paragraphs should be surrounded in backticks to mark them as code spans
+- When showing an entire URL in the copy, it should either be self-linked (e.g. `<https://example.com>`) or marked as a code span
+- Use 4 spaces to indent lists
+- Each item of a numbered list must start with `1.` (or whatever number). List items do not have to be in order, as long as they start with a number and a dot. The numeric sequence will be corrected when rendering.
+- Only use numbered lists for lists containing two or more items
+- To include paragraphs in a list item, add a blank line before the paragraph and indent it four spaces (or one tab) beyond the indent of the parent list item
+    - You can do the same with fenced code blocks, starting the fence four spaces/one tab from the parent
+- Use italics for emphasis in prose copy (`I *emphasized* this`)
+- Use bold for things like 
+    - emphasizing a key word
+    - product names
+    - menu/button titles
+- Use block quotes for quotes, starting each line with `> TEXT`. Add line breaks by including a double space at the end of the line. Attribution should start with `---` (em dash), and be linked if appropriate
+- When linking text, make the content of the link actually describe where the link will go
+    - __Bad:__ Click [here](http://example.com) for more details
+    - __Good:__ Click here for [more details on Markdown formatting](http://example.com)

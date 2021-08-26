@@ -82,8 +82,8 @@ layout: default
   <section class="tagposts">
     <div class="tagposts__tag active" id="all-posts">
       <ul class="tagposts__posts">
-        {% assign tagged_pages = site.pages | where_exp:"item", "item.parent" %}
-        {% for page in tagged_pages | sort_natural %}
+        {% assign tagged_pages = site.pages | where_exp:"item", "item.parent" | sort_natural %}
+        {% for page in tagged_pages %}
           <li class="tagposts__post"><a href="{{ site.baseurl }}/{{ page.url }}">{{ page.title }}</a></li>
         {% endfor %}
       </ul>
