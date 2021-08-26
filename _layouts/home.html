@@ -4,8 +4,6 @@ layout: archive
 
 {{ content | markdownify }}
 
-{% include collections.html %}
-
 <section id="posts">
 <h3 class="archive__subtitle">{{ site.data.ui-text[site.locale].recent_posts | default: "Recent Posts" }}</h3>
 
@@ -24,3 +22,5 @@ layout: archive
 
 {% include paginator.html %}
 </section>
+
+{% include collections.html %}
