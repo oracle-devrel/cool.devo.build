@@ -14,7 +14,7 @@ title: Oracle Developer Projects
           <h4><a class="animated-link" href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
           <figure class="thumbnail"><a href="{{ site.baseurl }}{{ pg.url }}"><img class="center-cropped" src="{% if pg.thumbnail %}{{ pg.thumbnail | relative_to: pg.url }}{% elsif pg.image %}{{ page.image | relative_to: pg.url }}{% endif %}"></a></figure>
           <p>{{ pg.description }}</p>
-          <footer><span class="project"><a href="{{ site.baseurl }}/projects/{{ pg.parent | slugify }}">{{ pg.parent }}</a></span>: {% for tag in pg.tags %}<span class="tag"><a href="{{ site.baseurl }}/tag/{{ tag | slugify }}">{{ tag }}</a></span>{% endfor %}</footer>
+          <footer><span class="project"><a href="{{ site.baseurl }}/projects/{{ pg.parent | slugify }}">{{ pg.parent }}</a></span> &raquo; {% for tag in pg.tags %}<span class="tag"><a href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }}</a></span>{% endfor %}</footer>
       </div>
       {% endif %}
       {% endfor %}

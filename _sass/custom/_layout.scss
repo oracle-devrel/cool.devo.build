@@ -74,10 +74,18 @@
   }
 
   .tag {
-    border: solid 1px #ddd;
+    // border: solid 1px #ddd;
     border-radius: 4px;
     margin: 0 2px;
     padding: 0 2px;
+
+    &::after {
+      content: ',';
+    }
+
+    &:last-of-type::after {
+      content: '';
+    }
   }
 
   footer {

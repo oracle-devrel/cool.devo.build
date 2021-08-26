@@ -11,7 +11,7 @@ layout: archive
         <h4><a href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
         <a href="{{ site.baseurl }}{{ pg.url }}"><figure><img class="center-cropped" src="{% if pg.thumbnail %}{{ pg.thumbnail }}{% elsif pg.image %}{{ page.image }}{% endif %}"></figure></a>
         <p>{{ pg.description }}</p>
-        <footer><span class="project"><a href="{{ site.baseurl }}/projects/{{ pg.parent | slugify }}">{{ pg.parent }}</a></span>: {% for tag in pg.tags %}<span class="tag"><a href="{{ site.baseurl }}/tag/{{ tag | slugify }}">{{ tag }}</a></span>{% endfor %}</footer>
+        <footer><span class="project"><a href="{{ site.baseurl }}/projects/{{ pg.parent | slugify }}">{{ pg.parent }}</a></span>: {% for tag in pg.tags %}<span class="tag"><a href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }}</a></span>{% endfor %}</footer>
     </div>
     {% endif %}
     {% endfor %}
