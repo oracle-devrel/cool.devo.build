@@ -1,10 +1,10 @@
 {% if site.footer_scripts %}
   {% for script in site.footer_scripts %}
-    <script src="{{ script | relative_url }}"></script>
+    <script src="{{ script | relative_url | replace: '//', '/' }}"></script>
   {% endfor %}
 {% else %}
-  <script src="{{ '/assets/js/main.min.js' | relative_url }}"></script>
-  <script src="{{ '/assets/js/custom.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/main.min.js' | relative_url | replace: '//', '/' }}"></script>
+  <script src="{{ '/assets/js/custom.js' | relative_url | replace: '//', '/' }}"></script>
 {% endif %}
 
 {% if site.search == true or page.layout == "search" %}
@@ -24,6 +24,6 @@
 
 {% if site.after_footer_scripts %}
   {% for script in site.after_footer_scripts %}
-    <script src="{{ script | relative_url }}"></script>
+    <script src="{{ script | relative_url | replace: '//', '/' }}"></script>
   {% endfor %}
 {% endif %}

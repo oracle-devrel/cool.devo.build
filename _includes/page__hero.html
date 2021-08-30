@@ -1,4 +1,4 @@
-{% capture overlay_img_path %}{{ page.header.overlay_image | relative_url }}{% endcapture %}
+{% capture overlay_img_path %}{{ page.header.overlay_image | relative_url | replace: '//', '/' }}{% endcapture %}
 
 {% if page.header.overlay_filter contains "gradient" %}
   {% capture overlay_filter %}{{ page.header.overlay_filter }}{% endcapture %}
@@ -37,17 +37,17 @@
       {% endif %}
       {% include page__meta.html %}
       {% if page.header.cta_url %}
-        <p><a href="{{ page.header.cta_url | relative_url }}" class="btn btn--light-outline btn--large">{{ page.header.cta_label | default: site.data.ui-text[site.locale].more_label | default: "Learn More" }}</a></p>
+        <p><a href="{{ page.header.cta_url | relative_url | replace: '//', '/' }}" class="btn btn--light-outline btn--large">{{ page.header.cta_label | default: site.data.ui-text[site.locale].more_label | default: "Learn More" }}</a></p>
       {% endif %}
       {% if page.header.actions %}
         <p>
         {% for action in page.header.actions %}
-          <a href="{{ action.url | relative_url }}" class="btn btn--light-outline btn--large">{{ action.label | default: site.data.ui-text[site.locale].more_label | default: "Learn More" }}</a>
+          <a href="{{ action.url | relative_url | replace: '//', '/' }}" class="btn btn--light-outline btn--large">{{ action.label | default: site.data.ui-text[site.locale].more_label | default: "Learn More" }}</a>
         {% endfor %}
       {% endif %}
     </div>
   {% else %}
-    <img src="{{ page.header.image | relative_url }}" alt="{{ image_description }}" class="page__hero-image">
+    <img src="{{ page.header.image | relative_url | replace: '//', '/' }}" alt="{{ image_description }}" class="page__hero-image">
   {% endif %}
   {% if page.header.caption %}
     <span class="page__hero-caption">{{ page.header.caption | markdownify | remove: "<p>" | remove: "</p>" }}</span>

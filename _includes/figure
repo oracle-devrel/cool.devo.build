@@ -1,5 +1,5 @@
 <figure class="{{ include.class }}">
-  <img src="{{ include.image_path | relative_url }}"
+  <img src="{{ include.image_path | relative_url | replace: '//', '/' }}"
        alt="{% if include.alt %}{{ include.alt }}{% endif %}">
   {%- if include.caption -%}
     <figcaption>

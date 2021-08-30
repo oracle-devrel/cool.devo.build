@@ -14,14 +14,14 @@
   <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
     {% if include.type == "grid" and teaser %}
       <div class="archive__item-teaser">
-        <img src="{{ teaser | relative_url }}" alt="">
+        <img src="{{ teaser | relative_url | replace: '//', '/' }}" alt="">
       </div>
     {% endif %}
     <h2 class="archive__item-title no_toc" itemprop="headline">
       {% if post.link %}
-        <a href="{{ post.link }}">{{ title }}</a> <a href="{{ post.url | relative_url }}" rel="permalink"><i class="fas fa-link" aria-hidden="true" title="permalink"></i><span class="sr-only">Permalink</span></a>
+        <a href="{{ post.link }}">{{ title }}</a> <a href="{{ post.url | relative_url | replace: '//', '/' }}" rel="permalink"><i class="fas fa-link" aria-hidden="true" title="permalink"></i><span class="sr-only">Permalink</span></a>
       {% else %}
-        <a href="{{ post.url | relative_url }}" rel="permalink">{{ title }}</a>
+        <a href="{{ post.url | relative_url | replace: '//', '/' }}" rel="permalink">{{ title }}</a>
       {% endif %}
     </h2>
     {% include page__meta.html type=include.type %}

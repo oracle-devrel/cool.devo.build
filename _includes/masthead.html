@@ -8,7 +8,7 @@
           <a class="oracle-logo" href="https://oracle.com/"><span>Oracle</span></a>
         </div>
         <div class="u18-title">
-          <a href="{{ '/' | relative_url }}">
+          <a href="{{ '/' | relative_url | replace: '//', '/' }}">
             {{ site.masthead_title | default: site.title }}
             {% if site.subtitle %}<span class="site-subtitle">{{ site.subtitle }}</span>{% endif %}
           </a>
@@ -17,7 +17,7 @@
         <ul class="visible-links">
           {%- for link in site.data.navigation.main -%}
             <li class="masthead__menu-item">
-              <a href="{{ link.url | relative_url }}"{% if link.description %} title="{{ link.description }}"{% endif %}>{{ link.title }}</a>
+              <a href="{{ link.url | relative_url | replace: '//', '/' }}"{% if link.description %} title="{{ link.description }}"{% endif %}>{{ link.title }}</a>
             </li>
           {%- endfor -%}
         </ul>

@@ -19,13 +19,13 @@
 <figure class="{{ gallery_layout }} {{ include.class }}">
   {% for img in gallery %}
     {% if img.url %}
-      <a href="{{ img.url | relative_url }}"
+      <a href="{{ img.url | relative_url | replace: '//', '/' }}"
         {% if img.title %}title="{{ img.title }}"{% endif %}>
-          <img src="{{ img.image_path | relative_url }}"
+          <img src="{{ img.image_path | relative_url | replace: '//', '/' }}"
                alt="{% if img.alt %}{{ img.alt }}{% endif %}">
       </a>
     {% else %}
-      <img src="{{ img.image_path | relative_url }}"
+      <img src="{{ img.image_path | relative_url | replace: '//', '/' }}"
            alt="{% if img.alt %}{{ img.alt }}{% endif %}">
     {% endif %}
   {% endfor %}
