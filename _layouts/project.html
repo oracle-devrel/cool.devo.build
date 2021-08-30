@@ -5,7 +5,8 @@ layout: archive
 {{ content }}
 
 <div class="cards">
-    {% for pg in site.pages %}
+    {% assign pages = site.pages | sort: "date" | reverse %}
+    {% for pg in pages  %}
     {% if pg.parent == page.project %}
     <div class="card {{ pg.tags | tag_classes }}" data-category="{{ pg.categories | join: ' ' }}" data-tags="{{ pg.tags | join: ' ' }}">
         <h4><a href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
