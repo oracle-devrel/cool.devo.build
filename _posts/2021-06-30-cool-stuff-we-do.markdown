@@ -4,6 +4,6 @@ title:  "Cool stuff we do"
 date:   2021-08-23 13:16:28 -0500
 categories: [blog]
 tags: [oci,wedo]
-modified: 2021-08-31 13:34:13 -0500
+modified: 2021-08-31 13:36:53 -0500
 ---
 This is not the project you're looking for.
