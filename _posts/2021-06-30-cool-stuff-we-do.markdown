@@ -4,7 +4,6 @@ title:  "Cool stuff we do"
 date:   2021-08-23 13:16:28 -0500
 categories: [blog]
 tags: [oci,wedo]
+modified: 2021-08-31 13:34:13 -0500
 ---
-We've highlighted a few of the cool things we're doing with Oracle services in the Wedo project. You know, "we do," as in "cool stuff." You get it.
-
-[Check out the Wedo project!]({{ site.baseurl}}/projects/wedo/)
+This is not the project you're looking for.
