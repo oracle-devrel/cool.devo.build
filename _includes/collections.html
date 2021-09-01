@@ -1,17 +1,36 @@
 <section class="collections">
-  <h3>Collections</h3>
-
   <div class="collections__cards cards">
-    {% for pg in site.pages %}
-    {% if pg.project %}
-    <div class="collections__cards--card card">
+    {% assign site_pages = site.pages | where_exp: "item", "item.series != null" | sort:"title" %}
+    {% for pg in site_pages %}
 
-        <h4><a class="animated-link" href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
-        <figure><a href="{{ site.baseurl }}{{ pg.url }}"><img class="center-cropped" src="{{ site.baseurl }}{{ pg.url }}/{% if pg.thumbnail %}{{ pg.thumbnail }}{% elsif pg.image %}{{ page.image }}{% endif %}"></a></figure>
-        <p>{{ pg.description }}</p>
-      </a>
-    </div>
-    {% endif %}
+    <a href="{{ site.baseurl }}{{ pg.url }}" class="collections__card card">
+
+
+        <h4>{{ pg.title }}</h4>
+        {% assign thumb = '' %}
+        {% if pg.thumbnail %}
+          {% assign thumb = pg.thumbnail %}
+        {% elsif pg.image %}
+          {% assign thumb = pg.image %}
+        {% else %}
+          {% assign first_child = site.pages | where:"parent", pg.series | sort: "date" | reverse | first %}
+          {% if first_child.thumbnail %}
+            {% assign thumb = first_child.thumbnail %}
+          {% elsif first_child.image %}
+            {% assign thumb = first_child.image %}
+          {% endif %}
+        {% endif %}
+
+        <figure>
+          {% unless thumb == '' %}
+          <img class="center-cropped" src="{{ site.baseurl }}{{ pg.url }}/{{ thumb }}">
+          {% else %}
+          <span href="{{ site.baseurl }}{{ pg.url }}" class="placeholder {{ pg.title | placeholder_class }}">{{ pg.title }}</span>
+          {% endunless %}
+        </figure>
+        {{ pg.description | markdownify }}
+
+    </a>
     {% endfor %}
   </div>
 

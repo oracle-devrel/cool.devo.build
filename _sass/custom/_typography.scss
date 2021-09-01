@@ -48,6 +48,12 @@ h1, h2, h3, h4, h5, h6 {
     transition: $global-transition;
     -webkit-transform: scaleX(0) translate3d(0, 0, 0);
     transform: scaleX(0) translate3d(0, 0, 0);
+    transform-origin: 0;
+  }
+
+  &.tag:before {
+    background: $color-green;
+    border-radius: 0 0 4px 0;
   }
 
   &:hover:before {

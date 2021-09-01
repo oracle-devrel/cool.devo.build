@@ -3,24 +3,27 @@ layout: category
 title: Topics
 ---
 
-{% assign min_matches = 0 %}
+{% assign min_matches = 1 %}
 {% assign topics = site.data.topics.topics | sort_natural %}
 {% assign personas = site.data.topics.personas | sort_natural %}
 {% assign languages = site.data.topics.languages | sort_natural %}
 {% assign frameworks = site.data.topics.frameworks | sort_natural %}
+{% assign cases = site.data.topics.cases | sort_natural %}
 {% assign all_topics = topics | concat: personas | sort_natural %}
 {% assign all_topics = all_topics | concat: languages %}
 {% assign all_topics = all_topics | concat: frameworks %}
+{% assign all_topics = all_topics | concat: cases %}
 {% assign all_topics = all_topics | sort_natural %}
 
 <div class="archive topics-grid">
 
   <nav class="classifications__nav">
     <a href="#alltopics">All Tags</a>
-    <a href="#projects">Projects</a>
+    <a href="#collections">Collections</a>
     <a href="#personas">Personas</a>
     <a href="#languages">Languages</a>
     <a href="#frameworks">Frameworks</a>
+    <a href="#cases">Cases</a>
     <a href="#topics">Topics</a>
   </nav>
 
@@ -36,14 +39,13 @@ title: Topics
       </ul>
     </section>
 
-    <section id="projects" class="topics">
-        {% for pg in site.pages %}
-        {% if pg.project %}
+    <section id="collections" class="topics">
+      {% assign all_pages = site.pages | where_exp:"item", "item.series != null" | sort: "title" %}
         <ul class="topics__list">
+        {% for pg in all_pages %}
             <li class="topics__tag"><a href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></li>
-        </ul>
-        {% endif %}
         {% endfor %}
+        </ul>
     </section>
 
     <section id="personas" class="topics">
@@ -72,6 +74,17 @@ title: Topics
       <h2>Frameworks</h2>
       <ul class="topics__list">
         {% for tag in frameworks %}
+          {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
+           {% if tagged_pages.size >= min_matches %}
+            <li class="topics__tag tag-{{ tag | slugify }}"><a href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }} <span class="topics__tag-count">{{ tagged_pages | size }}</span></a></li>
+           {% endif %}
+        {% endfor %}
+      </ul>
+    </section>
+    <section id="cases" class="topics">
+      <h2>Cases</h2>
+      <ul class="topics__list">
+        {% for tag in cases %}
           {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
            {% if tagged_pages.size >= min_matches %}
             <li class="topics__tag tag-{{ tag | slugify }}"><a href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }} <span class="topics__tag-count">{{ tagged_pages | size }}</span></a></li>

@@ -2,6 +2,16 @@
   padding: 0 2em;
 }
 
+
+.page {
+  width: 100%;
+  padding-right: 0;
+
+  &.has-toc {
+    padding-right: 300px;
+  }
+}
+
 .archive {
   float: none;
   // margin: 1em 2em 2em 2em;
@@ -34,16 +44,30 @@
   align-content: flex-start;
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+a.card {
+  text-decoration: none;
 }
 
 .card {
+  background: $background-color;
   display: grid;
-  border-radius: 4px;
-  border: solid 1px #ccc;
+  margin-bottom: 1em;
   padding: 0.5em;
   position: relative;
+  transition: $global-transition;
   width: 100%;
-  margin-bottom: 1em;
+
+  &:hover,
+  &:active {
+    border-color: $color-green;
+    box-shadow: 4px 4px 6px rgba($light-gray, .9);
+    transform: scale(1.025);
+    transition: $global-transition;
+    z-index: 2;
+  }
 
   a {
     border-bottom: none;
@@ -58,43 +82,17 @@
     display: none;
   }
 
-  .project {
-    border: solid 1px #ddd;
-    background: #666;
-    border-radius: 4px;
-    margin: 0 2px;
-    padding: 0 4px;
-
-    a {
-      font-weight: 600;
-      color: #fafafa;
-      text-transform: uppercase;
-      font-size: .8em;
-    }
-  }
-
-  .tag {
-    // border: solid 1px #ddd;
-    border-radius: 4px;
-    margin: 0 2px;
-    padding: 0 2px;
-
-    &::after {
-      content: ',';
-    }
-
-    &:last-of-type::after {
-      content: '';
-    }
-  }
-
   footer {
     align-self: flex-end;
     display: flex;
     flex-wrap: wrap;
   }
 
-  @media screen and (min-width: $medium) {
+  @include breakpoint($x-large) {
+    width: 30%;
+  }
+
+  @include breakpoint($medium) {
     grid-template-rows: 3em 150px auto;
     margin: 1%;
     width: 48%;
@@ -119,7 +117,146 @@
       }
     }
   }
+}
 
+.card,
+.all-projects__card {
+  border-radius: $border-radius;
+  border: solid 1px $light-gray;
+  box-shadow: 2px 2px 4px rgba($lighter-gray, 0.5);
+
+  .meta {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    width: 100%;
+
+    a {
+      border-radius: $border-radius;
+      display: inline-block;
+      font-size: .8em;
+      font-weight: 600;
+      text-decoration: none;
+      text-transform: lowercase;
+    }
+
+    .project {
+      text-transform: uppercase;
+      color: $light-gray;
+      margin-top: .4rem;
+    }
+
+    .tag {
+      background: $lighter-gray;
+      border-left: 8px solid $color-green;
+      margin: 0 2px;
+      padding: 0 6px;
+      // &::after {
+      //   content: ',';
+      // }
+
+      // &:last-of-type::after {
+      //   content: '';
+      // }
+    }
+  }
+}
+
+.all-projects__card {
+  display: grid;
+  gap: 15px;
+  grid-template-areas: "thumb title" "thumb desc";
+  grid-template-columns: 150px auto;
+  grid-template-rows: 1fr auto;
+  height: 100%;
+  margin-bottom: 1em;
+  min-height: 200px;
+  overflow: hidden;
+  width: 100%;
+
+  a {
+    text-decoration: none;
+  }
+
+  header {
+    grid-area: title;
+    padding: 8px;
+
+    h4 {
+      margin: 0;
+    }
+  }
+
+  .thumbnail {
+    background-size: cover;
+    box-sizing: content-box;
+    display: block;
+    grid-area: thumb;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    width: 150px;
+  }
+
+  .desc {
+    grid-area: desc;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 8px;
+  }
+
+  .date {
+    color: $light-gray;
+    display: flex;
+    flex-direction: column;
+    font-size: .8em;
+    justify-content: space-between;
+  }
+
+  footer {
+    align-self: flex-start;
+    // display: flex;
+    // flex-wrap: wrap;
+    // flex-direction: column;
+  }
+}
+
+.placeholder {
+  align-content: center;
+  color: rgba(255, 255, 255, .3) !important;
+  display: flex!important;
+  flex-direction: column;
+  font-size: 2em;
+  font-weight: 700;
+  height: 100%;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
+  text-shadow: -1px -1px 0 rgba(0, 0, 0,.15);
+  text-transform: uppercase;
+  width: 100%;
+}
+
+@function linear-grad($color, $angle: 65deg, $darken: 25%, $lighten: 20%) {
+  $start: saturate(darken($color, $darken), 50%);
+  $end: saturate(lighten($color, $lighten), 20%);
+  @return linear-gradient($angle, $start 0%, $end 100%);
+}
+
+$themeColors: ('red': $color-red,
+               'yellow': $color-yellow,
+               'purple': $color-purple,
+               'green': $color-green,
+               'blue': $color-blue,
+               'orange': $color-orange);
+
+@each $name, $value in $themeColors {
+  .ph-#{$name} {
+    background: $value;
+    background: linear-grad($value);
+  }
 }
 
 // tags page
@@ -199,22 +336,45 @@
 
   a {
     display: inline-block;
+    background: $lighter-gray;
+    color: $darker-gray;
     text-decoration: none;
-    border: solid 1px lighten($primary-color, 25%);
     padding: .4rem;
     border-radius: 4px;
     width: 100%;
-    background-image: linear-gradient(#fff 95%, lighten($link-color, 35%) 95%);
     position: relative;
     padding-right: 3.5ch;
+    transition: background .2s linear, color .2s linear;
+
+    &:hover,
+    &:active {
+      background: $oracle-bg;
+      color: #fff;
+    }
+  }
+
+  #collections & {
+    width: auto;
+
+    a {
+      padding-right: .4rem;
+    }
+  }
+
+  &:hover {
+    .topics__tag-count {
+      transition: background .5s linear;
+      background: $color-red;
+    }
   }
 
   .topics__tag-count {
-    background: lighten($link-color, 40%);
-    border-left: 1px solid darken($link-color, 10%);
+    transition: background 1s linear;
+    background: lighten($oracle-bg, 15%);
+    border-left: 1px solid lighten($oracle-bg, 50%);
     border-radius: 0 4px 4px 0;
     bottom: 0;
-    box-shadow: inset 0 1px 1px 2px rgba(0,0,0,.08);
+    // box-shadow: inset 0 1px 1px 2px rgba(0,0,0,.08);
     color: #fff;
     display: inline-block;
     line-height: 2.25;

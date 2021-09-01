@@ -21,9 +21,9 @@ The index.md file should have the following front matter. Uppercase values must 
 
 ```yaml
 ---
-layout: project
+layout: collection
 title: PROJECT_TITLE
-project: PROJECT_TAG
+series: SERIES-SLUG
 description: ONE_LINE_SUMMARY
 thumbnail: RELATIVE_PATH_TO_THUMBNAIL_IMAGE
 ---
@@ -42,7 +42,7 @@ Required front matter:
 ```yaml
 ---
 title: PAGE TITLE
-categories: [CATEGORIES]
+parent: series-slug
 tags: [TAGS]
 thumbnail: https://via.placeholder.com/350x400?text=DevOps+Thumbnail
 ---
@@ -54,7 +54,7 @@ Optional front matter:
 
 - `author:` can be a block of YAML data, or if the author has been permanently added to the site, the author's slug can be used.
     
-    To specify author data in the front matter, use a block like this. Most fields are optional, fill out what's appropriate and leave out what's not:
+    To specify author data in the front matter, use a block like this. Other than "name" all fields are optional, fill out what's appropriate and leave out what's not:
 
     ```yaml
     author:
@@ -63,9 +63,33 @@ Optional front matter:
       home: https://brettterpstra.com
       twitter: ttscoff
       github: ttscoff
+      gitlab: ttscoff
+      bitbucket: ttscoff
+      stackoverflow: ttscoff
+      codepen: ttscoff
+      youtube: BrettTerpstra
+      facebook: ttscoff
+      linkedin: brettterpstra
+      instagram: ttscoff
+      avatar: https://cdn3.brettterpstra.com/images/bt-mark.png
+      location: Minnesota
+      links:
+        - label: Random Link
+          url: https://example.com/one/
+        - label: Second Link
+          url: https://example.com/two/
+      email: brett@example.com
+
     ```
 
 - `toc: true` will enable a sidebar table of contents, automatically generated from headers in the page
+
+- To disable either or both sidebars and make content wider:
+    
+    ```yaml
+    toc: false
+    author_profile: false
+    ```
 
 ## Posts
 

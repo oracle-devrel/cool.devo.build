@@ -43,14 +43,14 @@ module Jekyll
           data = { 'layout' => layout, 'posts' => posts, 'tag' => tag, 'title' => tag }
           data.merge!(site.config["tag_#{type}_data"] || {})
 
-          name = yield data if block_given?
-          name ||= tag
-          name = jekyll_tagging_slug(name)
+          filename = yield data if block_given?
+          filename ||= tag
+          filename = jekyll_tagging_slug(filename)
 
           tag_dir = site.config["tag_#{type}_dir"]
-          tag_dir = File.join(tag_dir, (pretty? ? name : ''))
+          tag_dir = File.join(tag_dir, (pretty? ? filename : ''))
 
-          page_name = "#{pretty? ? 'index' : name}#{site.layouts[data['layout']].ext}"
+          page_name = "#{pretty? ? 'index' : filename}#{site.layouts[data['layout']].ext}"
 
           site.pages << TagPage.new(
             site, site.source, tag_dir, page_name, data
@@ -61,7 +61,7 @@ module Jekyll
 
     def active_tags
       classifications = site.data['topics']
-      classifications.reject! { |k, v| k == 'cases'}
+      # classifications.reject! { |k, v| k == 'cases'}
       all_topics = []
       classifications.each { |t, ts| all_topics.concat(ts) }
 

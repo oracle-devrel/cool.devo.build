@@ -1,8 +1,19 @@
 ---
 layout: archive
 ---
-<ul>
-{% for post in page.posts %}
-  <li><a href="{{ post.url }}">{{ post.title }}</a></li>
-{% endfor %}
-</ul>
+<div class="cards">
+    {% assign pages = page.posts | sort: "date" | reverse %}
+    {% for pg in pages  %}
+    {% assign series = site.pages | where: "series", pg.parent | first %}
+    <div class="card {{ pg.tags | tag_classes }}" data-category="{{ pg.categories | join: ' ' }}" data-tags="{{ pg.tags | join: ' ' }}">
+        <h4><a href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
+        <a href="{{ site.baseurl }}{{ pg.url }}"><figure><img class="center-cropped" src="{% if pg.thumbnail %}{{ pg.thumbnail | relative_to: pg.url }}{% elsif pg.image %}{{ page.image | relative_to: pg.url }}{% endif %}"></figure></a>
+        <p>{{ pg.description }}</p>
+        <footer class="meta">
+            <span class="tags">{% for tag in pg.tags %}<a class="animated-link tag" href="{{ site.baseurl }}/topics/{{ tag | slugify }}">{{ tag }}</a>{% endfor %}</span>
+            <a class="project" href="{{ site.baseurl }}{{ series.url }}">{{ series.title }}</a>
+        </footer>
+    </div>
+
+    {% endfor %}
+</div>

@@ -4,7 +4,22 @@ layout: archive
 
 {{ content }}
 
-{% assign entries_layout = page.entries_layout | default: 'list' %}
-<div class="entries-{{ entries_layout }}">
-  {% include documents-collection.html collection=page.collection sort_by=page.sort_by sort_order=page.sort_order type=entries_layout %}
+<div class="cards">
+    {% assign pages = site.pages | sort: "date" | reverse %}
+    {% for pg in pages  %}
+    {% if pg.parent == page.series %}
+    <div class="card {{ pg.tags | tag_classes }}" data-category="{{ pg.categories | join: ' ' }}" data-tags="{{ pg.tags | join: ' ' }}">
+        <h4><a href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
+        <a href="{{ site.baseurl }}{{ pg.url }}"><figure><img class="center-cropped" src="{% if pg.thumbnail %}{{ pg.thumbnail }}{% elsif pg.image %}{{ page.image }}{% endif %}"></figure></a>
+        <p>{{ pg.description }}</p>
+        <footer class="meta">
+            <span class="tags">
+                {% for tag in pg.tags %}
+                <a class="animated-link tag" href="{{ site.baseurl }}/topics/{{ tag | slugify }}">{{ tag }}</a>
+                {% endfor %}
+            </span>
+        </footer>
+    </div>
+    {% endif %}
+    {% endfor %}
 </div>

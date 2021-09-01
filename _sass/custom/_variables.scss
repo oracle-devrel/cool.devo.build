@@ -1,4 +1,4 @@
-$link-color: #2f7d95;
+
 $sans: "Oracle Sans", "Noto Sans Hebrew", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 $sans-serif: $sans;
 $caption-font-family: $sans;
@@ -60,6 +60,14 @@ $h-size-6: 1em; // ~16px
 /*
    Colors
    ========================================================================== */
+$oracle-bg: #2b2825;
+$color-red: #c03d2e;
+$color-blue: #47857D;
+$color-purple: #914275;
+$color-green: #7FC135;
+$color-yellow: #EFD564;
+$color-orange: #F35E18;
+$link-color: $color-blue;
 
 $gray: #7a8288;
 $dark-gray: mix(#000, $gray, 50%);
@@ -77,10 +85,10 @@ $form-background-color: $lighter-gray;
 $footer-background-color: $lighter-gray;
 
 $primary-color: #6f777d;
-$success-color: #3fa63f;
-$warning-color: #d67f05;
-$danger-color: #ee5f5b;
-$info-color: #2f7d95;
+$success-color: $color-green;
+$warning-color: $color-yellow;
+$danger-color: $color-red;
+$info-color: $color-blue;
 $focus-color: $primary-color;
 $active-color: mix(#fff, $primary-color, 80%);
 

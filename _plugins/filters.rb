@@ -1,3 +1,5 @@
+require 'time'
+
 class String
   def fix_encoding
     converter = Iconv.new 'UTF-8//IGNORE', 'UTF-8'
@@ -6,7 +8,6 @@ class String
 end
 
 module BTLiquidFilters
-
   def fixer(input)
     input.fix_encoding || input
   end
@@ -144,6 +145,34 @@ module BTLiquidFilters
     tags.map {|tag|
       %Q{<meta property="article:tag" content="#{tag}">}
     }.join("\n")
+  end
+
+  def in_series(input)
+    return !input['parent'].nil? && input['url'] !~ /\.(js|css|xml|txt|html)$/
+  end
+
+  def is_series(input)
+    return !input['series'].nil? && input['url'] !~ /\.(js|css|xml|txt|html)$/
+  end
+
+  def placeholder_class(input)
+    c = case input[0].downcase
+        when /[a-e]/
+          'red'
+        when /[f-l]/
+          'green'
+        when /[l-r]/
+          'blue'
+        when /[r-w]/
+          'orange'
+        when /[x-z]/
+          'yellow'
+        end
+    "ph-#{c}"
+  end
+
+  def first_letter(input)
+    input[0].upcase
   end
 
   Liquid::Template.register_filter self

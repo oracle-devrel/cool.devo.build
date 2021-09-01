@@ -15,9 +15,11 @@ layout: default
 {% endif %}
 
 <div id="main" role="main">
+  {% if page.author or page.sidebar %}
   {% include sidebar.html %}
+  {% endif %}
 
-  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+  <article class="page{% if page.author or page.sidebar %} has-sidebar{% endif %}{% if page.toc %} has-toc{% endif %}" itemscope itemtype="https://schema.org/CreativeWork">
     {% if page.title %}<meta itemprop="headline" content="{{ page.title | markdownify | strip_html | strip_newlines | escape_once }}">{% endif %}
     {% if page.excerpt %}<meta itemprop="description" content="{{ page.excerpt | markdownify | strip_html | strip_newlines | escape_once }}">{% endif %}
     {% if page.date %}<meta itemprop="datePublished" content="{{ page.date | date_to_xmlschema }}">{% endif %}

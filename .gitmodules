@@ -2,5 +2,5 @@
 	path = projects/wedo
 	url = git@github.com:oracle-devrel/devo-wedo.git
 [submodule "wedo"]
-	path = wedo
+	path = temp/cool-stuff
 	url = git@github.com:oracle-devrel/devo-wedo.git
