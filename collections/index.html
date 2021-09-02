@@ -8,11 +8,9 @@ title: Collections
   <h2>All The Things</h2>
 
   <div class="all-projects__cards cards">
-    {% assign site_pages = site.pages | sort: "modified" | reverse %}
+    {% assign site_pages = site.pages | where_exp: "item", "item.parent != null" | sort: "modified" | reverse %}
 
       {% for pg in site_pages %}
-        {% capture include %}{{ pg | in_series }}{% endcapture %}
-        {% if include == 'true' %}
           {% assign series = site.pages | where: "series", pg.parent | first %}
 
           <div class="all-projects__card {{ pg.tags | tag_classes }}" data-category="{{ pg.categories | join: ' ' }}" data-tags="{{ pg.tags | join: ' ' }}">
@@ -49,7 +47,6 @@ title: Collections
                 </footer>
               </div>
           </div>
-        {% endif %}
       {% endfor %}
   </div>
 

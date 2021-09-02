@@ -35,7 +35,7 @@ The thumbnail should be a minimum of 250x150px. It will be resized and cropped (
 
 Each project repo (and the root repo) can contain pages written in Markdown. The only technical requirement for a page is that it contain the appropriate front matter. There are stylistic guidelines that will be enforced in the content, but any text file with an `.md` extension and front matter will render as part of the site.
 
-Within a project repo, directories become parts of the url (permalink) for the page. Submodule repos are created within the `/projects` directory, and the base URL for any project is `devo.build/projects/PROJECT-SLUG`. The slug will be assigned by the maintainers when the submodule is added.
+Within a project repo, directories become parts of the url (permalink) for the page. Submodule repos are added within the `/collections` directory, and the base URL for any project is `devo.build/projects/PROJECT-SLUG`. The slug will be assigned by the maintainers when the submodule is added.
 
 Required front matter:
 
