@@ -119,6 +119,24 @@ a.card {
   }
 }
 
+.sidebar {
+  ul {
+    padding-left: .75em;
+  }
+  a.tag {
+    background: $lighter-gray;
+    border-left: 8px solid $color-green;
+    border-radius: $border-radius;
+    display: inline-block;
+    font-size: .8em;
+    font-weight: 600;
+    margin: 0 2px;
+    padding: 0 6px;
+    text-decoration: none;
+    text-transform: lowercase;
+  }
+}
+
 .card,
 .all-projects__card,
 .category__card {

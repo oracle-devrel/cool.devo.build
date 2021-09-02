@@ -1,4 +1,3 @@
-{% if page.author or layout.author_profile or page.sidebar %}
   <div class="sidebar sticky">
   {% if page.author or layout.author_profile %}{% include author-profile.html %}{% endif %}
   {% if page.sidebar %}
@@ -15,5 +14,20 @@
       {% include nav_list nav=page.sidebar.nav %}
     {% endif %}
   {% endif %}
+  {% assign site_pages = site.pages | where_exp:"item", "item.parent == page.parent" | where_exp:"item", "item.url != page.url" %}
+  {% if site_pages.size > 0 %}
+  <p><strong>From this collection:</strong>
+    <ul>
+      {% for pg in site_pages %}
+        <li><a href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <p><strong>Tags:</strong> <span class="tags">
+
+          {% for tag in page.tags %}
+          <a class="animated-link tag" href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }}</a>{% endfor %}
+          </span>
+  </p>
   </div>
-{% endif %}
