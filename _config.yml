@@ -39,6 +39,7 @@ tag_page_dir: topics
 # minimal_mistakes_skin: "contrast"
 
 plugins:
+  - jekyll-asciidoc
   - jekyll-feed
   - jekyll-paginate-v2
   - jekyll-sitemap
