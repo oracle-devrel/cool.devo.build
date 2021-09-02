@@ -52,6 +52,7 @@ See [Tagging Posts and Pages](#tags)
 
 Optional front matter:
 
+- `categories:` is an array containing one or more category tags. See [Tagging Posts and Pages](#tags) for a list of available categories.
 - `author:` can be a block of YAML data, or if the author has been permanently added to the site, the author's slug can be used.
     
     To specify author data in the front matter, use a block like this. Other than "name" all fields are optional, fill out what's appropriate and leave out what's not:
@@ -140,7 +141,7 @@ Available Categories, use all that apply. Only include the short version (after 
 
     slug: `frameworks`
 
-Available Tags, use at least one of each type. If no appropriate tag exists in a section, you can add a new tag to your post. In the pull request, please specify the new tag and to which type it belongs.
+Available Tags, try to use at least one of each type. If no appropriate tag exists in a section, you can add a new tag to your post. In the pull request, please specify the new tag and to which type it belongs.
 
 __personas:__
 
@@ -192,7 +193,7 @@ Images should be sized to appropriate dimensions for retina presentation. If the
 
 Ideally, though, multiple versions of the image should be available. The 1x version should have the base name, e.g. `image1.jpg`. A 2x version should be provided using the same base name with `@2x` appended, i.e. `image1@2x.jpg`. If webp versions with the same base name are provided, they will be offered as sources to compatible browsers (`image1.webp`, `image1@2x.webp`). Webp images can greatly reduce file size and render time for image-heavy pages.
 
-When providing multiple versions of the same image, please use the liquid tag `{% img BASE_NAME{.jpg,@2x.jpg,.webp,@2x.webp} %}`, which will allow our Jekyll plugins to build out a picture tag with multiple sources.
+When providing multiple versions of the same image, please use the liquid tag `{% img assets/BASE_NAME{.jpg,@2x.jpg,.webp,@2x.webp} %}`, which will allow our Jekyll plugins to build out a picture tag with multiple sources.
 
 See [Plugins][] for more info on the img tag.
 
@@ -201,6 +202,10 @@ See [Plugins][] for more info on the img tag.
 Animated gifs can be used in your Markdown, but instead of embedding them with `![](movie.gif)` Markdown formatting, please use the `{% gif movie.gif %}` Liquid tag. See [Plugins][].
 
 In general, videos over one minute in length should be linked to from an external hosting platform like YouTube or Vimeo. Maintaining repositories with large video files is not ideal.
+
+To insert a YouTube video as a responsive embed, simply use:
+
+    {% youtube VIDEOID %}
 
 Short, silent videos can be used instead of animated GIFS, and in most cases take up significantly less space than a GIF. These can be embedded with the gif tag using `{% gif FILENAME{.mp4,.webm} %}`, which will detect the movie format and generate an appropriate video tag, replicating the autoplay/looping of an animated GIF. At minimum an mp4 version must be provided, additional formats (webm, ogv) with the same base name and different extensions are optional.
 

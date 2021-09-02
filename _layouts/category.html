@@ -4,8 +4,15 @@ layout: archive
 
 {{ content }}
 
-{% assign cat_pages = site.pages | where_exp:"item", "item.categories contains page.children" %}
+{% assign site_pages = site.pages | where_exp:"item", "item.categories contains page.children" | sort: "modified" | reverse %}
 
-{% for pg in cat_pages %}
-{{ pg.title }}
-{% endfor %}
+<section class="category">
+  <div class="category__cards cards">
+      {% for pg in site_pages %}
+          {% assign series = site.pages | where: "series", pg.parent | first %}
+
+          {% include card.html source=pg class="category__card" %}
+      {% endfor %}
+  </div>
+
+</section>

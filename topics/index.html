@@ -8,11 +8,9 @@ title: Topics
 {% assign personas = site.data.topics.personas | sort_natural %}
 {% assign languages = site.data.topics.languages | sort_natural %}
 {% assign frameworks = site.data.topics.frameworks | sort_natural %}
-{% assign cases = site.data.topics.cases | sort_natural %}
 {% assign all_topics = topics | concat: personas | sort_natural %}
 {% assign all_topics = all_topics | concat: languages %}
 {% assign all_topics = all_topics | concat: frameworks %}
-{% assign all_topics = all_topics | concat: cases %}
 {% assign all_topics = all_topics | sort_natural %}
 
 <div class="archive topics-grid">
@@ -23,7 +21,6 @@ title: Topics
     <a href="#personas">Personas</a>
     <a href="#languages">Languages</a>
     <a href="#frameworks">Frameworks</a>
-    <a href="#cases">Cases</a>
     <a href="#topics">Topics</a>
   </nav>
 
@@ -74,17 +71,6 @@ title: Topics
       <h2>Frameworks</h2>
       <ul class="topics__list">
         {% for tag in frameworks %}
-          {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
-           {% if tagged_pages.size >= min_matches %}
-            <li class="topics__tag tag-{{ tag | slugify }}"><a href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }} <span class="topics__tag-count">{{ tagged_pages | size }}</span></a></li>
-           {% endif %}
-        {% endfor %}
-      </ul>
-    </section>
-    <section id="cases" class="topics">
-      <h2>Cases</h2>
-      <ul class="topics__list">
-        {% for tag in cases %}
           {% assign tagged_pages = site.pages | where_exp:"item", "item.tags contains tag" %}
            {% if tagged_pages.size >= min_matches %}
             <li class="topics__tag tag-{{ tag | slugify }}"><a href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }} <span class="topics__tag-count">{{ tagged_pages | size }}</span></a></li>

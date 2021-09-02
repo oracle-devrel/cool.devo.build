@@ -1,0 +1,36 @@
+{% assign pg = include.source %}
+{% assign series = include.series %}
+<div class="{{ include.class }} {{ pg.tags | tag_classes }}" data-category="{{ pg.categories | join: ' ' }}" data-tags="{{ pg.tags | join: ' ' }}">
+  <header><h4><a class="animated-link" href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
+    <div class="date">
+      {% if pg.date %}
+      <span class="published"><time datetime="{{ pg.date | iso }}">{{ pg.date | format_date: "ordinal" }}</time></span>
+      {% endif %}
+      {% if pg.modified %}
+      <span class="updated">Updated: <time datetime="{{ pg.modified | iso }}">{{ pg.modified | format_date: "ordinal" }}</time></span>
+      {% endif %}
+    </div>
+  </header>
+    {% assign thumb = '' %}
+    {% if pg.thumbnail %}
+      {% assign thumb = pg.thumbnail %}
+    {% elsif pg.image %}
+      {% assign thumb = pg.image %}
+    {% endif %}
+    {% unless thumb == '' %}
+    <a class="thumbnail" href="{{ site.baseurl }}{{ pg.url }}" style="background-image:url('{{ thumb | relative_to: pg.url }}');"></a>
+    {% else %}
+    <a class="thumbnail placeholder {{ pg.title | placeholder_class }}" href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title | first_letter }}</a>
+    {% endunless %}
+    <div class="desc">
+      {{ pg.description | markdownify }}
+
+      <footer class="meta">
+          <span class="tags">
+          {% for tag in pg.tags %}
+          <a class="animated-link tag" href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }}</a>{% endfor %}
+          </span>
+          <a class="project" href="{{ site.baseurl }}{{ series.url }}">{{ series.title }}</a>
+      </footer>
+    </div>
+</div>

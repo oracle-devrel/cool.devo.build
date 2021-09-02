@@ -26,12 +26,4 @@ frameworks:
   - nodejs
   - spark
   - flask
-cases:
-  - cloudapps # Build and Run Cloud Native Apps
-  - clouddev # Cloud-Native Software Development on OCI
-  - modernize # Build, Move, and Modernize Applications
-  - java # Java, GraalVM, and Helidon
-  - enterprise # Enterprise Cloud Native Development
-  - personal # Personal Cloud Services
-  - games # Video Games, Servers, and Development
-  - frameworks # Top Frameworks for Top Languages
+
