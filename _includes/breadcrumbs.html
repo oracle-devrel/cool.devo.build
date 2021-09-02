@@ -18,6 +18,11 @@
 
 <nav class="breadcrumbs">
   <ol itemscope itemtype="https://schema.org/BreadcrumbList">
+    <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+      <a href="https://developer.oracle.com/" itemprop="item"><span itemprop="name">Developer Resource Center</span></a>
+      <meta itemprop="position" content="{{ i }}" />
+    </li>
+    <span class="sep">{{ site.data.ui-text[site.locale].breadcrumb_separator | default: "/" }}</span>
     {% assign crumbs = page.url | split: '/' %}
     {% assign i = 1 %}
     {% assign cumulus = site.baseurl %}

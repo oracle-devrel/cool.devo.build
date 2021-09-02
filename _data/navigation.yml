@@ -5,3 +5,5 @@ main:
     url: /collections/
   - title: "Topics"
     url: /topics/
+  - title: "Get Started For Free"
+    url: https://www.oracle.com/cloud/free/?source=:ow:o:s:nav::DevoGetStarted&intcmp=:ow:o:s:nav::DevoGetStarted
