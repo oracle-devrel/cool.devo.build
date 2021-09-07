@@ -19,6 +19,9 @@
             <li class="masthead__menu-item">
               <a href="{{ link.url | relative_url | replace: '//', '/' }}"{% if link.description %} title="{{ link.description }}"{% endif %}>{{ link.title }}</a>
             </li>
+            <li class="masthead__menu-item">
+              <a href="https://www.oracle.com/cloud/free/?source=:ow:o:s:nav::DevoGetStarted&intcmp=:ow:o:s:nav::DevoGetStarted">Get Started For Free</a>
+            </li>
           {%- endfor -%}
         </ul>
         {% if site.search == true %}
