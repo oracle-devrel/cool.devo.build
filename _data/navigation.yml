@@ -1,6 +1,6 @@
 main:
-  - title: "Categories"
-    url: /categories/
+  - title: "Use Cases"
+    url: /use-cases/
   - title: "Collections"
     url: /collections/
   - title: "Topics"

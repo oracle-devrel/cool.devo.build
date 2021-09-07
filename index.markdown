@@ -6,7 +6,5 @@ classes:
 pagination:
     enabled: true
 ---
-# Welcome to DevO.Build!
-
-This will be the publishing platform for Oracle DevRel projects.
+Developer tutorials from your friends at Oracle and the developer community.
 

@@ -1,6 +1,6 @@
 ---
 layout: archive
-title: Categories
+title: Use Cases
 ---
 
 - [Build and Run Cloud Native Apps](/categories/cloudapps)

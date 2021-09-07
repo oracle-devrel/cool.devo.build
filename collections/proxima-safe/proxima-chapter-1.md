@@ -3,7 +3,6 @@ title: "Chapter One: setting up the event-driven OCI components"
 categories: [cloudapps]
 tags: [devops,fullstack,oci,hardware]
 thumbnail: assets/promima-safe-chapter1-4.jpg
-parent: proxima-safe
 date: 2021-08-31 12:00
 ---
 > Signals transmitted  

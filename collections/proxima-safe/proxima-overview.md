@@ -6,6 +6,14 @@ thumbnail: assets/bread.jpeg
 parent: proxima-safe
 date: 2021-08-20 08:00
 modified: 2021-09-01 12:00
+sidebar:
+  - links:
+    - url: https://developer.oracle.com/proximasafe-intro/
+      title: Proxima Safe Part 1
+    - url: https://developer.oracle.com/proximasafe-part-2/
+      title: Proxima Safe Part 2
+    - url: https://developer.oracle.com/proximasafe-part-3/
+      title: Proxima Safe Part 3
 ---
 ## The Briefcase Dream
 
@@ -65,6 +73,6 @@ It was fun to build it. The boy I used to be would be proud of it.
 
 The briefcase needs more engineering. I became no Tony, no superpowers, no millionaire, and — overall — my once dark goatee has become white (alas!), so the distant reflection of that boy slipping comics and books in the backpack while wondering about future technology maybe it's gone forever. My morning back pain reminds me that, indeed, it is.
 
-Well, here's the [link to the first chapter](/projects/wedo/proxima-chapter-1), for it is time to think about the next thing to write.
+Well, here's the [link to the first chapter](https://developer.oracle.com/proximasafe-intro/), for it is time to think about the next thing to write.
 
 I still daydream about that magical briefcase, though.

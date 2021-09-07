@@ -2,6 +2,13 @@
   {% if page.author or layout.author_profile %}{% include author-profile.html %}{% endif %}
   {% if page.sidebar %}
     {% for s in page.sidebar %}
+      {% if s.links %}
+      <ul>
+        {% for link in s.links %}
+        <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
       {% if s.image %}
         <img src="{{ s.image | relative_url | replace: '//', '/' }}"
              alt="{% if s.image_alt %}{{ s.image_alt }}{% endif %}">
