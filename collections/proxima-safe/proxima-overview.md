@@ -1,7 +1,7 @@
 ---
-title: Mr. Stark's briefcase and ProximaSafe
+title: Mr. Stark's Briefcase and ProximaSafe
 categories: [cloudapps]
-tags: [fullstack,hardware]
+tags: [oci,iot,streaming,serverless,rpi,fullstack]
 thumbnail: assets/bread.jpeg
 parent: proxima-safe
 date: 2021-08-20 08:00

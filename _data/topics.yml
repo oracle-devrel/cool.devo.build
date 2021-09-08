@@ -2,6 +2,12 @@ topics:
   - hardware
   - oci
   - pytorch
+  - iot
+  - streaming
+  - serverless
+  - rpi
+  - apex
+  - alwaysfree
 personas:
   - fullstack
   - frontend
