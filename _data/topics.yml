@@ -19,6 +19,7 @@ personas:
   - datascience
   - gamedev
   - dbre
+  - community
 languages:
   - python
   - javascript

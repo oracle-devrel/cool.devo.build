@@ -5,13 +5,12 @@ layout: single
 parent: learning-with-oci
 sidebar: false
 description: Using Oracle Cloud to learn a to speak a new language
-author: 
-  name: Adrian Png
+author: adrian-png
 toc: true
 slug: learning-languages
 thumbnail: assets/the-whiteboard.jpg
 categories: [personal]
-tags: [oci,iot,apex,alwaysfree,architect]
+tags: [oci,iot,apex,alwaysfree,architect,community]
 date: 2021-08-15 12:00
 ---
 
