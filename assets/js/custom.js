@@ -11,6 +11,17 @@ $(document).ready(function() {
     var tag = $(this).attr('href');
     $(tag).addClass('active');
   });
+
+  $('#topic-filter').on('keyup', function(){
+     var value = $(this).val().toLowerCase();
+     $('.topics__list li').each(function () {
+        if ($(this).text().toLowerCase().search(value) > -1) {
+           $(this).show();
+        } else {
+           $(this).hide();
+        }
+     });
+  });
 });
 
 if (!window.cool) {
@@ -19,12 +30,16 @@ if (!window.cool) {
 
 cool.slides = (function() {
     function goToSlide(x) {
-      $('.slide.active').fadeOut(300, function(e) {
-        $('.active').removeClass('active');
-        $('*[data-target-slide=' + x + ']').addClass('active');
-        $('#slide-' + x).fadeIn(300).addClass('active');
-        window.scrollTo(0, 0);
+      $('html, body').animate({
+        scrollTop: $("#slideshow").offset().top
+      }, 300, function() {
+        $('.slide.active').fadeOut(300, function(e) {
+          $('.active').removeClass('active');
+          $('*[data-target-slide=' + x + ']').addClass('active');
+          $('#slide-' + x).fadeIn(300).addClass('active');
+        });
       });
+
     }
 
     return {

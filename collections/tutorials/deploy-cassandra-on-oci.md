@@ -4,6 +4,7 @@ tags: [oci,python,jupyter,backend]
 parent: tutorials
 description: Set up your environment to run Cassandra in Oracle Cloud Infrastructure.
 author: olivier
+categories: [cloudapps]
 ---
 {% slides 2 %}
 This tutorial will guide you through the steps needed to set up your environment to run Cassandra in Oracle Cloud Infrastructure.
@@ -33,7 +34,7 @@ By default, OEL7 runs Python 3. The first step is to install `pip` and `virtuale
 
     The next step is to install `virtualenv`. `virtualenv` enables us to create isolated sandboxes to develop Python applications without running into module or library conflicts. It's easy to install:
 
-    ```bash
+    ```console
     sudo pip3.6 install virtualenv
     ```
 
@@ -179,11 +180,11 @@ By default, OEL7 runs Python 3. The first step is to install `pip` and `virtuale
     systemctl enable jupyterlab
     ```
 
-## Reboot Your machine to final check
+## Reboot Your machine for a final check
 
-Lastly, you'll need to **reboot your machine** to check if the jupyterlab script is enabled by default on port 8001.
+Lastly, you'll need to **reboot your machine** to ensure the jupyterlab script is available on port 8001.
 
-Open port 8001 to your virtual machine VM 2.1 in order to access JupyterLab using your Public IP.
+Open port 8001 on your virtual machine VM 2.1 to allow access to JupyterLab using your Public IP.
 
 ```console
 firewall-cmd --permanent --zone=public --list-ports
@@ -192,7 +193,7 @@ firewall-cmd --permanent --zone=public --add-port=8001/tcp
 firewall-cmd --reload
 ```
 
-If you're running directly on a virtual machine and have a browser installed, it should take you directly into the Jupyter environment. Connect using your public IP with the 8001 port, e.g. "http://xxx.xxx.xxx.xxx:8001/".
+If you're running directly on a virtual machine and have a browser installed, it should take you directly into the Jupyter environment. Connect using your public IP with the 8001 port, i.e. "http://xxx.xxx.xxx.xxx:8001/".
   
 You should now see the Python Web environment "Jupyterlab".
   

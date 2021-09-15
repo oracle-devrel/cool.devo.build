@@ -62,7 +62,7 @@ module Jekyll
     def render(context)
       context.environments.first['page']['slides'] = true
       input = super
-      output = %(<div class="slides" markdown=1>\n\n)
+      output = %(<div class="slides" id="slideshow" markdown=1>\n\n)
 
       sect_rx = /(?mi)^\#{#{@level}}(?=[^#])/
       sects = input.split(sect_rx).delete_if {|s| s.strip == ''}

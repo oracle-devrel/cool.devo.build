@@ -1,7 +1,7 @@
 {% assign pg = include.source %}
 {% assign series = include.series %}
 <div class="{{ include.class }} {{ pg.tags | tag_classes }}" data-category="{{ pg.categories | join: ' ' }}" data-tags="{{ pg.tags | join: ' ' }}">
-  <header><h4><a class="animated-link" href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
+  <header><h4><a class="" href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
     <div class="date">
       {% if pg.date %}
       <span class="published"><time datetime="{{ pg.date | iso }}">{{ pg.date | format_date: "ordinal" }}</time></span>

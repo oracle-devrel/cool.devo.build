@@ -288,12 +288,22 @@ $themeColors: ('red': $color-red,
 // tags page
 .topics-grid {
   display: grid;
-  grid-template-areas: "title ." "categories tags";
-  grid-template-columns: minmax(calc(15vw + 1em), 150px) auto;
+  grid-template-areas: "title filter" "categories tags";
+  grid-template-columns: minmax(calc(15vw + 4em), 150px) auto;
   padding: 1em;
 
   h1 {
     grid-area: title;
+  }
+
+  .filter {
+    grid-area: filter;
+
+    input {
+      width: 300px;
+      max-width: 50vw;
+      display: inline-block;
+    }
   }
 }
 
@@ -344,7 +354,7 @@ $themeColors: ('red': $color-red,
   flex-direction: column;
   margin: 0;
   padding: 0;
-  max-height: 70vh;
+  max-height: 60vh;
   overflow: hidden auto;
   width: 100%;
 
@@ -389,14 +399,14 @@ $themeColors: ('red': $color-red,
 
   &:hover {
     .topics__tag-count {
-      transition: background .5s linear;
-      background: $color-red;
+      transition: background .2s linear;
+      background: $color-green;
     }
   }
 
   .topics__tag-count {
     transition: background 1s linear;
-    background: lighten($oracle-bg, 15%);
+    background: lighten($oracle-bg, 35%);
     border-left: 1px solid lighten($oracle-bg, 50%);
     border-radius: 0 $border-radius $border-radius 0;
     bottom: 0;
