@@ -11,6 +11,10 @@
 	    color:  #fff;
 	}
 
+	.navicon {
+		height: 5px;
+	}
+
 	.u18-title {
 	    display: flex;
 	}
@@ -62,4 +66,23 @@
 
 .oracle-logo span {
 	opacity: 0;
+}
+
+.greedy-nav {
+	.hidden-links {
+		background: lighten($oracle-bg, 5%);
+
+		li {
+			border-bottom-color: lighten($oracle-bg, 10%);
+		}
+
+		a {
+			background: $oracle-bg;
+			color: white;
+
+			&:hover {
+				background: lighten($oracle-bg, 10%);
+			}
+		}
+	}
 }

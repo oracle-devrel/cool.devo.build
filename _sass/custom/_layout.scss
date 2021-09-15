@@ -137,7 +137,7 @@ a.card {
     text-decoration: none;
     text-transform: lowercase;
   }
-  p {
+  .author__bio {
     font-size: .6em;
   }
 }
@@ -454,6 +454,79 @@ $themeColors: ('red': $color-red,
       width: 100%;
       border-bottom: solid 1px $link-color;
       position: relative;
+    }
+  }
+}
+
+// Slides
+
+.slides-nav {
+  font-size: .75em;
+  border: 0;
+  padding-left: 1em;
+
+  ul {
+    list-style-position: inside;
+  }
+
+  li {
+    list-style-type: decimal;
+    padding: .25em .5em;
+    border-radius: $border-radius;
+  }
+
+  .active {
+    background: $color-green;
+
+    a {
+      color: white;
+      outline: none;
+    }
+  }
+}
+
+.slide {
+  display: none;
+
+  &.active {
+    display: block;
+  }
+
+  .slide__title {
+    background: $color-green;
+    border-radius: 4px;
+    color: #fff;
+    margin-top: 0;
+    padding: .25em;
+    position: relative;
+  }
+
+  .slide__num {
+    background: $gray;
+    border-radius: 4px;
+    color: white;
+    font-size: 1.2rem;
+    padding: 0 .25ch;
+  }
+
+  .slide__nav {
+    display: flex;
+    justify-content: space-between;
+
+    a {
+      display: block;
+      background: $color-green;
+      color: white;
+      font-weight: 600;
+      padding: 8px;
+      border-radius: $border-radius;
+      text-decoration: none;
+
+      &:hover,
+      &:focus {
+        text-decoration: none;
+        background: darken(saturate($color-green, 20%), 20%);
+      }
     }
   }
 }

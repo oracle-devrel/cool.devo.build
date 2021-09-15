@@ -26,6 +26,7 @@ baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://cool.devo.build" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: oracle
 github_username:  oracle-devrel
+search: true
 
 permalink: /:year/:month/:title.html
 

@@ -8,9 +8,26 @@ layout: archive
     {% assign pages = site.pages | sort: "date" | reverse %}
     {% for pg in pages  %}
     {% if pg.parent == page.series %}
+
+    {% assign thumb = '' %}
+    {% if pg.thumbnail %}
+      {% assign thumb = pg.thumbnail %}
+    {% elsif pg.image %}
+      {% assign thumb = pg.image %}
+    {% endif %}
+
     <div class="card {{ pg.tags | tag_classes }}" data-category="{{ pg.categories | join: ' ' }}" data-tags="{{ pg.tags | join: ' ' }}">
         <h4><a href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
-        <a href="{{ site.baseurl }}{{ pg.url }}"><figure><img class="center-cropped" src="{% if pg.thumbnail %}{{ pg.thumbnail }}{% elsif pg.image %}{{ page.image }}{% endif %}"></figure></a>
+        <a href="{{ site.baseurl }}{{ pg.url }}">
+        <figure>
+          {% unless thumb == '' %}
+          <img class="center-cropped" src="{{ site.baseurl }}{{ pg.url }}/{{ thumb }}">
+          {% else %}
+          <span href="{{ site.baseurl }}{{ pg.url }}" class="placeholder {{ pg.title | placeholder_class }}">{{ pg.title | first_letter }}</span>
+          {% endunless %}
+        </figure>
+        </a>
+
         <p>{{ pg.description }}</p>
         <footer class="meta">
             <span class="tags">

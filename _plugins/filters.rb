@@ -175,5 +175,81 @@ module BTLiquidFilters
     input[0].upcase
   end
 
+  def split_slides(input, level = 2)
+    if level =~ /^\d+$/
+      level = level.to_i
+    else
+      level = 2
+    end
+
+    output = %(<div class="slides" markdown=1>\n\n)
+
+    sect_rx = /(?mi)^<h{#{level}}.*?>/
+    sects = input.split(sect_rx).delete_if {|s| s.strip == ''}
+
+    intro = sects.slice!(0)
+    toc = [%(<a href="#slide-0">Intro</a>)]
+    nav = [%(<a href="#slide-0">0</a>)]
+    output += %(\n\n<div class="slide intro" id="slide-0" markdown=1>\n\n)
+    output += intro
+    output += "\n\n</div>\n\n"
+
+    sects.each_with_index do |sect, i|
+      lines = sect.split(/\n/)
+      headline = lines.slice!(0).sub(/<\/h#{level}>$/, '').strip
+      output += %(\n\n<div class="slide" id="slide-#{i+1}" markdown=1>\n\n)
+      output += %(<h2 class="slide-title">#{headline.strip}</h2>\n\n)
+      output += lines.join("\n")
+      output += %(\n\n</div>\n\n)
+      toc << %(<a href="#slide-#{i+1}">#{headline.strip}</a>)
+      nav << %(<a href="#slide-#{i+1}">#{i+1}</a>)
+    end
+
+    output += %(</div>\n\n)
+
+    result = %(<nav class="slides-nav"><ul>)
+
+    toc.each {|slide| result += "<li>#{slide}</li>" }
+
+    result += "</ul></nav>"
+
+    result += output
+
+    result += %(<div class="slides-dots">)
+
+    nav.each {|slide| result += slide }
+
+    result
+  end
+
+  def strip_markdown(input)
+    # strip all Markdown and Liquid tags
+    output = input.dup
+    begin
+      output.gsub!(/\{%.*?%\}/,'')
+      output.gsub!(/\{[:\.].*?\}/,'')
+      output.gsub!(/\[\^.+?\](\: .*?$)?/,'')
+      output.gsub!(/\s{0,2}\[.*?\]: .*?$/,'')
+      output.gsub!(/\!\[.*?\][\[\(].*?[\]\)]/,"")
+      output.gsub!(/\[(.*?)\][\[\(].*?[\]\)]/,"\\1")
+      output.gsub!(/^\s{1,2}\[(.*?)\]: (\S+)( ".*?")?\s*$/,'')
+      output.gsub!(/^\#{1,6}\s*/,'')
+      output.gsub!(/(\*{1,2})(\S.*?\S)\1/,'\2')
+      output.gsub!(/\{[%{](.*?)[%}]\}/,'')
+      output.gsub!(/\{#(.*?)\}/,'')
+      output.gsub!(/(`{3,})(.*?)\1/m,'\2')
+      output.gsub!(/^-{3,}\s*$/,'')
+      output.gsub!(/`/,'')
+      output.gsub!(/(?i-m)(_|\*)+(\S.*?\S)\1+/) {|match|
+        $2.gsub(/(?i-m)(_|\*)+(\S.*?\S)\1+/,'\2')
+      }
+      output.gsub(/\n{2,}/,"\n\n")
+    rescue
+      return input
+    else
+      output
+    end
+  end
+
   Liquid::Template.register_filter self
 end
