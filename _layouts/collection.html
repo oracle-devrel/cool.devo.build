@@ -21,7 +21,7 @@ layout: archive
         <a href="{{ site.baseurl }}{{ pg.url }}">
         <figure>
           {% unless thumb == '' %}
-          <img class="center-cropped" src="{{ site.baseurl }}{{ pg.url }}/{{ thumb }}">
+          <img class="center-cropped" src="{{ site.baseurl }}{{ page.url }}/{{ thumb }}">
           {% else %}
           <span href="{{ site.baseurl }}{{ pg.url }}" class="placeholder {{ pg.title | placeholder_class }}">{{ pg.title | first_letter }}</span>
           {% endunless %}
