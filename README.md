@@ -77,6 +77,7 @@ title: PAGE TITLE
 parent: series-slug
 tags: [TAGS]
 thumbnail: https://via.placeholder.com/350x400?text=DevOps+Thumbnail
+date: YYYY-MM-DD HH:MM
 ---
 ```
 
@@ -84,8 +85,9 @@ See [Tagging Pages](#tagging-pages)
 
 ### Optional front matter
 
+- `modified`: If you update a post with new content (or corrections), you can add a `modified` key with a new date. Don't change the publish date, though. The modified key will be enough to let us surface updated content without disrupting the (mostly) chronological publishing system.
 - `categories:` is an array containing one or more category tags. See [Tagging Pages](#tagging-pages) for a list of available categories.
-- `author:` can be a block of YAML data, or if the author has been permanently added to the site by the maintainers, the author's slug can be used.
+- `author:` can be a block of YAML data, or if the author has been permanently added to the site by the maintainers, a slug will be provided for the author to use.
     
     To specify author data in the front matter, use a block like this. Other than "name," all fields are optional; fill out what's appropriate and leave out what's not:
 
@@ -112,12 +114,19 @@ See [Tagging Pages](#tagging-pages)
         - label: Second Link
           url: https://example.com/two/
       email: brett@example.com
-
     ```
+
+    If you fill all this out once and there's a good chance you'll write again in the future, we'll pull all of this info into the authors data file and assign you a slug. Once you have a slug, you're author section just looks like:
+
+    ```yaml
+    author: brett-terpstra
+    ```
+
+    Of course, once that happens you'll have to make pull requests to update your bio, but that should be manageable.
 
 - `toc: true` will enable a sidebar table of contents, automatically generated from headers in the page
 
-- You can manually add links to the left sidebar using:
+- You can manually add links to the left sidebar, below any author bio, using:
     
     ```yaml
     sidebar:
@@ -139,9 +148,17 @@ See [Tagging Pages](#tagging-pages)
 
 ## Tagging Pages
 
-Tags and categories should be chosen from available options. If you need a tag or category that does not exist yet, add it to your post but specify in the pull request that you'd like the new tag added to the site.
+Tags and categories should be chosen from available options. If you need a tag or category that does not exist yet, add it to your post but specify in the pull request (or open an Issue) that you'd like the new tag added to the site.
 
 ### Categories
+
+The categories key is an array, surrounded by square brackets, with multiple values separated by a comma:
+
+```yaml
+categories: [cloudapps]
+# or with multiple categories...
+categories: [clouddev, java, games]
+```
 
 Available Categories, use all that apply. Only include the short version (slug):
 
@@ -150,7 +167,7 @@ Available Categories, use all that apply. Only include the short version (slug):
     slug: `cloudapps`
 - __Cloud-Native Software Development on OCI__
 
-    slug: `coulddev`
+    slug: `clouddev`
 - __Build, Move, and Modernize Applications__
 
     slug: `modernize`
@@ -228,6 +245,12 @@ Assets are stored in an `assets` directory in each repository. All links to thes
 
 Images should be sized to appropriate dimensions for retina presentation. If the image is to be displayed at 800x600 and only one asset is being provided, the asset should be 1600x1200 at 72dpi.
 
+<!--
+
+The plugins I'm talking about from here on out are not officially written yet and everything about them may change. The youtube plugin is finished and works great, but the gif and img plugins need some work before they can be used. Stick with regular Markdown syntax for now.
+
+### FUTURE STUFF
+
 Ideally, though, multiple versions of the image should be available. The 1x version should have the base name, e.g. `image1.jpg`. A 2x version should be provided using the same base name with `@2x` appended, i.e. `image1@2x.jpg`. If webp versions with the same base name are provided, they will be offered as sources to compatible browsers (`image1.webp`, `image1@2x.webp`). Webp images can greatly reduce file size and render time for image-heavy pages.
 
 When providing multiple versions of the same image, please use the liquid tag `{% img assets/BASE_NAME{.jpg,@2x.jpg,.webp,@2x.webp} %}`, which will allow our Jekyll plugins to build out a picture tag with multiple sources.
@@ -239,14 +262,18 @@ See [Plugins][] for more info on the img tag.
 Animated gifs can be used in your Markdown, but instead of embedding them with `![](movie.gif)` Markdown formatting, please use the `{% gif movie.gif %}` Liquid tag. See [Plugins][].
 
 In general, videos over one minute in length should be linked to from an external hosting platform like YouTube or Vimeo. Maintaining repositories with large video files is not ideal.
-
+-->
 To insert a YouTube video as a responsive embed, simply use:
 
     {% youtube VIDEOID %}
 
+<!--
 Short, silent videos can be used instead of animated GIFS, and in most cases take up significantly less space than a GIF. These can be embedded with the gif tag using `{% gif FILENAME{.mp4,.webm} %}`, which will detect the movie format and generate an appropriate video tag, replicating the autoplay/looping of an animated GIF. At minimum an mp4 version must be provided, additional formats (webm, ogv) with the same base name and different extensions are optional.
+-->
 
 ## Style
+
+These are very random notes I've collected while editing some of the initial copy, mostly syntax-related. They are not organized, and are definitely a bit rambly. I'm sure I'll have a bunch more in short order... I'll update with a cleaned up, official "style guide" soon. But please do give them a quick read and avoid some pitfalls we'll have to ask you to fix.
 
 - The title front matter will be used as an h1 at the top of the page, don't repeat it in the content
 - Avoid using "smart quotes" (curly quotes). Use straight single and double quotes
