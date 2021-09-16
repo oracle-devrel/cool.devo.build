@@ -114,7 +114,7 @@ The creation process is a breeze. Let's test it by producing a test message - th
 
 Now that the stream is actually working, let's jump to the subsequent step - the creation of the Stream Analytics component.
 
-### Provision and configure the Golden Gate Stream Analytics Component 
+### Provision and configure the Golden Gate Stream Analytics Component
 
 Stream Analytics will be the stream processing center of gravity for all messages sent from sensors and/or development boards. In fact, we could consider it as the event driven engine of our portable lab. Being placed in the Cloud, we can avoid the burden of management and operations and be laser-focused on the development of analysis pipelines.
 

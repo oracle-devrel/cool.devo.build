@@ -2,7 +2,7 @@
 title: Build Your Own Language Translator on Oracle Cloud
 tags: [oci,fullstack,hardware]
 layout: single
-parent: learning-with-oci
+parent: tutorials
 sidebar: false
 description: Using Oracle Cloud to learn a to speak a new language
 author: adrian-png

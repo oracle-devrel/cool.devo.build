@@ -80,11 +80,11 @@ thumbnail: https://via.placeholder.com/350x400?text=DevOps+Thumbnail
 ---
 ```
 
-See [Tagging Pages](#tags)
+See [Tagging Pages](#tagging-pages)
 
 ### Optional front matter
 
-- `categories:` is an array containing one or more category tags. See [Tagging Pages](#tags) for a list of available categories.
+- `categories:` is an array containing one or more category tags. See [Tagging Pages](#tagging-pages) for a list of available categories.
 - `author:` can be a block of YAML data, or if the author has been permanently added to the site by the maintainers, the author's slug can be used.
     
     To specify author data in the front matter, use a block like this. Other than "name," all fields are optional; fill out what's appropriate and leave out what's not:
@@ -137,7 +137,7 @@ See [Tagging Pages](#tags)
     author_profile: false
     ```
 
-## Tagging Pages {#tags}
+## Tagging Pages
 
 Tags and categories should be chosen from available options. If you need a tag or category that does not exist yet, add it to your post but specify in the pull request that you'd like the new tag added to the site.
 
