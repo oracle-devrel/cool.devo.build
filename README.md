@@ -281,8 +281,8 @@ These are very random notes I've collected while editing some of the initial cop
     - Don't jump from a level two to a level four
 - [Title case](https://brettterpstra.com/titlecase/test) lede headlines (the `title` key), but simply capitalize subheaders within the content
 - Use fenced code blocks for multi-line code, or commands that wrap to multiple lines (allows better formatting and syntax highlighting)
-    - Start a code block with triple backticks (`\`\`\``)
-    - include language specifier when possible, e.g. `\`\`\`ruby`. You can use `console` for terminal instructions
+    - Start a code block with triple backticks (<code>\`\`\`</code>)
+    - include language specifier when possible, e.g. <code>\`\`\`ruby</code>. You can use `console` for terminal instructions
 - Include a newline after headlines
 - Use numbered lists when it represents a sequence
     - As long as the first item in the list starts with "1.", it doesn't matter what numbers follow. Every line can be "1." or they can be out of order, they'll be automatically straightened out when it renders. Don't waste a lot of time tweaking the numbering if your list gets out of order
