@@ -275,34 +275,57 @@ Short, silent videos can be used instead of animated GIFS, and in most cases tak
 
 These are very random notes I've collected while editing some of the initial copy, mostly syntax-related. They are not organized, and are definitely a bit rambly. I'm sure I'll have a bunch more in short order... I'll update with a cleaned up, official "style guide" soon. But please do give them a quick read and avoid some pitfalls we'll have to ask you to fix.
 
+### Headers
+
 - The title front matter will be used as an h1 at the top of the page, don't repeat it in the content
-- Avoid using "smart quotes" (curly quotes). Use straight single and double quotes
-- Divide long pieces up with headers, starting with level two (`##`), and increasing for sub-sections in sequence
-    - Don't jump from a level two to a level four
+- Divide long pieces up with headers, starting with level two (`##`), and increasing for sub-sections in sequence, e.g. don't jump from a level two to a level four
 - [Title case](https://brettterpstra.com/titlecase/test) lede headlines (the `title` key), but simply capitalize subheaders within the content
+- Include an empty after headlines
+
+### Code samples
+
 - Use fenced code blocks for multi-line code, or commands that wrap to multiple lines (allows better formatting and syntax highlighting)
     - Start a code block with triple backticks (<code>\`\`\`</code>)
     - include language specifier when possible, e.g. <code>\`\`\`ruby</code>. You can use `console` for terminal instructions
-- Include a newline after headlines
+- When showing shell commands in fenced code, use a single `$` at the beginning of the line to represent the prompt
+- File names, paths, and commands in paragraphs should be surrounded in backticks to mark them as `code spans`
+
+### Lists
+
+- Use 4 spaces to indent lists. You can get away with 1 tab instead, but please do not indent lists with two spaces, it leads to trouble if we ever change the rendering engine we use. Four spaces will work _everywhere_
 - Use numbered lists when it represents a sequence
     - As long as the first item in the list starts with "1.", it doesn't matter what numbers follow. Every line can be "1." or they can be out of order, they'll be automatically straightened out when it renders. Don't waste a lot of time tweaking the numbering if your list gets out of order
 - First letter of list items should be capitalized unless the list items each finish a sentence preceding the list
-- If you're referring to a tool or product that is only ever lowercase, don't capitalize it to fit in with sentence structure
 - One-sentence list items should not end in a period. If a list item contains multiple sentences, periods are optional. If you use a period on one, though, use a period on every item in that list
-- When showing shell commands in fenced code, use a single `$` at the beginning of the line to represent the prompt
-- File names, paths, and commands in paragraphs should be surrounded in backticks to mark them as code spans
-- When showing an entire URL in the copy, it should either be self-linked (e.g. `<https://example.com>`) or marked as a code span
-- Use 4 spaces to indent lists. You can get away with 1 tab instead, but please do not indent lists with two spaces, it leads to trouble if we ever change the rendering engine we use. Four spaces will work _everywhere_
-- Only use numbered lists for lists containing two or more items. It's not really a list if there's just one item. That's a sentence, if you're lucky
+- Don't, in general, use a list for a single item. If you're breaking up a long list by putting headers between groupings, a single-item list is fine
 - To include paragraphs in a list item, add a blank line before the paragraph and indent it four spaces (or one tab) beyond the indent of the parent list item
     - You can do the same with fenced code blocks, starting the fence four spaces/one tab from the parent list item's indent level
-- Use italics for emphasis in prose copy (`I *emphasized* this`)
+
+### Emphasis
+
+- Use italics for emphasis in prose copy (`I *emphasized* this`). Either asterisks (\*) or underscores (\_) are fine
 - Use bold for things like 
     - emphasizing a key word
     - product names
     - menu/button titles
-- Use block quotes for quotes, starting each line with `> TEXT`. Add line breaks by including a double space at the end of the line. Attribution should start with `---` (em dash), and be linked if appropriate
-    - No one will yell at you if you include `<br>` tags to force line breaks. I'd prefer you use two spaces, but a lot of editors trim whitespace willy nilly and it's easy for them to disappear. A `<br>` will stick around. They'll be there for you. We won't begrudge you that
+
+### Quotes
+
+- Use block quotes for quotes, starting each line with `> TEXT`
+- Quote styling will be handled automatically, so don't add emphasis (italics/bold) to entire lines
+- Force line breaks by including a double space at the end of the line (or `<br>`, see General style/formatting)
+- Attribution (source) should start with `---` (em dash), and be linked if appropriate
+
+### Links
+
 - When linking text, make the content of the link actually describe where the link will go
     - __Bad:__ Click [here](http://example.com) for more details
     - __Good:__ Check out our tips page for [more details on Markdown formatting](http://example.com)
+- When showing an entire URL in the copy (as opposed to hyperlinked text), it should either be self-linked with angle brackets (e.g. `<https://example.com>`) or marked as a code span with single backticks
+- Whenever representing a dummy URL in examples, use `https://example.com`. `example.com` is a ICANN protected url for this purpose and it avoids myriad potential security issues with using hijackable domains
+
+### General style/formatting
+
+- Avoid using "smart quotes" (curly quotes). Use straight single and double quotes
+- If you're referring to a tool or product that is only ever lowercase, you don't have to capitalize it at the beginning of a sentence
+- No one will yell at you if you include `<br>` tags to force line breaks. Different Markdown syntaxes allow for different formatting, but the standard is two spaces the end of a line. However, some text editors trim whitespace on every save and it's easy for them to disappear. A `<br>` will stick around. They'll be there for you. We won't begrudge you that
