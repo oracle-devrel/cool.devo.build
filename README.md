@@ -14,6 +14,12 @@ To use the Jekyll setup, you'll need a Ruby setup with `bundler` installed. `gem
 
 The `-l` flag turns on LiveReload and incremental builds, so as you edit your content the web browser should automatically refresh when you save the document. Only pages being modified are rendered again, so if you change a title and it doesn't show up properly on an index page, you need to `touch` the index page to regenerate it. Or kill the server and run `jekyll build` to force the entire site to render.
 
+## Where your content will exist on the web
+
+Once it's edited and merged, your content will be available at `https://cool.devo.build/collections/...`. The `...` will be the directory path from the parent repo you contributed to. If you're creating in the Tutorials repo and your markdown file is called `my-cool-tutorial.md` in the root of that repository, the url would be `https://cool.devo.build/collections/tutorials/my-cool-tutorial`.
+
+The front matter included in your content will determine where else on the site your content is surfaced. It will be available under its parent collection and in the content listing the Collections page, under tag pages for the tags you specified, and under the Use Case category you specified.
+
 ## Content comes from repositories
 
 The root devo.build site is fairly spartan. Most content in it is provided by external GitHub repositories that are added as submodules and imported when rendering the site.
