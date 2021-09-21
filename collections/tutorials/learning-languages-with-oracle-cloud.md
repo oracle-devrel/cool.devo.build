@@ -16,7 +16,7 @@ date: 2021-08-15 12:00
 
 ![A whiteboard for learning the Japanese language.](assets/the-whiteboard.jpg)
 
-こにちわ！
+こんにちは！
 
 Have you always wanted to learn a new language and be introduced to a new and different culture? I have, and for the last six months, I have been using [Duolingo](https://www.duolingo.com/) to get an introduction to the Japanese language. Among the seven secrets recommended by [TED](http://www.ted.com/) translators in this [blog post](https://blog.ted.com/how-to-learn-a-new-language-7-secrets-from-ted-translators/), the general consensus seems to be integrating the language in your daily lives.
 
