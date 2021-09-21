@@ -11,7 +11,7 @@ layout: archive
       {% for pg in site_pages %}
           {% assign series = site.pages | where: "series", pg.parent | first %}
 
-          {% include card.html source=pg class="category__card" %}
+          {% include card.html source=pg class="card category__card" %}
       {% endfor %}
   </div>
 

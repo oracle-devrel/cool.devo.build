@@ -1,4 +1,5 @@
 ---
+published: false
 title: "Chapter One: setting up the event-driven OCI components"
 categories: [cloudapps]
 tags: [devops,fullstack,oci,hardware]

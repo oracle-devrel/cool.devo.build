@@ -56,19 +56,61 @@ a.card {
 .card {
   background: $background-color;
   display: grid;
+  gap: 5px 10px;
+  grid-template-areas: "thumb title" "thumb desc";
+  grid-template-columns: 60px auto;
+  height: 155px;
   margin-bottom: 1em;
+  max-height: 155px;
   padding: 0.5em;
   position: relative;
   transition: $global-transition;
   width: 100%;
 
+  figure {
+    grid-area: thumb;
+  }
+
+  h4 {
+    grid-area: title;
+  }
+
+  p {
+    grid-area: desc;
+    margin: 0;
+  }
+
   &:hover,
-  &:active {
+  &:focus {
     border-color: $color-green;
-    box-shadow: 4px 4px 6px rgba($light-gray, .9);
+    box-shadow: -2px 0 6px rgba($darker-gray, .15);
     transform: scale(1.025);
     transition: $global-transition;
     z-index: 2;
+  }
+
+  .thumbnail {
+    background-size: cover;
+    box-sizing: content-box;
+    display: block;
+    grid-area: thumb;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    width: 60px;
+  }
+
+  .date {
+    color: $light-gray;
+    display: flex;
+    flex-direction: column;
+    font-size: .8em;
+    justify-content: space-between;
+  }
+
+  .tags {
+    height: 1.7em;
+    overflow: hidden;
   }
 
   a {
@@ -81,7 +123,7 @@ a.card {
   }
 
   figure {
-    display: none;
+    margin: 0;
   }
 
   footer {
@@ -95,7 +137,7 @@ a.card {
   }
 
   @include breakpoint($medium) {
-    grid-template-rows: 3em 150px auto;
+    // grid-template-rows: 3em 150px auto;
     margin: 1%;
     width: 48%;
 
@@ -104,7 +146,7 @@ a.card {
       box-sizing: content-box;
       margin: 0;
       overflow: hidden;
-      height: 150px;
+      height: 130px;
 
       img {
         margin: 0;
@@ -147,15 +189,48 @@ a.card {
 .all-projects__card,
 .category__card {
   border-radius: $border-radius;
-  border: solid 1px $light-gray;
-  box-shadow: 2px 2px 4px rgba($lighter-gray, 0.5);
+  // border: solid 1px $light-gray;
+  box-shadow: -1px 0 4px rgba($darker-gray, 0.15);
+  transition: $global-transition;
+
+  figure,
+  .thumbnail {
+    grid-area: thumb;
+    filter: brightness(85%);
+    transition: $global-transition;
+  }
+
+  &:hover,
+  &:active {
+    box-shadow: -1px 0 6px rgba($darker-gray, 0.3);
+
+    .thumbnail {
+      filter: brightness(100%);
+    }
+  }
+
+  h4 {
+    font-size: 1.1em;
+
+    @include breakpoint($medium) {
+      font-size: 1.2em;
+    }
+
+    @include breakpoint($large) {
+      font-size: 1.4em;
+    }
+  }
 
   .meta {
-    display: flex;
+    display: none;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: space-between;
     width: 100%;
+
+    @include breakpoint($small) {
+      display: flex;
+    }
 
     a {
       border-radius: $border-radius;
@@ -192,12 +267,8 @@ a.card {
 .all-projects__card {
   display: grid;
   gap: 15px;
-  grid-template-areas: "thumb title" "thumb desc";
-  grid-template-columns: 150px auto;
-  grid-template-rows: 1fr auto;
-  height: 100%;
+  // grid-template-rows: minmax(1em, 3em) auto;
   margin-bottom: 1em;
-  min-height: 200px;
   overflow: hidden;
   width: 100%;
 
@@ -207,10 +278,9 @@ a.card {
 
   header {
     grid-area: title;
-    padding: 8px;
 
     h4 {
-      margin: 0;
+      margin: 8px 0 0;
     }
   }
 
@@ -222,7 +292,7 @@ a.card {
     height: 100%;
     margin: 0;
     overflow: hidden;
-    width: 150px;
+    width: 60px;
   }
 
   .desc {
@@ -230,19 +300,16 @@ a.card {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    padding: 8px;
-  }
 
-  .date {
-    color: $light-gray;
-    display: flex;
-    flex-direction: column;
-    font-size: .8em;
-    justify-content: space-between;
+    p {
+      margin: 0 0 .25em 0;
+    }
   }
 
   footer {
     align-self: flex-start;
+    padding-right: 8px;
+    margin-bottom: 4px;
     // display: flex;
     // flex-wrap: wrap;
     // flex-direction: column;
@@ -251,7 +318,7 @@ a.card {
 
 .placeholder {
   align-content: center;
-  border-radius: $border-radius;
+  border-radius: $border-radius 0 0 $border-radius;
   color: rgba(255, 255, 255, .3) !important;
   display: flex!important;
   flex-direction: column;
@@ -398,7 +465,8 @@ $themeColors: ('red': $color-red,
     }
   }
 
-  &:hover {
+  &:hover,
+  &:focus {
     .topics__tag-count {
       transition: background .2s linear;
       background: $color-green;

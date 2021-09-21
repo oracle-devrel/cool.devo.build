@@ -87,11 +87,13 @@ date: YYYY-MM-DD HH:MM
 ---
 ```
 
+The date should be the date you plan to publish. If there's any delay in publishing, we'll update the date for you. 
+
 See [Tagging Pages](#tagging-pages)
 
 ### Optional front matter
 
-- `modified`: If you update a post with new content (or corrections), you can add a `modified` key with a new date. Don't change the publish date, though. The modified key will be enough to let us surface updated content without disrupting the (mostly) chronological publishing system.
+- `modified`: If you update a post with new content (or corrections), you can add a `modified` key with a new date. Don't change the publish date, though. The modified key will be enough to let us surface updated content without disrupting the (mostly) chronological publishing system. (hint: there's [a script](https://github.com/oracle-devrel/cool.devo.build/blob/main/update_modified.rb) in the cool.devo.build repo that can use to update the modified key for all changed markdown files prior to doing a commit.)
 - `categories:` is an array containing one or more category tags. See [Tagging Pages](#tagging-pages) for a list of available categories.
 - `author:` can be a block of YAML data, or if the author has been permanently added to the site by the maintainers, a slug will be provided for the author to use.
     

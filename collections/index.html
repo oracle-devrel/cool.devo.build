@@ -12,7 +12,7 @@ title: Collections
 
       {% for pg in site_pages %}
           {% assign series = site.pages | where: "series", pg.parent | first %}
-          {% include card.html class="all-projects__card" source=pg series=series %}
+          {% include card.html class="card all-projects__card" source=pg series=series %}
 
 
       {% endfor %}
