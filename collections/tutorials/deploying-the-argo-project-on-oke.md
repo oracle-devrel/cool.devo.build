@@ -8,6 +8,7 @@ date: 2021-09-22 15:30
 description: How to deploy the Argo project on an OKE cluster.
 toc: true
 author: 
+  name: Ali Mukadam
 ---
 ![](assets/argo-icon-color-800.png)
 
