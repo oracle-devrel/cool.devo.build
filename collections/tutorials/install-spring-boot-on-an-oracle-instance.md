@@ -2,11 +2,10 @@
 title: Install Spring Boot on an Oracle Instance
 parent: tutorials
 tags: [oci, java]
-categories: [cloudapps]
+categories: [java]
 thumbnail: assets/install-spring-boot-on-an-oracle-instance-Spring_Diagram.png
 date: 2021-09-22 15:30
 description: Use an Oracle Cloud Infrastructure Free Tier account to set up an Oracle Linux compute instance, install a Spring Boot application, set up a virtual network, and access your new app from the internet.
-toc: true
 ---
 {% slides %}
 
