@@ -60,7 +60,7 @@ a.card {
   grid-template-areas: "thumb title" "thumb desc";
   grid-template-columns: 60px auto;
   margin-bottom: 1em;
-  max-height: 185px;
+  // max-height: 185px;
   padding: 0.5em;
   position: relative;
   transition: $global-transition;

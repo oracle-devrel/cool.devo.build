@@ -5,7 +5,7 @@ title: Collections
 {% include collections.html %}
 
 <section class="all-collections">
-  <h2>All The Things</h2>
+  <h2>All Articles</h2>
 
   <div class="all-projects__cards cards">
     {% assign site_pages = site.pages | where_exp: "item", "item.parent != null" | sort: "modified" | reverse %}
