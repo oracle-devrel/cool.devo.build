@@ -9,6 +9,7 @@ description: How to deploy the Argo project on an OKE cluster.
 toc: true
 author: 
   name: Ali Mukadam
+  home: https://lmukadam.medium.com
 ---
 ![](assets/argo-icon-color-800.png)
 
