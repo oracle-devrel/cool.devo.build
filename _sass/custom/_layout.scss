@@ -59,9 +59,8 @@ a.card {
   gap: 5px 10px;
   grid-template-areas: "thumb title" "thumb desc";
   grid-template-columns: 60px auto;
-  height: 155px;
   margin-bottom: 1em;
-  max-height: 155px;
+  max-height: 185px;
   padding: 0.5em;
   position: relative;
   transition: $global-transition;
