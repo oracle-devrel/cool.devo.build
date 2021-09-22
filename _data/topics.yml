@@ -28,6 +28,7 @@ languages:
   - go
   - ruby
   - terraform
+  - java
 frameworks:
   - tensorflow
   - micronaut
