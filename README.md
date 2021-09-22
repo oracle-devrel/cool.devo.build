@@ -82,12 +82,15 @@ Within a project repo, directories become parts of the url (permalink) for the p
 title: PAGE TITLE
 parent: series-slug
 tags: [TAGS]
-thumbnail: https://via.placeholder.com/350x400?text=DevOps+Thumbnail
+thumbnail: RELATIVE_PATH_TO_THUMBNAIL_IMAGE
 date: YYYY-MM-DD HH:MM
+description: ONE_LINE_SUMMARY
 ---
 ```
 
 The date should be the date you plan to publish. If there's any delay in publishing, we'll update the date for you. 
+
+The thumbnail can be any image from your content that can represent it, no resizing necessary. If you want to generate a custom thumbnail, just make an image at least 800px x 800px and include it in the assets folder. Thumbnails are displayed cropped, and cropped differently in different views, so your image shouldn't try to convey vital information.
 
 See [Tagging Pages](#tagging-pages)
 

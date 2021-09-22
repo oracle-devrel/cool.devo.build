@@ -608,3 +608,14 @@ $themeColors: ('red': $color-red,
     }
   }
 }
+
+// Alerts and notices
+blockquote {
+  &.notice {
+    background: lighten($color-blue, 50%);
+  }
+
+  &.alert {
+    background: lighten($color-yellow, 20%);
+  }
+}

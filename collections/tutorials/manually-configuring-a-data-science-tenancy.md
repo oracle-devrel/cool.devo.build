@@ -6,19 +6,21 @@ date: 2021-09-22 12:00
 parent: tutorials
 thumbnail: assets/manually-configuring-a-data-science-tenancy-groups.png
 toc: true
+description: Configure your tenancy for Data Science and test creating a notebook session.
 ---
+{% slides %}
 Learn how to get started configuring your tenancy for Data Science and test creating a notebook session.
 
 This tutorial is directed at administrator users because they are granted the required access permissions.
 
-In this tutorial, you are:
+In this tutorial, you will:
 
-1. [Creating a Data Scientists User Group](#user-group).
-2. [Creating a Compartment for Your Work](#create-compartment).
-3. [Creating a VCN and Subnet.](#create-vcn)
-4. [Creating Policies](#create-policy).
-5. [Creating a Dynamic Group and Writing Policies for It](#dynamic-group).
-6. [Creating a Notebook Session](#create-notebook).
+1. Create a Data Scientists User Group
+2. Create a Compartment for Your Work
+3. Create a VCN and subnet
+4. Create policies
+5. Create a Dynamic Group and write policies for it
+6. Create a notebook session
 
 ## Before You Begin
 
@@ -27,7 +29,7 @@ To perform this tutorial successfully, you must have the following:
 * An OCI account with administrator privileges, see [signing up for Oracle Cloud Infrastructure](https://docs.oracle.com/iaas/Content/GSG/Tasks/signingup.htm).
 * At least one user in your tenancy who wants to access the Data Science service. This user must be created in [IAM](https://docs.oracle.com/iaas/Content/Identity/Tasks/managingusers.htm).
 
-## 1. Creating a Data Scientists User Group {#user-group}
+## Creating a Data Scientists User Group
 
 You must create a user group for the data scientists to work in.
 
@@ -64,7 +66,7 @@ You must create a user group for the data scientists to work in.
 
 	A list of the users in your tenancy displays.
 
-## 2. Creating a Compartment for Your Work {#create-compartment}
+## Creating a Compartment for Your Work
 
 Next, you create a compartment for your data science resources.
 
@@ -81,7 +83,7 @@ Next, you create a compartment for your data science resources.
 
 	The data-science-work compartment is created, and added to the compartments list when it successfully creates.
 
-## 3. Creating a VCN and Subnet. {#create-vcn}
+## Creating a VCN and Subnet.
 
 You need to create a virtual cloud network (VCN) for use by the Data Science service.
 
@@ -119,7 +121,7 @@ You need to create a virtual cloud network (VCN) for use by the Data Science ser
 
 12. Click **View Virtual Cloud Network** to review your VCN and subnets. 
 
-## 4. Creating Policies {#create-policy}
+## Creating Policies
 
 Before you can launch a notebook session, you have to configure the Data Science policies.
 
@@ -155,7 +157,7 @@ Before you can launch a notebook session, you have to configure the Data Science
 
 8. Click **Create** to create your policy.
 
-## 5. Creating a Dynamic Group and Writing Policies for It {#dynamic-group}
+## Creating a Dynamic Group and Writing Policies for It
 
 To enable notebook sessions to access other OCI resources, such as Object Storage or model catalog, you have to create a dynamic group and write policies for the notebook sessions' resource principals.
 
@@ -233,7 +235,7 @@ To enable notebook sessions to access other OCI resources, such as Object Storag
 
 	You can use this dynamic group with [resource principals in notebook sessions](https://docs.oracle.com/en-us/iaas/data-science/data-science-tutorial/get-started.htm#dynamic-group).
 
-## 6. Creating a Notebook Session {#create-notebook}
+## Creating a Notebook Session
 
 Lastly, you need to create a notebook session then test its access to the public internet.
 
@@ -294,3 +296,4 @@ Now, you can follow the remaining instructions in the `getting-started.ipynb` no
 * Access Data Flow.
 
 [Using Notebook Sessions to Build and Train Models](https://docs.oracle.com/iaas/data-science/using/use-notebook-sessions.htm) shows you how to continue with Data Science.
+{% endslides %}
