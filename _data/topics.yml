@@ -1,39 +1,43 @@
 topics:
-  - hardware
-  - oci
-  - pytorch
-  - iot
-  - streaming
-  - serverless
-  - rpi
+  - always-free
   - apex
-  - alwaysfree
+  - hardware
+  - iot
   - jupyter
+  - oci
+  - oke
+  - open-source
+  - pytorch
+  - rpi
+  - serverless
+  - streaming
 personas:
-  - fullstack
-  - frontend
-  - devops
-  - backend
   - architect
-  - robotics
   - arvr
-  - datascience
-  - gamedev
-  - dbre
+  - backend
   - community
+  - data-science
+  - dbre
+  - devops
+  - front-end
+  - full-stack
+  - game-dev
+  - robotics
 languages:
-  - python
-  - javascript
-  - typescript
   - go
+  - java
+  - javascript
+  - python
   - ruby
   - terraform
-  - java
+  - typescript
 frameworks:
-  - tensorflow
+  - express
+  - flask
   - micronaut
   - nodejs
   - spark
-  - flask
-  - express
+  - spring
+  - tensorflow
+  - kubernetes
 

@@ -248,25 +248,41 @@ frameworks:
 
 ## Assets
 
-Assets are stored in an `assets` directory in each repository. All links to these assets should be relative to the location of the linking page. If your page is at `/collections/tutorials/page-1.md` and your assets folder is at `/collections/tutorials/assets/`, then your link to an image from `page-1.md` would look like:
+Assets are stored in an `assets` directory in each repository. All links to these assets should be relative to the location of the linking page. If your page is at `/collections/tutorials/page-1.md` and your assets folder is at `/collections/tutorials/assets/`, then your link to an image from `page-1.md` would look like `assets/my_image.jpg`.
 
-    ![](assets/my_image.jpg)
+Please name assets with a prefix based on the page they're being used in. This is to avoid name clashes with other content. If you're writing a tutorial called "Node on OCI," any asset used should be named with the prefix `node-on-oci-*`.
 
 ### Images
 
-Images should be sized to appropriate dimensions for retina presentation. If the image is to be displayed at 800x600 and only one asset is being provided, the asset should be 1600x1200 at 72dpi.
+Insert images using the Liquid tag:
+
+    {% img [classes] assets/image.jpg [WIDTH HEIGHT] "CAPTION" "ALT TEXT" %}
+
+This tag allows us to convert the asset to a proper `<picture>` tag with a `srcset`. Use only the base image and size in the tag. _If a matching @2x version is present in the same folder as the image, the generated tag will make it available to hi-res displays._
+
+Classes are optional but can be used to align an image left, right, or center:
+
+- `alignleft`: floats image left, text flows around
+- `alignright`: floats image right, text flows around
+- `aligncenter`: container becomes full width, image centered, text breaks above and below
+
+WIDTH and HEIGHT are also optional but are encouraged. These should be numbers only, no `px` or other specifier. These should be the width and height of the 1x image, e.g. the size it will display on the page.
+
+The last two strings are also optional but encouraged. If only one string is given, it's used as alt text. Alt text tells screen readers and content scrapers what the image is, and is important for accessibility. Please always include at least one quoted string in the tag.
+
+If two quoted strings are provided, the first one becomes both an image caption, visible on the page. The second string is the alt tag.
+
+Example:
+
+    {% img alignright assets/my-tutorial-circuit.jpg 500 300 "Circuit diagram" %}
+
+#### Image Sizes
+
+Images can not be displayed at a width greater than 1200px. Your base image size should never be wider than 1200. Please size your images appropriately and optimize them for web.
+
+If possible, please provide two images for every asset, one at the size you want it displayed, and one at exactly twice the pixel dimensions, named with @2x (image.jpg and image@2x.jpg). An 800x500px image.jpg would have a 1600x1000px image@2x.jpg counterpart.
 
 <!--
-
-The plugins I'm talking about from here on out are not officially written yet and everything about them may change. The youtube plugin is finished and works great, but the gif and img plugins need some work before they can be used. Stick with regular Markdown syntax for now.
-
-### FUTURE STUFF
-
-Ideally, though, multiple versions of the image should be available. The 1x version should have the base name, e.g. `image1.jpg`. A 2x version should be provided using the same base name with `@2x` appended, i.e. `image1@2x.jpg`. If webp versions with the same base name are provided, they will be offered as sources to compatible browsers (`image1.webp`, `image1@2x.webp`). Webp images can greatly reduce file size and render time for image-heavy pages.
-
-When providing multiple versions of the same image, please use the liquid tag `{% img assets/BASE_NAME{.jpg,@2x.jpg,.webp,@2x.webp} %}`, which will allow our Jekyll plugins to build out a picture tag with multiple sources.
-
-See [Plugins][] for more info on the img tag.
 
 ### Video/Animated GIF
 
@@ -281,6 +297,25 @@ To insert a YouTube video as a responsive embed, simply use:
 <!--
 Short, silent videos can be used instead of animated GIFS, and in most cases take up significantly less space than a GIF. These can be embedded with the gif tag using `{% gif FILENAME{.mp4,.webm} %}`, which will detect the movie format and generate an appropriate video tag, replicating the autoplay/looping of an animated GIF. At minimum an mp4 version must be provided, additional formats (webm, ogv) with the same base name and different extensions are optional.
 -->
+
+## Callouts
+
+Use block quotes to create callouts, with Kramdown IAL syntax to add formatting. There are two types available, notice and alert. The formatting works like:
+
+    > This is my note.
+    > It can have a couple of lines
+    {:.notice}
+
+    > This is an alert. It gets colored in yellow.
+    {:.alert}
+
+## Snippets
+
+Fragments will be made available soon.
+
+When linking the Oracle Always-Free Tier signup, please use this in place of the link: `{{ site.urls.always_free }}`. This will insert a tracking link for you.
+
+    Oracle Cloud Infrastructure Free Tier account. [Start for Free]({{ site.urls.always_free }}).
 
 ## Style
 

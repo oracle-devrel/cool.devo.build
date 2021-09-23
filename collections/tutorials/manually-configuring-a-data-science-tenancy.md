@@ -1,7 +1,7 @@
 ---
-title: Manually Configuring a Data Science Tenancy
-tags: [oci,datascience]
-categories: [clouddev]
+title: Manually configuring Data Science service on Oracle Cloud Infrastructure
+tags: [oci,data-science,nodejs,javascript,typescript]
+categories: [am-ml]
 date: 2021-09-22 12:00
 parent: tutorials
 thumbnail: assets/manually-configuring-a-data-science-tenancy-groups.png

@@ -1,11 +1,11 @@
 ---
 title: Deploy Cassandra on Oracle Cloud (OCI) Linux VM
-tags: [oci,python,jupyter,backend]
+tags: [oci,python,jupyter,back-end]
 parent: tutorials
 description: Set up your environment to run Cassandra in Oracle Cloud Infrastructure.
 author: olivier
 categories: [cloudapps]
-date: 2021-09-21 00:00
+date: 2021-09-21 12:00
 ---
 {% slides 2 %}
 This tutorial will guide you through the steps needed to set up your environment to run Cassandra in Oracle Cloud Infrastructure.

@@ -1,8 +1,8 @@
 ---
 title: Install Node Express on an Oracle Linux Instance
 parent: tutorials
-tags: [oci, nodejs, express]
-categories: [frameworks,cloudapps]
+tags: [open-source, oci, always-free, nodejs, javascript, typescript, front-end]
+categories: [frameworks, cloudapps]
 thumbnail: assets/get-started-with-node-express-on-oracle-cloud-Node_Diagram.png
 date: 2021-09-22 13:47
 description: Use an Oracle Cloud Infrastructure Free Tier account to set up an Oracle Linux compute instance, install a Node Express application and access your new app from the internet.
@@ -34,7 +34,7 @@ To successfully complete this tutorial, you must have the following:
 
 ### Requirements
 
-* An Oracle Cloud Infrastructure Free Tier account. [Start for Free](https://www.oracle.com/cloud/free/).
+* An Oracle Cloud Infrastructure Free Tier account. [Start for Free]({{ site.urls.always_free }}).
 * A MacOS, Linux, or Windows computer with `ssh` support installed.
 
 ## Set up a Compartment for Development

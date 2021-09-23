@@ -60,7 +60,12 @@ module DateFilters
   end
 
   def iso(input)
-    t = Time.parse(input)
+    if input.is_a?(String)
+      t = Time.parse(input)
+    else
+      t = input
+    end
+
     if t
       t.iso8601
     else

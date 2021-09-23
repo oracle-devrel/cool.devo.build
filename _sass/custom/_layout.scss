@@ -162,9 +162,57 @@ a.card {
   }
 }
 
+picture {
+  display: inline-block;
+  margin-bottom: 1em;
+
+  figure & {
+    margin-bottom: 0;
+  }
+}
+
+.author__content {
+  margin-bottom: 1em;
+}
+
+a[data-readmore-toggle] {
+  font-size: .7em;
+}
+
+.author__bio {
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+.aligncenter {
+  width: 100%;
+  text-align: center;
+}
+
+.alignright,
+.alignleft {
+  max-width: 50%;
+  height: auto;
+}
+
+.alignright {
+  float: right;
+  margin: 0 0 1em .5em;
+}
+
+.alignleft {
+  float: left;
+  margin: 0 .5em 1em 0;
+}
+
 .sidebar {
   ul {
-    padding-left: .75em;
+    list-style-type: none;
+    padding-left: 0;
+
+    a {
+      text-decoration: none;
+    }
   }
   a.tag {
     background: $lighter-gray;

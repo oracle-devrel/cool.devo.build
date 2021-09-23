@@ -22,6 +22,12 @@ $(document).ready(function() {
         }
      });
   });
+
+  $('.author__bio').readmore({
+    collapsedHeight: 200,
+    moreLink: '<a href="#">More&hellip;</a>',
+    lessLink: '<a href="#">Less&hellip;</a>',
+    embedCSS: true });
 });
 
 if (!window.cool) {

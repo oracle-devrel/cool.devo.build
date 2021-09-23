@@ -1,8 +1,8 @@
 ---
 title: Deploying the ARGO Project on OKE
 parent: tutorials
-tags: [terraform,devops]
-categories: [clouddev]
+tags: [open-source, oke, kubernetes, terraform, devops]
+categories: [cloudapps, opensource]
 thumbnail: assets/argo-icon-color-800.png
 date: 2021-09-22 15:30
 description: How to deploy the Argo project on an OKE cluster.
@@ -10,8 +10,14 @@ toc: true
 author: 
   name: Ali Mukadam
   home: https://lmukadam.medium.com
+  bio: |-
+       Technical Director, Asia Pacific Center of Excellence.
+
+       For the past 16 years, Ali has held technical presales, architect and industry consulting roles in BEA Systems and Oracle across Asia Pacific, focusing on middleware and application development. Although he pretends to be Thor, his real areas of expertise are Application Development, Integration, SOA (Service Oriented Architecture) and BPM (Business Process Management). An early and worthy Docker and Kubernetes adopter, Ali also leads a few open source projects (namely [terraform-oci-oke](https://github.com/oracle-terraform-modules/terraform-oci-oke)) aimed at facilitating the adoption of Kubernetes and other cloud native technologies on Oracle Cloud Infrastructure.
+  linkedin: https://www.linkedin.com/in/alimukadam/
 ---
-![](assets/argo-icon-color-800.png)
+{% img alignright assets/argo-icon-color-800.png 400 400 "ARGO Logo" %}
+
 
 I was quite thrilled to learn that the [Argo Project](https://argoproj.github.io/) has [recently been accepted as incubator-level](https://www.cncf.io/blog/2020/04/07/toc-welcomes-argo-into-the-cncf-incubator/) project in CNCF's stack.
 
@@ -190,7 +196,7 @@ $ kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | c
 
 and login with username admin and the retrieved password.
 
-![](assets/argo-oke-login-1024.jpg)
+{% img aligncenter assets/argo-oke-login-1024.jpg 1024 557 Argo Login Screen %}
 
 Follow the rest of the instructions in [creating apps via UI](https://argoproj.github.io/argo-cd/getting_started/#creating-apps-via-ui). Once the application is created, click on 'Sync' and watch the application being deployed as Kubernetes works its way to creating the various resources (deployment, service, ReplicaSet, pods, etc).
 

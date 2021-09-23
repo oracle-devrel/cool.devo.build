@@ -36,6 +36,12 @@ breadcrumb_home_label: Dev.O
 tag_page_layout: topic
 tag_page_dir: topics
 
+urls:
+  always_free: https://www.oracle.com/cloud/free/?source=:ow:o:s:nav::DevoGetStarted&intcmp=:ow:o:s:nav::DevoGetStarted
+
+after_footer_scripts:
+  - /assets/js/plugins/readmore.min.js
+
 # Build settings
 # minimal_mistakes_skin: "contrast"
 
