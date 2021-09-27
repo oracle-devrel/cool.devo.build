@@ -114,17 +114,16 @@ To get started installing your instance with the **Create a VM Instance** wizard
     * **Memory (GB):** 1
     * **Network bandwidth (Gbps):** 0.48
 
-** Note**  
-  
-For Free Tier, use **Always Free Eligible** shape options.
+        > **Note:** For Free Tier, use **Always Free Eligible** shape options.
+        {:.notice}
 
 5. Review the **Networking** settings. Take the default values provided by the wizard.
 
     > The following is sample data. The actual values change over time or differ in a different data center.
     {:.notice}
 
-    * **Virtual cloud network:** vcn-<date>-<time>
-    * **Subnet:** vcn-<date>-<time>
+    * **Virtual cloud network:** vcn-\<date>-\<time>
+    * **Subnet:** vcn-\<date>-\<time>
     * **Assign a public IPv4 address:** Yes
 
 6. Review the **Add SSH keys** settings. Take the default values provided by the wizard.
@@ -154,7 +153,7 @@ Follow these steps to select your VCN's public subnet and add the ingress rule.
 
 1. Open the navigation menu and click **Networking**, and then click **Virtual Cloud Networks**.
 2. Select the VCN you created with your compute instance.
-3. With your new VCN displayed, click **<your-subnet-name>** subnet link.
+3. With your new VCN displayed, click **\<your-subnet-name>** subnet link.
 
     The public subnet information is displayed with the Security Lists at the bottom of the page. A link to the **Default Security List** for your VCN is displayed.
 
@@ -242,14 +241,14 @@ Follow these steps to set up your instance and build your application:
 
     Enter information as follows:
 
-    * **name: **node-hello-app
+    * **name:** node-hello-app
     * **version:** 1.0.0
     * **description:** Node Express Hello application
     * **entry point:** app.js (Don't use the default.)
     * **test command:** (leave-blank)
     * **git repository:** git://github.com/username/repository.git (or replace with a valid git repository)
     * **keywords:** (leave-blank)
-    * **author:** Example User <username@example.com>
+    * **author:** Example User username@example.com
     * **license:** UPL-1.0
 
     Preview what you get in `package.json`.
@@ -269,7 +268,7 @@ Follow these steps to set up your instance and build your application:
         "type": "git",
         "url": "git://github.com/username/repository.git"
       },
-      "author": "Example User <username@example.com>",
+      "author": "Example User username@example.com",
       "license": "UPL-1.0",
       "bugs": {
         "url": "https://github.com/username/repository/issues"
@@ -307,19 +306,18 @@ Follow these steps to set up your instance and build your application:
 
     In the file, input the following text and save the file:
 
-    ```nodejs
+    ```javascript
     const express = require('express')
     const app = express()
-    
+
     app.get('/', function (req, res) {
       res.send('Hello World!')
     })
-    
+
     app.listen(3000, function() {
       console.log('Hello World app listening on port 3000!');
     })
     ```
-    
 
 14. Run the NodeJS program:
 
@@ -330,7 +328,7 @@ Follow these steps to set up your instance and build your application:
 15. Test the application using the command line or a browser:
 
     * To test with `curl`, from a new terminal, connect to your Ubuntu instance with your SSH keys, and then in the command line enter: `curl -X GET http://localhost:3000`
-    * From a browser, connect to the public IP address assigned to your instance: http://<x.x.x.x>:3000
+    * From a browser, connect to the public IP address assigned to your instance: http://\<x.x.x.x>:3000
 
     The Node app returns `Hello World!` on your instance, or in your browser.
 
