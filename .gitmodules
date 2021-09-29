@@ -1,0 +1,3 @@
+[submodule "collections/tutorials"]
+	path = collections/tutorials
+	url = git@github.com:oracle-devrel/devo.tutorials.git
