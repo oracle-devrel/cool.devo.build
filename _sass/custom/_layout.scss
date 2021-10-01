@@ -483,19 +483,22 @@ $themeColors: ('red': $color-red,
 .topics__tag {
   list-style: none;
   width: 170px;
-  margin-right: .5em;
+  margin-right: 0 .5em 0 0;
 
   a {
-    display: inline-block;
     background: $lighter-gray;
-    color: $darker-gray;
-    text-decoration: none;
-    padding: .4rem;
     border-radius: $border-radius;
-    width: 100%;
-    position: relative;
+    color: $darker-gray;
+    display: inline-block;
+    overflow: hidden;
     padding-right: 3.5ch;
+    padding: .4rem;
+    position: relative;
+    text-decoration: none;
+    text-overflow: ellipsis;
     transition: background .2s linear, color .2s linear;
+    white-space: nowrap;
+    width: 100%;
 
     &:hover,
     &:active {
