@@ -12,3 +12,13 @@ adrian-png:
 olivier:
   name: Olivier Francois Xavier Perard
   github: operard
+tim-clegg:
+  name: Tim Clegg
+  bio: Code. Share. Secure. Innovate. Automate. Educate.
+  github: timclegg
+  linkedin: https://www.linkedin.com/in/timothy-clegg/
+jon-decamp:
+  name: Jon DeCamp
+  bio: Jon has a passion for infrastructure automation and improving the lives of his customers.
+  github: jondecamp
+  twitter: jondecamp
