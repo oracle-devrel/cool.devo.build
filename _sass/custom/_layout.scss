@@ -187,6 +187,10 @@ a[data-readmore-toggle] {
 .aligncenter {
   width: 100%;
   text-align: center;
+
+  picture {
+    margin: 0 auto;
+  }
 }
 
 .alignright,
@@ -483,7 +487,7 @@ $themeColors: ('red': $color-red,
 .topics__tag {
   list-style: none;
   width: 170px;
-  margin-right: 0 .5em 0 0;
+  margin: 0 .5em 0 0;
 
   a {
     background: $lighter-gray;
