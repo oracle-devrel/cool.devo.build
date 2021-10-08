@@ -8,7 +8,7 @@ title: Collections
   <h2>Latest tutorials</h2>
 
   <div class="all-projects__cards cards">
-    {% assign site_pages = site.pages | where_exp: "item", "item.parent != null" | sort: "modified" | reverse %}
+    {% assign site_pages = site.pages | where_exp: "item", "item.parent != null" | sort: "date" | reverse %}
 
       {% for pg in site_pages %}
           {% assign series = site.pages | where: "series", pg.parent | first %}
