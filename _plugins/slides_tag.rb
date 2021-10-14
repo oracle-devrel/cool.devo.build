@@ -73,7 +73,7 @@ module Jekyll
       output += %(\n\n<div class="slide active" id="slide-0" markdown=1>\n\n)
       output += %(<h2 class="slide__title"><span class="slide__num">1</span> Introduction</h2>\n\n)
       output += intro
-      output += %(\n\n<div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)">Begin &raquo;</a></div>)
+      output += %(\n\n<div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)" class="slides__btn--begin">Begin &raquo;</a></div>)
       output += "\n\n</div>\n\n"
 
       sects.each_with_index do |sect, i|

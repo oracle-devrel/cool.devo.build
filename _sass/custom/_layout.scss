@@ -655,6 +655,11 @@ $themeColors: ('red': $color-red,
       border-radius: $border-radius;
       text-decoration: none;
 
+      &.slides__btn--begin {
+        width: 100%;
+        text-align: center;
+      }
+
       &:hover,
       &:focus {
         text-decoration: none;
