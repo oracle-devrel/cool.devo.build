@@ -54,12 +54,15 @@ title: PROJECT_TITLE
 series: SERIES-SLUG
 description: ONE_LINE_SUMMARY
 thumbnail: RELATIVE_PATH_TO_THUMBNAIL_IMAGE
+sort: desc
 ---
 ```
 
 The thumbnail should be a minimum of 250x150px. It will be resized and cropped (if needed to fit the aspect ratio) when displayed. At this time we're requesting that all collections and all submitted content have *at least one* image, even if it's simply a screenshot of a tutorial in action. These thumbnails are used to offer better visual navigation and help prevent a "wall of text."
 
 The `series` key defines the slug you'll use to assign content to the collection, so it must be unique. We may eventually run into issues with name clashes, but we'll manually curate until we have a better solution.
+
+The `sort` key determines in what order the child pages of the collection will be shown on the index page. If the collection represents a sequential series, you want to make sure that each article in the series has a more recent date than the one before it, so that when they're sorted by date they'll appear in order. In the case of a sequential series, you'd want to use `sort: asc` to cause the articles to appear starting with the oldest (first) article. If the collection should always surface the newest content at the top of the list, use `sort: desc` (default).
 
 ##### Multiple collections per repo
 
