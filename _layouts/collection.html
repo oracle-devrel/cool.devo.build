@@ -5,18 +5,23 @@ layout: archive
 {{ content }}
 
 <div class="cards">
+  {% if page.sort == 'asc' %}
+    {% assign pages = site.pages | sort: "date" %}
+  {% else %}
     {% assign pages = site.pages | sort: "date" | reverse %}
-    {% for pg in pages  %}
-    {% if pg.parent == page.series %}
+  {% endif %}
 
-    {% assign thumb = '' %}
-    {% if pg.thumbnail %}
-      {% assign thumb = pg.thumbnail %}
-    {% elsif pg.image %}
-      {% assign thumb = pg.image %}
-    {% endif %}
+  {% for pg in pages  %}
+  {% if pg.parent == page.series %}
 
-    {% include card.html class="card all-projects__card" source=pg series=page.series %}
-    {% endif %}
-    {% endfor %}
+  {% assign thumb = '' %}
+  {% if pg.thumbnail %}
+    {% assign thumb = pg.thumbnail %}
+  {% elsif pg.image %}
+    {% assign thumb = pg.image %}
+  {% endif %}
+
+  {% include card.html class="card all-projects__card" source=pg series=page.series %}
+  {% endif %}
+  {% endfor %}
 </div>
