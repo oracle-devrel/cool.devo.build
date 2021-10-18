@@ -234,6 +234,29 @@ a[data-readmore-toggle] {
     font-size: $type-size-5;
     color: lighten($gray, 5%);
   }
+
+  @include breakpoint($large) {
+    .author__urls-wrapper {
+      float: left;
+      margin-bottom: 1em;
+      width: 100%;
+    }
+
+    .author__urls {
+      a {
+        float: left;
+        padding: 0;
+      }
+
+      .fab {
+        font-size: 22px;
+      }
+
+      .label {
+        display: none;
+      }
+    }
+  }
 }
 
 .card,
