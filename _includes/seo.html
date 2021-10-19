@@ -32,10 +32,12 @@
   {%- assign author_twitter = author.twitter | replace: "@", "" -%}
 {%- endif -%}
 
-{%- assign page_large_image = page.header.og_image | default: page.header.overlay_image | default: page.header.image | absolute_url -%}
+{%- assign page_large_image = page.header.og_image | default: page.header.overlay_image | default: page.header.image | default: page.image | default: page.thumbnail | relative_to: page.url | absolute_url -%}
 {%- assign page_large_image = page_large_image | escape -%}
 
-{%- assign page_teaser_image = page.header.teaser | default: site.og_image | absolute_url -%}
+{%- assign relative_thumb = page.og_image | default: page.image | default: page.thumbnail | relative_to: page.url %}
+
+{%- assign page_teaser_image = relative_thumb | default: site.og_image | absolute_url -%}
 {%- assign page_teaser_image = page_teaser_image | escape -%}
 
 {%- assign site_og_image = site.og_image | absolute_url -%}
@@ -86,9 +88,7 @@
   {% else %}
     <meta name="twitter:card" content="summary">
     {% if page_teaser_image %}
-      <meta name="twitter:image" content="{{ page_teaser_image }}">
-    {% elsif page.thumbnail %}
-      <meta name="twitter:image" content="{{ page.thumbnail | absolute_url }}">
+    <meta name="twitter:image" content="{{ page_teaser_image }}">
     {% endif %}
   {% endif %}
 

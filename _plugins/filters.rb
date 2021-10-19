@@ -24,16 +24,27 @@ module BTLiquidFilters
     File.dirname(input)
   end
 
+  def absolute_url(input)
+    site_url = @context.registers[:site].config['url']
+    base_url = @context.registers[:site].config['baseurl']
+
+    return File.join(site_url, base_url) if input.nil?
+
+    File.join(site_url, base_url, input)
+  end
+
   def relative_to(input, page)
-    return input if input =~ /^(\/|http)/
+    return input if input =~ %r{^(/|http)}
+
+    input ||= ''
 
     dir = File.dirname(page)
-    baseurl = Jekyll.sites.first.baseurl
-    File.join(baseurl, dir, input)
+    base_url = @context.registers[:site].config['baseurl']
+    File.join(base_url, dir, input)
   end
 
   # remove all HTML tags and smart quotes
-  def strip_tags(html,decode=true)
+  def strip_tags(html, decode=true)
     begin
       out = CGI.unescapeHTML(html.
         gsub(/<(script|style|pre|code|figure).*?>.*?<\/\1>/im, '').
