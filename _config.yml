@@ -28,6 +28,7 @@ twitter_username: groundbreakers
 github_username:  oracle-devrel
 twitter:
   username: groundbreakers
+og_image: /assets/site-logo.png
 search: true
 
 permalink: /:year/:month/:title.html
@@ -88,6 +89,13 @@ defaults:
     values:
       layout: single
       toc_sticky: true
+
+feed:
+  collections:
+    pages:
+      path: "tutorials.xml"
+atom_feed:
+  path: "/main.xml"
 
 ############################################################
 # Site configuration for the Jekyll 3 Pagination Gem

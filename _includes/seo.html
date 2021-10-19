@@ -82,13 +82,16 @@
   <meta name="twitter:description" content="{{ seo_description }}">
   <meta name="twitter:url" content="{{ canonical_url }}">
 
-  {% if page_large_image %}
+  {% if page.image %}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="{{ page_large_image }}">
+    <meta name="twitter:image" content="{{ page.image | relative_to: page.url | absolute_url | escape }}">
   {% else %}
+    {% if page.thumbnail %}
     <meta name="twitter:card" content="summary">
-    {% if page_teaser_image %}
-    <meta name="twitter:image" content="{{ page_teaser_image }}">
+    <meta name="twitter:image" content="{{ page.thumbnail | relative_to: page.url | absolute_url | escape }}">
+    {% else %}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="{{ site.og_image | absolute_url | escape }}">
     {% endif %}
   {% endif %}
 
