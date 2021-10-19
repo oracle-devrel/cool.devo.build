@@ -30,6 +30,7 @@ twitter:
   username: groundbreakers
 og_image: /assets/site-logo.png
 search: true
+author: Oracle Developer Community
 
 permalink: /:year/:month/:title.html
 

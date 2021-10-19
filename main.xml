@@ -59,8 +59,8 @@ layout:
       <title type="html">{{ post_title }}</title>
       <link href="{{ post.url | absolute_url }}" rel="alternate" type="text/html" title="{{ post_title }}" />
       <published>{{ post.date | date_to_xmlschema }}</published>
-      <updated>{{ post.last_modified_at | default: post.date | date_to_xmlschema }}</updated>
-      <id>{{ post.id | absolute_url | xml_escape }}</id>
+      <updated>{{ post.last_modified_at | default: post.updated | default: post.date | date_to_xmlschema }}</updated>
+      <id>{{ post.url | absolute_url | xml_escape }}</id>
       {% assign excerpt_only = post.feed.excerpt_only | default: site.feed.excerpt_only %}
       {% unless excerpt_only %}
         <content type="html" xml:base="{{ post.url | absolute_url | xml_escape }}">{{ post.content | markdownify | strip | xml_escape }}</content>
