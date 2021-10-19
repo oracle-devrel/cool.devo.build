@@ -43,6 +43,14 @@ module BTLiquidFilters
     File.join(base_url, dir, input)
   end
 
+  def feed_markdownify(input)
+    site = @context.registers[:site]
+    converter = site.find_converter_instance(::Jekyll::Converters::Markdown)
+    input.gsub!(/\{% *img.*?%\}/, '')
+    input.gsub!(/\{% *(end)?slides *%\}/, '')
+    converter.convert(input)
+  end
+
   # remove all HTML tags and smart quotes
   def strip_tags(html, decode=true)
     begin
