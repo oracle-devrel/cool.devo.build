@@ -24,10 +24,10 @@ description: >- # this means to ignore newlines until "baseurl:"
   Cool stuff from Oracle's Developer Relations team
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://cool.devo.build" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: oracle
+twitter_username: groundbreakers
 github_username:  oracle-devrel
 twitter:
-  username: oracle
+  username: groundbreakers
 search: true
 
 permalink: /:year/:month/:title.html
