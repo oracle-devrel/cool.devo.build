@@ -28,5 +28,11 @@ jon-decamp:
 bogdan-farca:
   name: Bogdan Farca
   email: bogdan.farca@oracle.com
+kubemen:
+  name: Malte Menkhoff
+  bio: Malte is a passioned solution architect and is supporting customers in the DACH region in migrating to OCI.
+  github: kubemen
+  email: malte.menkhoff@oracle.com
 community:
   name: Oracle Developer Community
+  
