@@ -36,6 +36,7 @@ languages:
   - ruby
   - terraform
   - typescript
+  - php
 frameworks:
   - express
   - flask
