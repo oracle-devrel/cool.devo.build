@@ -4,23 +4,22 @@ layout: archive
 
 {{ content | markdownify }}
 
-<section id="posts">
-<!-- <h3 class="archive__subtitle">{{ site.data.ui-text[site.locale].recent_posts | default: "Recent Posts" }}</h3>
+<h2>Collections</h2>
 
-{% if paginator %}
-  {% assign posts = paginator.posts %}
-{% else %}
-  {% assign posts = site.posts %}
-{% endif %}
-
-{% assign entries_layout = page.entries_layout | default: 'list' %}
-<div class="entries-{{ entries_layout }}">
-  {% for post in posts %}
-    {% include archive-single.html type=entries_layout %}
-  {% endfor %}
-</div>
-
-{% include paginator.html %}
-</section>
- -->
 {% include collections.html %}
+
+<section class="all-collections">
+  <h2>Latest tutorials</h2>
+
+  <div class="all-projects__cards cards">
+    {% assign site_pages = site.pages | where_exp: "item", "item.parent != null" | sort: "date" | reverse %}
+
+      {% for pg in site_pages %}
+          {% assign series = site.pages | where: "series", pg.parent | first %}
+          {% include card.html class="card all-projects__card" source=pg series=series %}
+
+
+      {% endfor %}
+  </div>
+
+</section>

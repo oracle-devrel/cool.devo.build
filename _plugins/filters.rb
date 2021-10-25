@@ -43,10 +43,23 @@ module BTLiquidFilters
     File.join(base_url, dir, input)
   end
 
-  def feed_markdownify(input)
+  def feed_markdownify(input, source)
     site = @context.registers[:site]
+    site_url = site.config['url']
+    site_url = File.join(site_url, site.config['baseurl'])
+    site_url = File.join(site_url, File.dirname(source))
+    puts site_url
     converter = site.find_converter_instance(::Jekyll::Converters::Markdown)
-    input.gsub!(/\{% *img.*?%\}/, '')
+    input.gsub!(/!\[(.*?)\]\(((?!http).*?\))/) do
+      m = Regexp.last_match
+      path = File.join
+      "![#{m[1]}](#{File.join(site_url, m[2])})"
+    end
+    input.gsub!(/\{% *img \s*(?<class>(?:\S+ )*)(?<path>(?:https?:\/\/|\/|\S+\/)\S+)(?:\s+(?<width>\d+))?(?:\s+(?<height>\d+))?(?:\s+(?<title>.*))?%\}/i) do
+      m = Regexp.last_match
+      path = File.join(site_url, m['path'])
+      "![#{m['title']}](#{path})"
+    end
     input.gsub!(/\{% *(end)?slides *%\}/, '')
     converter.convert(input)
   end
