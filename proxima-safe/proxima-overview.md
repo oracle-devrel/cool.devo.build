@@ -81,7 +81,7 @@ So, given a number of messages that can be recognized as an uptrend/downtrend pa
 
 {% img assets/gates.jpeg "Something has definitely happened" %}
 
-Here's a short YouTube video: https://youtu.be/dw_odrtwAUk.
+Here's a [short YouTube video](https://youtu.be/dw_odrtwAUk).
 
 **Three chapters, a common goal**
 

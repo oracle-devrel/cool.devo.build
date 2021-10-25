@@ -1,8 +1,8 @@
 main:
+  - title: "Tutorials"
+    url: /
   - title: "Use Cases"
     url: /use-cases/
-  - title: "Collections"
-    url: /collections/
   - title: "Topics"
     url: /topics/
 
