@@ -1,4 +1,6 @@
 main:
+  - title: "Tutorials"
+    url: /
   - title: "Use Cases"
     url: /use-cases/
   - title: "Topics"
