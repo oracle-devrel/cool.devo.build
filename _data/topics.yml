@@ -1,10 +1,13 @@
 topics:
   - always-free
+  - apache
   - apex
+  - get-started
   - hardware
   - iac
   - iot
   - jupyter
+  - machine-learning
   - oci
   - oke
   - open-source
@@ -13,7 +16,7 @@ topics:
   - rpi
   - serverless
   - streaming
-  - machine-learning
+  - ubuntu
 personas:
   - architect
   - arvr
@@ -32,18 +35,18 @@ languages:
   - java
   - javascript
   - mysql
+  - php
   - python
   - ruby
   - terraform
   - typescript
-  - php
 frameworks:
   - express
   - flask
+  - kubernetes
   - micronaut
   - nodejs
   - spark
   - spring
   - tensorflow
-  - kubernetes
 
