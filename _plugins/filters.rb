@@ -44,6 +44,8 @@ module BTLiquidFilters
   end
 
   def feed_markdownify(input, source)
+    return '' if input.nil?
+
     site = @context.registers[:site]
     site_url = site.config['url']
     site_url = File.join(site_url, site.config['baseurl'])
