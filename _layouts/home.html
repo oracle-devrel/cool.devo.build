@@ -15,10 +15,11 @@ layout: archive
     {% assign site_pages = site.pages | where_exp: "item", "item.parent != null" | sort: "date" | reverse %}
 
       {% for pg in site_pages %}
+      {% if pg.draft != true and pg.published != false %}
           {% assign series = site.pages | where: "series", pg.parent | first %}
           {% include card.html class="card all-projects__card" source=pg series=series %}
 
-
+      {% endif %}
       {% endfor %}
   </div>
 

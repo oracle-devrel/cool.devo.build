@@ -12,7 +12,7 @@ layout: archive
   {% endif %}
 
   {% for pg in pages  %}
-  {% if pg.parent == page.series %}
+  {% if pg.parent contains page.series and pg.draft != true and pg.published != false %}
 
   {% assign thumb = '' %}
   {% if pg.thumbnail %}
