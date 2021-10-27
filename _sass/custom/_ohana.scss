@@ -1,0 +1,38 @@
+#ohana {
+	h3 {
+		display: none;
+	}
+
+	&.active {
+		h3 {
+			display: block;
+		}
+	}
+}
+
+.diy,
+.mix,
+.managed {
+	display: none;
+}
+
+.pathnav {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-evenly;
+
+	.path {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		width: 30%;
+		background: #eee;
+		border-radius: 8px;
+		padding: 1em;
+		text-align: center;
+	}
+}
+
+.path__icon {
+	font-size: 6em;
+}
