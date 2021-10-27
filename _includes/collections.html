@@ -13,7 +13,7 @@
         {% elsif pg.image %}
           {% assign thumb = pg.image %}
         {% else %}
-          {% assign first_child = site.pages | where:"parent", pg.series | sort: "date" | reverse | first %}
+          {% assign first_child = site.pages | where_exp:"item", "item.parent contains pg.series" | sort: "date" | reverse | first %}
           {% if first_child.thumbnail %}
             {% assign thumb = first_child.thumbnail %}
           {% elsif first_child.image %}

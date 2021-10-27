@@ -21,7 +21,7 @@ layout: archive
     {% assign thumb = pg.image %}
   {% endif %}
 
-  {% include card.html class="card all-projects__card" source=pg series=page.series %}
+  {% include card.html collection=true class="card all-projects__card" source=pg series=page.series %}
   {% endif %}
   {% endfor %}
 </div>

@@ -16,7 +16,8 @@ layout: archive
 
       {% for pg in site_pages %}
       {% if pg.draft != true and pg.published != false %}
-          {% assign series = site.pages | where: "series", pg.parent | first %}
+          {% assign parent_series = pg.parent.last | default: pg.parent %}
+          {% assign series = site.pages | where_exp: "item", "item.series == parent_series" | first %}
           {% include card.html class="card all-projects__card" source=pg series=series %}
 
       {% endif %}
