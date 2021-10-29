@@ -35,4 +35,13 @@ kubemen:
   email: malte.menkhoff@oracle.com
 community:
   name: Oracle Developer Community
-  
+lucas-jellema:
+  name: Lucas Jellema
+  bio: Lucas Jellema, active in IT (and with Oracle) since 1994. Oracle ACE Director and Oracle Developer Champion.
+frederic-descamps:
+  name: Frédéric Descamps
+  bio: MySQL Community Manager - Oracle
+  home: https://lefred.be/
+ignacio-martinez:
+  name: Ignacio Martínez
+  linkedin: ignacio-g-martinez
