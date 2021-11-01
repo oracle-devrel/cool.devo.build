@@ -1,0 +1,10 @@
+{% assign series = include.series | default: page.parent.last %}
+{% assign site_pages = site.pages | where_exp: "item", "item.parent contains series" | sort: "date" %}
+<aside class="series-nav">
+  <h6>From this series:</h6>
+  <ul>
+    {% for pg in site_pages %}
+    <li><a href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></li>
+    {% endfor %}
+  </ul>
+</aside>
