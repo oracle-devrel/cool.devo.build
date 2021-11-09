@@ -21,13 +21,7 @@
           {% endif %}
         {% endif %}
 
-        <figure>
-          {% unless thumb == '' %}
-          <img class="center-cropped" src="{{ site.baseurl }}{{ pg.url }}/{{ thumb }}">
-          {% else %}
-          <span href="{{ site.baseurl }}{{ pg.url }}" class="placeholder {{ pg.title | placeholder_class }}">{{ pg.title }}</span>
-          {% endunless %}
-        </figure>
+
         {{ pg.description | markdownify }}
 
     </a>

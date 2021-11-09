@@ -1,6 +1,13 @@
 #main {
   padding: 0 2em;
+  max-width: 1200px;
+
+  .layout--single & {
+    max-width: 1600px;
+  }
 }
+
+
 
 
 .page {
@@ -51,14 +58,11 @@
 
 a.card {
   text-decoration: none;
+  background: $lighter-gray;
 }
 
 .card {
   background: $background-color;
-  display: grid;
-  gap: 5px 10px;
-  grid-template-areas: "thumb title" "thumb desc";
-  grid-template-columns: 60px auto;
   margin-bottom: 1em;
   // max-height: 185px;
   padding: 0.5em;
@@ -79,14 +83,14 @@ a.card {
     margin: 0;
   }
 
-  &:hover,
-  &:focus {
-    border-color: $color-green;
-    box-shadow: -2px 0 6px rgba($darker-gray, .15);
-    transform: scale(1.025);
-    transition: $global-transition;
-    z-index: 2;
-  }
+  // &:hover,
+  // &:focus {
+  //   border-color: $color-green;
+  //   box-shadow: -2px 0 6px rgba($darker-gray, .15);
+  //   transform: scale(1.025);
+  //   transition: $global-transition;
+  //   z-index: 2;
+  // }
 
   .thumbnail {
     background-size: cover;
@@ -164,24 +168,6 @@ a.card {
 }
 
 .card__titleparent {
-  color: white!important;
-  padding: 0 5px;
-  border-radius: 8px 0 8px 0;
-  margin-right: 2px;
-  opacity: .5;
-  transition: opacity .2s linear;
-  align-self: flex-end;
-
-  .card:hover & {
-    transition: opacity .2s linear;
-    opacity: 1;
-  }
-
-  .separator::after {
-    font-style: normal;
-    content: ':';
-    opacity: .8;
-  }
 
   $color-map: (
     red: $color-red,
@@ -194,7 +180,7 @@ a.card {
 
   @each $name, $color in $color-map {
     .color-#{$name} & {
-      background: $color;
+      color: $color;
     }
   }
 
@@ -297,12 +283,10 @@ a[data-readmore-toggle] {
   }
 }
 
-.card,
 .all-projects__card,
 .category__card {
   border-radius: $border-radius;
   // border: solid 1px $light-gray;
-  box-shadow: -1px 0 4px rgba($darker-gray, 0.15);
   transition: $global-transition;
 
   figure,
@@ -310,15 +294,6 @@ a[data-readmore-toggle] {
     grid-area: thumb;
     filter: brightness(85%);
     transition: $global-transition;
-  }
-
-  &:hover,
-  &:active {
-    box-shadow: -1px 0 6px rgba($darker-gray, 0.3);
-
-    .thumbnail {
-      filter: brightness(100%);
-    }
   }
 
   h4 {
@@ -362,7 +337,7 @@ a[data-readmore-toggle] {
 
     .tag {
       background: $lighter-gray;
-      border-left: 8px solid $color-green;
+      // border-left: 8px solid $color-green;
       margin: 0 2px 6px;
       padding: 0 6px;
       // &::after {
@@ -378,9 +353,6 @@ a[data-readmore-toggle] {
 
 .category__card,
 .all-projects__card {
-  display: grid;
-  gap: 15px;
-  // grid-template-rows: minmax(1em, 3em) auto;
   margin-bottom: 1em;
   overflow: hidden;
   width: 100%;
