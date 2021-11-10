@@ -27,6 +27,9 @@
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
+		width: 30%;
+		background: #eee;
+		border-radius: 8px;
 		padding: 1em;
 		position: relative;
 		text-align: center;
@@ -49,6 +52,7 @@
 	border-radius: $border-radius;
 	display: inline-block;
 	font-size: .8em;
+	font-size: 6em;
 	font-weight: 600;
 	margin: 0 2px;
 	padding: 0 6px;

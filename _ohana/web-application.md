@@ -6,16 +6,22 @@ services:
 - tags: [available, autoscaling]
   types: [diy, mix, managed]
 - tags: [integration, iaas, paas]
+- title: Ease of integration with OCI IaaS and PaaS services
   types: [diy, mix, managed]
 - tags: [automated, database]
+- title: Automated database operations such as patching, upgrade and backup
   types: [mix, managed]
 - tags: [protection]
+- title: Advanced data protection against external attacks and data
   types: [mix, managed]
 - tags: [latest-features]
+- title: Gain immediate access to the latest features from MySQL team
   types: [mix, managed]
 - tags: [content-management, site-builder]
+- title: Fully managed content management platform with built-in site builder to accellerate website development
   types: [managed]
 - tags: [multi-channel, rest-api]
+- title: Publish content to multiple channels such as web, mobile, and custom enterprise applications using REST API
   types: [managed]
 diy: 
   pattern: Web Apps on K8s
@@ -49,6 +55,7 @@ managed:
       url: https://support.oracle.com/portal
 ---
 <div class="slides diy" markdown=1>
+<div class="diy" markdown=1>
 
 {% slides %}
 
@@ -69,6 +76,7 @@ Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu 
 </div>
 
 <div class="slides mix" markdown=1>
+<div class="mix" markdown=1>
 
 {% slides %}
 
@@ -85,6 +93,7 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 </div>
 
 <div class="slides managed" markdown=1>
+<div class="managed" markdown=1>
 
 {% slides %}
 
