@@ -22,17 +22,36 @@
 	justify-content: space-evenly;
 
 	.path {
+		background: #eee;
+		border-radius: 8px;
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
-		width: 30%;
-		background: #eee;
-		border-radius: 8px;
 		padding: 1em;
+		position: relative;
 		text-align: center;
+		width: 30%;
+	}
+
+	.path__icon {
+		position: absolute;
+		left: 10%;
+		top: 10%;
+		font-size: 3em;
+		opacity: .5;
 	}
 }
 
-.path__icon {
-	font-size: 6em;
+
+.tag {
+	background: $lighter-gray;
+	border-left: 8px solid $color-green;
+	border-radius: $border-radius;
+	display: inline-block;
+	font-size: .8em;
+	font-weight: 600;
+	margin: 0 2px;
+	padding: 0 6px;
+	text-decoration: none;
+	text-transform: lowercase;
 }

@@ -2,24 +2,23 @@
 layout: archive
 title: Graph Mapping
 services:
-- title: Highly available infrastructure with autoscaling
+- tags: [available, autoscaling]
   types: [diy, mix, managed]
-- title: Ease of integration with OCI IaaS and PaaS services
+- tags: [integration, iaas, paas]
   types: [diy, mix, managed]
-- title: Automated database operations such as patching, upgrade and backup
+- tags: [automated, database]
   types: [mix, managed]
-- title: Advanced data protection against external attacks and data
+- tags: [protection]
   types: [mix, managed]
-- title: Gain immediate access to the latest features from MySQL team
+- tags: [latest-features]
   types: [mix, managed]
-- title: Fully managed content management platform with built-in site builder to accellerate website development
+- tags: [content-management, site-builder]
   types: [managed]
-- title: Publish content to multiple channels such as web, mobile, and custom enterprise applications using REST API
+- tags: [multi-channel, rest-api]
   types: [managed]
 how_it_works: assets/dummy.jpg
 deploy: https://example.com
 ---
-
 ## Let's build this thing.
 
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 

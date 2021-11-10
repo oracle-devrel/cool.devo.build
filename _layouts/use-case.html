@@ -6,6 +6,10 @@ body_id: ohana
 
 	<h1>{{ page.title }}</h1>
 
+	<h2>Use case</h2>
+
+	{{ page.description }}
+
 	<h2>Choose your path</h2>
 	<nav class="nav pathnav">
 
@@ -29,12 +33,12 @@ body_id: ohana
 	</nav>
 
 	<div class="services">
-		<h3>Services</h3>
-		<ul>
-			{% for service in page.services %}
-			<li class="{{ service.types | join: ' ' }}">{{ service.title }}</li>
-			{% endfor %}
-		</ul>
+		<p><b>Services:</b> <span class="tags">
+		{% for service in page.services %}
+		{% for tag in service.tags %}<a class="animated-link tag {{ service.types | join: ' ' }}" href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }}</a>{% endfor %}
+		{% endfor %}
+		</span>
+		</p>
 	</div>
 
 	<div class="howitworks">
