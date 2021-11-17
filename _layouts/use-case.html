@@ -9,59 +9,7 @@ body_id: ohana
 	<h2>Use case</h2>
 
 	{{ page.description }}
+	{% assign parent = page.path | dirname %}
 
-	<h2>Choose your path</h2>
-	<nav class="nav pathnav">
-
-		<a href="javascript:void(0);" class="path" data-path="diy">
-		<h4 class="path__title">DIY</h4>
-		<h5 class="path__subtitle">{{ page.diy.pattern }}</h5>
-		<i class="path__icon fas fa-{{ page.diy.icon }}"></i>
-		</a>
-
-		<a href="javascript:void(0);" class="path" data-path="mix">
-		<h4 class="path__title">Mix & Match</h4>
-		<h5 class="path__subtitle">{{ page.mix.pattern }}</h5>
-		<i class="path__icon fas fa-{{ page.mix.icon }}"></i>
-		</a>
-
-		<a href="javascript:void(0);" class="path" data-path="managed">
-		<h4 class="path__title">Managed</h4>
-		<h5 class="path__subtitle">{{ page.managed.pattern }}</h5>
-		<i class="path__icon fas fa-{{ page.managed.icon }}"></i>
-		</a>
-	</nav>
-
-	<div class="services">
-		<p><b>Services:</b> <span class="tags">
-		{% for service in page.services %}
-		{% for tag in service.tags %}<a class="animated-link tag {{ service.types | join: ' ' }}" href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }}</a>{% endfor %}
-		{% endfor %}
-		</span>
-		</p>
-	</div>
-
-	<div class="howitworks">
-		<h3>How it works</h3>
-
-		<div class="diy">
-			<img src="{{ page.diy.how_it_works }}">
-
-			<a href="{{ page.diy.deploy }}" class="btn--deploy">Download</a>
-		</div>
-		<div class="mix">
-			<img src="{{ page.mix.how_it_works }}">
-
-			<a href="{{ page.mix.deploy }}" class="btn--deploy">Download</a>
-		</div>
-		<div class="managed">
-			<img src="{{ page.managed.how_it_works }}">
-
-			<a href="{{ page.managed.deploy }}" class="btn--deploy">Download</a>
-		</div>
-	</div>
-
-	<div class="buildit">
-		{{ content }}
-	</div>
+	{% include path-menu.html parent=parent %}
 </div>

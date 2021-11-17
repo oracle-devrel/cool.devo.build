@@ -1,0 +1,56 @@
+---
+layout: default
+body_id: ohana
+---
+{% assign parent_dir = page.path | dirname %}
+{% assign parent = site.pages | where_exp: "item", "item.layout == 'use-case'" | where_exp: "item", "item.path contains parent_dir" | first %}
+
+<div id="main" role="main">
+
+	<h1>{{ parent.title }}</h1>
+
+	<section class="use use_case">
+	<h2>Use case</h2>
+
+	{{ parent.description }}
+	</section>
+
+	<section class="choose_path">
+		<h2>Choose your path</h2>
+
+		{% include path-menu.html parent=parent_dir %}
+	</section>
+
+	<section class="services">
+		<p><b>Services:</b> <span class="tags">
+		{% for tag in page.services %}<a class="animated-link tag" href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }}</a>{% endfor %}
+		</span>
+		</p>
+	</section>
+
+	<section class="howitworks">
+		<h3>How it works</h3>
+
+		<img src="{{ page.how_it_works }}">
+
+		<div class="deploy deploy_buttons">
+		{% if page.deploy %}
+		<a href="{{ page.deploy }}" class="btn--deploy">Deploy to Oracle Cloud</a>
+		{% endif %}
+
+		{% if page.github %}
+		<a href="{{ page.github }}" class="btn--github">Open on GitHub</a>
+		{% endif %}
+
+		{% if page.download %}
+		<a href="{{ page.download }}" class="btn--download">Download</a>
+		{% endif %}
+		</div>
+	</section>
+
+	<section class="buildit">
+
+		{{ content }}
+
+	</section>
+</div>

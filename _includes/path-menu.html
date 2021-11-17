@@ -1,0 +1,48 @@
+{% assign parent = include.parent %}
+
+{% assign path_pages = site.pages | where_exp: "item", "item.path contains parent" %}
+
+{% assign diy = path_pages | where_exp: "item", "item.name == 'diy.md'" | first %}
+{% assign diyci = path_pages | where_exp: "item", "item.name == 'diy-ci.md'" | first %}
+{% assign mix = path_pages | where_exp: "item", "item.name == 'mix.md'" | first %}
+{% assign mixci = path_pages | where_exp: "item", "item.name == 'mix-ci.md'" | first %}
+{% assign managed = path_pages | where_exp: "item", "item.name == 'managed.md'" | first %}
+{% assign managedci = path_pages | where_exp: "item", "item.name == 'managed-ci.md'" | first %}
+	
+<nav class="nav pathnav">
+	<a href="{{ diy.url }}" class="path no-ci" data-path="diy">
+	<h4 class="path__title">DIY</h4>
+	<h5 class="path__subtitle">{{ diy.pattern }}</h5>
+	<i class="path__icon fas fa-{{ diy.icon }}"></i>
+	</a>
+
+	<a href="{{ mix.url }}" class="path no-ci" data-path="mix">
+	<h4 class="path__title">Mix & Match</h4>
+	<h5 class="path__subtitle">{{ mix.pattern }}</h5>
+	<i class="path__icon fas fa-{{ mix.icon }}"></i>
+	</a>
+
+	<a href="{{ managed.url }}" class="path no-ci" data-path="managed">
+	<h4 class="path__title">Managed</h4>
+	<h5 class="path__subtitle">{{ managed.pattern }}</h5>
+	<i class="path__icon fas fa-{{ managed.icon }}"></i>
+	</a>
+
+	<a href="{{ diyci.url }}" class="path ci" data-path="diyci">
+	<h4 class="path__title">DIY</h4>
+	<h5 class="path__subtitle">{{ diyci.pattern }}</h5>
+	<i class="path__icon fas fa-{{ diyci.icon }}"></i>
+	</a>
+
+	<a href="{{ mixci.url }}" class="path ci" data-path="mixci">
+	<h4 class="path__title">Mix & Match</h4>
+	<h5 class="path__subtitle">{{ mixci.pattern }}</h5>
+	<i class="path__icon fas fa-{{ mixci.icon }}"></i>
+	</a>
+
+	<a href="{{ managedci.url }}" class="path ci" data-path="managedci">
+	<h4 class="path__title">Managed</h4>
+	<h5 class="path__subtitle">{{ managedci.pattern }}</h5>
+	<i class="path__icon fas fa-{{ managedci.icon }}"></i>
+	</a>
+</nav>

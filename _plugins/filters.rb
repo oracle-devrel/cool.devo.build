@@ -285,6 +285,12 @@ module BTLiquidFilters
     end
   end
 
+  def dirname(input)
+    return nil unless input
+
+    File.dirname(input)
+  end
+
   def ohana_content(input)
     parts = input.split(/<h1.*?>/)
     return input if parts.count != 3

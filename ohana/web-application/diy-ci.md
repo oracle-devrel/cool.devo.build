@@ -1,25 +1,16 @@
 ---
-layout: archive
-title: Graph Mapping
-services:
-- tags: [available, autoscaling]
-  types: [diy, mix, managed]
-- tags: [integration, iaas, paas]
-  types: [diy, mix, managed]
-- tags: [automated, database]
-  types: [mix, managed]
-- tags: [protection]
-  types: [mix, managed]
-- tags: [latest-features]
-  types: [mix, managed]
-- tags: [content-management, site-builder]
-  types: [managed]
-- tags: [multi-channel, rest-api]
-  types: [managed]
-how_it_works: assets/dummy.jpg
+layout: use-case-path
+pattern: Web Apps on K8s (CI/CD)
+icon: compass
+how_it_works: https://source.unsplash.com/1200x600/?cloud
 deploy: https://example.com
+resources:
+  - title: Sign in in to Oracle Cloud
+    url: https://www.oracle.com/uk/cloud/sign-in.html
+  - title: Signing in to My Oracle Support Portal
+    url: https://support.oracle.com/portal
+services: [available, autoscaling, integration, iaas, paas, automated, database]
 ---
-
 ## Let's build this thing.
 
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
