@@ -40,8 +40,11 @@ lucas-jellema:
   bio: Lucas Jellema, active in IT (and with Oracle) since 1994. Oracle ACE Director and Oracle Developer Champion.
 frederic-descamps:
   name: Frédéric Descamps
-  bio: MySQL Community Manager - Oracle
+  bio: "@lefred has been consulting OpenSource and MySQL for 20+ years. After graduating in Management Information Technology, Frédéric started his career as a developer for an ERP under HPUX."
   home: https://lefred.be/
+  linkedin: freddescamps
+  twitter: lefred
+  github: lefred
 ignacio-martinez:
   name: Ignacio Martínez
   linkedin: ignacio-g-martinez

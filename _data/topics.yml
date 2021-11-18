@@ -17,6 +17,8 @@ topics:
   - serverless
   - streaming
   - ubuntu
+  - data-visualization
+  - analytics
 personas:
   - architect
   - arvr
@@ -49,4 +51,5 @@ frameworks:
   - spark
   - spring
   - tensorflow
+  - ansible
 
