@@ -59,7 +59,7 @@ module Jekyll
 
 
           if title && title !~ /^[\s"]*$/
-            if /(?mi)"(?<xtitle>[^"]+)?"\s+"(?<alt>[^"]+)?"/ =~ title
+            if /(?mi)(?:"|&quot;)(?<xtitle>.*?)?(?:"|&quot;)\s+(?:"|&quot;)(?<alt>.*?)?(?:"|&quot;)/ =~ title
               @img['title']  = xtitle
               @img['alt']    = alt
             else
