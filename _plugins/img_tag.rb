@@ -55,11 +55,8 @@ module Jekyll
 
           @img['data-at2x'] = image2
 
-
-
-          $stdout.puts title
           if title && title !~ /^[\s"]*$/
-            if /(?mi)(?:"|&quot;)(?<xtitle>.*?)?(?:"|&quot;)\s+(?:"|&quot;)(?<alt>.*?)?(?:"|&quot;)/ =~ title
+            if /(?mi)"(?<xtitle>.*?)?"\s+"(?<alt>.*?)?"/ =~ title
               m = Regexp.last_match
               @img['title']  = m['xtitle']
               @img['alt']    = m['alt']

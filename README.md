@@ -261,7 +261,7 @@ Please name assets with a prefix based on the page they're being used in. This i
 
 Insert images using the Liquid tag:
 
-    {% img [classes] assets/image.jpg [WIDTH HEIGHT] "CAPTION" "ALT TEXT" %}
+    {% imgx [classes] assets/image.jpg [WIDTH HEIGHT] "CAPTION" "ALT TEXT" %}
 
 This tag allows us to convert the asset to a proper `<picture>` tag with a `srcset`. Use only the base image and size in the tag. _If a matching @2x version is present in the same folder as the image, the generated tag will make it available to hi-res displays._
 
@@ -279,7 +279,7 @@ If two quoted strings are provided, the first one becomes both an image caption,
 
 Example:
 
-    {% img alignright assets/my-tutorial-circuit.jpg 500 300 "Circuit diagram" %}
+    {% imgx alignright assets/my-tutorial-circuit.jpg 500 300 "Circuit diagram" %}
 
 #### Image Sizes
 

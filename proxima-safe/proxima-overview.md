@@ -46,7 +46,7 @@ The hard limit — at the time — was the number of physical coins I was allowe
 
 Few years later, my tastes and interests turned to the Golden Age Sci-Fi (Asimov and all of the Futurians, Heinlein, Bradbury ). The news vendor corner was always there, my monthly allowance was a tad more generous and I could smuggle sci-fi books in my school bag without arousing suspicion. With a notable exception: pooled with the books, a comic, the Iron Man episode where the iconic Mr. Stark briefcase was introduced to my 'magnets and miracles' world.
 
-{% img alignright assets/marvel.png 700 572 "I think I should write something like © Marvel Comics — All right reserved" "Comic book image of costume in suitcase" %}
+{% imgx alignright assets/marvel.png 700 572 "I think I should write something like © Marvel Comics — All right reserved" "Comic book image of costume in suitcase" %}
 
 I wish I had that briefcase available in a number of situations, getting a bad grade or running into the inevitable school bully: my curiosity about the relationship between miniaturization and technology remains a fixed point even today.
 
@@ -56,7 +56,7 @@ During the 2020 lockdown we had no access to the city model, installed in the Cu
 
 "I should definitely do it" was my inner morning echo while sipping my favorite daily americano brew. Changing the model to be portable also meant changing the use cases perimeter: the year 2020 required — for obvious reasons — a rapid transition from Smart City services to an extended and appropriate Safe City scenario.
 
-{% img aligncenter assets/bread.jpeg The playground %}
+{% imgx aligncenter assets/bread.jpeg The playground %}
 
 Requirements were clear: small enough to fit in my backpack, programmable, made with off-the-shelf components, easily connectable to OCI services, and capable to show the end-to-end message flow by means of physical interaction. The stretch goal was to enable teachers, students, developer and tinkerers to improve this 'portable lab' and develop new use cases oriented to safety, exploring and expanding the needed back-end cloud services.
 
@@ -71,15 +71,15 @@ Here's the link (Note: insert link) to the article series about what I call **Pr
 - a **Raspberry Pi 4**, the inevitable Edge gateway taking care of communication between sensors & boards to Cloud — and viceversa
 - a suitable battery pack to power the whole stuff.
 
-{% img assets/case.jpeg "The bag of goodies" %}
+{% imgx assets/case.jpeg "The bag of goodies" %}
 
 The overall architecture designed for this mobile lab includes the representation of the edge (the boards inside the briefcase) and the communication flow edge -> OCI -> edge with return messages containing anomaly detections and alarms.
 
-{% img assets/wire.png %}
+{% imgx assets/wire.png %}
 
 So, given a number of messages that can be recognized as an uptrend/downtrend pattern or a number of messages within a time frame (maybe few seconds), the stream analysis within OCI may (or may not) throw an alarm, sent back to the edge to make something happen.
 
-{% img assets/gates.jpeg "Something has definitely happened" %}
+{% imgx assets/gates.jpeg "Something has definitely happened" %}
 
 Here's a [short YouTube video](https://youtu.be/dw_odrtwAUk).
 
