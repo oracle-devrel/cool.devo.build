@@ -57,11 +57,12 @@ module Jekyll
 
 
 
-
+          $stdout.puts title
           if title && title !~ /^[\s"]*$/
             if /(?mi)(?:"|&quot;)(?<xtitle>.*?)?(?:"|&quot;)\s+(?:"|&quot;)(?<alt>.*?)?(?:"|&quot;)/ =~ title
-              @img['title']  = xtitle
-              @img['alt']    = alt
+              m = Regexp.last_match
+              @img['title']  = m['xtitle']
+              @img['alt']    = m['alt']
             else
               @img['alt']    = title.gsub(/(^["\s]*|["\s]*$)/, '')
             end
