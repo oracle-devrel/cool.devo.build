@@ -9,7 +9,7 @@
 {% assign managed = path_pages | where_exp: "item", "item.name == 'managed.md'" | first %}
 {% assign managedci = path_pages | where_exp: "item", "item.name == 'managed-ci.md'" | first %}
 	
-<nav class="nav pathnav">
+<nav class="nav pathnav" id="nocicd">
 	<a href="{{ diy.url }}" class="path no-ci" data-path="diy">
 	<h4 class="path__title">DIY</h4>
 	<h5 class="path__subtitle">{{ diy.pattern }}</h5>
@@ -27,7 +27,8 @@
 	<h5 class="path__subtitle">{{ managed.pattern }}</h5>
 	<i class="path__icon fas fa-{{ managed.icon }}"></i>
 	</a>
-
+</nav>
+<nav class="nav pathnav" id="cicd" style="display: none;">
 	<a href="{{ diyci.url }}" class="path ci" data-path="diyci">
 	<h4 class="path__title">DIY</h4>
 	<h5 class="path__subtitle">{{ diyci.pattern }}</h5>
@@ -46,3 +47,9 @@
 	<i class="path__icon fas fa-{{ managedci.icon }}"></i>
 	</a>
 </nav>
+
+<div id="cicd-check">
+    <input type="checkbox"  class="cicdchoice"> CI/CD </input>
+</div>
+
+

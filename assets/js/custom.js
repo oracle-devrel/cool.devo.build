@@ -44,8 +44,20 @@ cool.ohana = (function() {
         });
 
     });
-  };
 
+    
+  };
+  $(".cicdchoice").change(function() {
+    if (this.checked){
+      $("#nocicd").css('display','none')
+      $("#cicd").css('display','flex')
+    }
+    else{
+      $("#nocicd").css('display','flex')
+      $("#cicd").css('display','none')
+    }
+    
+  });
   return {
     bind: bind
   };
