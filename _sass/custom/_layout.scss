@@ -142,7 +142,7 @@ a.card {
 
   @include breakpoint($medium) {
     // grid-template-rows: 3em 150px auto;
-    margin: 1%;
+    // margin: 1%;
     width: 48%;
 
     figure {
@@ -168,6 +168,7 @@ a.card {
 }
 
 .card__titleparent {
+  font-size: .8em;
 
   $color-map: (
     red: $color-red,
@@ -296,20 +297,7 @@ a[data-readmore-toggle] {
     transition: $global-transition;
   }
 
-  h4 {
-    font-size: 1.1em;
-
-    @include breakpoint($medium) {
-      font-size: 1.2em;
-    }
-
-    @include breakpoint($large) {
-      font-size: 1.4em;
-    }
-  }
-
   .meta {
-    display: none;
     flex-direction: column;
     flex-wrap: wrap;
     justify-content: space-between;
@@ -507,7 +495,7 @@ $themeColors: ('red': $color-red,
   flex-direction: column;
   margin: 0;
   padding: 0;
-  max-height: 60vh;
+  // max-height: 60vh;
   overflow: hidden auto;
   width: 100%;
 
@@ -520,7 +508,7 @@ $themeColors: ('red': $color-red,
 
 .topics__tag {
   list-style: none;
-  width: 170px;
+  width: 220px;
   margin: 0 .5em 0 0;
 
   a {
