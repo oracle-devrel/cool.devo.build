@@ -56,6 +56,20 @@
   justify-content: space-between;
 }
 
+.collections__cards {
+  .card {
+    padding: .5em;
+    margin: .5%;
+    width: 23%;
+    border-radius: $border-radius;
+
+    p {
+      font-size: .8em;
+      margin-top: .5em;
+    }
+  }
+}
+
 a.card {
   text-decoration: none;
   background: $lighter-gray;
@@ -65,7 +79,7 @@ a.card {
   background: $background-color;
   margin-bottom: 1em;
   // max-height: 185px;
-  padding: 0.5em;
+  padding: 0.5em 0;
   position: relative;
   transition: $global-transition;
   width: 100%;
@@ -79,6 +93,7 @@ a.card {
   }
 
   p {
+    color: $gray;
     grid-area: desc;
     margin: 0;
   }
@@ -169,21 +184,32 @@ a.card {
 
 .card__titleparent {
   font-size: .8em;
+  color:  lighten($subtitle-color, 15%);
+  text-transform: uppercase;
 
-  $color-map: (
-    red: $color-red,
-    blue: $color-blue,
-    purple: $color-purple,
-    green: $color-green,
-    yellow: $color-yellow,
-    orange: $color-orange
-  );
-
-  @each $name, $color in $color-map {
-    .color-#{$name} & {
-      color: $color;
-    }
+  &:visited {
+    color: lighten($subtitle-color, 15%);
   }
+
+  &:active,
+  &:hover {
+    color: lighten($subtitle-color, 20%)
+  }
+
+  // $color-map: (
+  //   red: $color-red,
+  //   blue: $color-blue,
+  //   purple: $color-purple,
+  //   green: $color-green,
+  //   yellow: $color-yellow,
+  //   orange: $color-orange
+  // );
+
+  // @each $name, $color in $color-map {
+  //   .color-#{$name} & {
+  //     color: $color;
+  //   }
+  // }
 
 }
 
@@ -244,7 +270,7 @@ a[data-readmore-toggle] {
     }
   }
   a.tag {
-    background: $lighter-gray;
+    background: $tag-fill;
     border-left: 8px solid $color-green;
     border-radius: $border-radius;
     display: inline-block;
@@ -312,7 +338,7 @@ a[data-readmore-toggle] {
       border-radius: $border-radius;
       display: inline-block;
       font-size: .8em;
-      font-weight: 600;
+      font-weight: 400;
       text-decoration: none;
       text-transform: lowercase;
     }
@@ -324,7 +350,7 @@ a[data-readmore-toggle] {
     }
 
     .tag {
-      background: $lighter-gray;
+      background: #CEDAD9;
       // border-left: 8px solid $color-green;
       margin: 0 2px 6px;
       padding: 0 6px;
@@ -507,8 +533,9 @@ $themeColors: ('red': $color-red,
 }
 
 .topics__tag {
+  font-size: 16px;
   list-style: none;
-  width: 220px;
+  width: 180px;
   margin: 0 .5em 0 0;
 
   a {
