@@ -34,17 +34,31 @@ body_id: ohana
 		<img src="{{ page.how_it_works }}">
 
 		<div class="deploy deploy_buttons">
+		
+		{% if page.download %}
+		<a href="{{ page.download }}" class="automation-button" target="_blank" role="button" aria-label="Download" title="Download">
+			<span class="download-diagram"></span>
+			<span>Download diagram</span>
+		</a>
+		{% endif %}
+		
 		{% if page.deploy %}
-		<a href="{{ page.deploy }}" class="btn--deploy">Deploy to Oracle Cloud</a>
+		<a href="{{ page.deploy }}" class="automation-button" target="_blank" role="button" aria-label="Deploy to Oracle Cloud" title="Deploy to Oracle Cloud">
+			<span class="deploy-oracle"></span>
+			<span>Deploy to Oracle Cloud</span>
+		</a>
 		{% endif %}
 
 		{% if page.github %}
-		<a href="{{ page.github }}" class="btn--github">Open on GitHub</a>
+		<a href="{{ page.github }}" class="automation-button" target="_blank" role="button" aria-label="Open on GitHub" title="Open on GitHub">
+			<span class="open-gh"></span>
+			<span>Open on GitHub</span>
+		</a>
 		{% endif %}
 
-		{% if page.download %}
-		<a href="{{ page.download }}" class="btn--download">Download</a>
-		{% endif %}
+		
+
+		
 		</div>
 	</section>
 

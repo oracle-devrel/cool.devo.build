@@ -2,18 +2,19 @@
 layout: use-case-path
 pattern: Web Apps on K8s
 icon: compass
-how_it_works: https://source.unsplash.com/1200x600/?cloud
+how_it_works: ../assets/ohana_dy.png
 deploy: https://example.com/deploy
-github: https://github.com/example/repo
+github: https://github.com/oracle-devrel
 download: https://example.com/download
 resources:
   - title: Sign in in to Oracle Cloud
     url: https://www.oracle.com/uk/cloud/sign-in.html
   - title: Signing in to My Oracle Support Portal
     url: https://support.oracle.com/portal
-services: [available, autoscaling, integration, iaas, paas, automated, database]
+services: [oke, autoscaling, functions, compute, datascience, load balancer, adb]
 ---
 {% slides %}
+
 Here's how to build it...
 
 ## Let's build this thing.
