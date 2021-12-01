@@ -43,6 +43,13 @@ breadcrumb_home_label: Dev.O
 tag_page_layout: topic
 tag_page_dir: topics
 
+collections:
+  ohana:
+    output: true
+    order:
+      - web-applications
+      - graph-mapping
+
 urls:
   always_free: https://signup.cloud.oracle.com/?language=en&sourceType=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted&intcmp=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted
 

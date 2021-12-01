@@ -285,5 +285,38 @@ module BTLiquidFilters
     end
   end
 
+  def dirname(input)
+    return nil unless input
+
+    File.dirname(input)
+  end
+
+  def ohana_content(input)
+    parts = input.split(/<h1.*?>/)
+    return input if parts.count != 3
+
+    sections = {}
+    parts.each do |part|
+      lines = part.lines
+      type = lines.shift
+      type.sub!(/(.*?)<\/h1>.*?$/i,'\1').strip.downcase
+      sections[type] = lines.join("\n")
+    end
+
+    output = []
+
+    sections.each do |type, content|
+      output << <<~EOSECT
+      <div class="buildit-#{type.strip}">
+
+      #{content}
+
+      </div>
+      EOSECT
+    end
+
+    output.join("\n")
+  end
+
   Liquid::Template.register_filter self
 end

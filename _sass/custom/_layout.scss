@@ -804,3 +804,59 @@ blockquote {
     color: $link-color;
   }
 }
+
+
+.automation-button {
+  display: inline-block;
+  margin: 12px 20px 12px 5px;
+  background-color: #312D2A;
+  border-color: transparent;
+  color: #fff;
+  justify-content: center;
+  min-width: 0;
+  align-items: center;
+  padding: 4px 8px 10px 16px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: Oracle Sans;
+  font-size: 14px;
+  line-height: 18px;
+  padding-top: 6px;
+  text-decoration: none;
+
+}
+
+.automation-button:visited {
+  color: #fff;
+  text-decoration: none;
+}
+
+.deploy-oracle {
+  background-image: url(../image/o.png);
+  width: 20px;
+  height: 17px;
+  background-repeat: no-repeat;
+  display: inline-block;
+  transform: translate3d(-6px, 6px, 0px);
+}
+
+.open-gh {
+  background-image: url(../image/gh.png);
+  width: 20px;
+  height: 17px;
+  background-repeat: no-repeat;
+  display: inline-block;
+  transform: translate3d(-8px, 2px, 0px);
+}
+
+.download-diagram {
+  background-image: url(../image/download.png);
+  width: 20px;
+  height: 17px;
+  background-repeat: no-repeat;
+  display: inline-block;
+  transform: translate3d(-6px, 6px, 0px);
+}
+
