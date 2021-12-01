@@ -40,16 +40,16 @@ lucas-jellema:
   bio: Lucas Jellema, active in IT (and with Oracle) since 1994. Oracle ACE Director and Oracle Developer Champion.
 frederic-descamps:
   name: Frédéric Descamps
-  bio: "@lefred has been consulting OpenSource and MySQL for 20+ years. After graduating in Management Information Technology, Frédéric started his career as a developer for an ERP under HPUX."
+  bio: bio: "@lefred has been consulting OpenSource and MySQL for 20+ years. After graduating in Management Information Technology, Frédéric started his career as a developer for an ERP under HPUX."
   home: https://lefred.be/
-  linkedin: freddescamps
-  twitter: lefred
-  github: lefred
 ignacio-martinez:
   name: Ignacio Martínez
   linkedin: ignacio-g-martinez
 ali-mukadam:
   name: Ali Mukadam
   home: https://lmukadam.medium.com
-  bio: For the past 16 years, Ali has held technical presales, architect and industry consulting roles in BEA Systems and Oracle across Asia Pacific, focusing on middleware and application development. Although he pretends to be Thor, his real areas of expertise are Application Development, Integration, SOA (Service Oriented Architecture) and BPM (Business Process Management).
+  bio: |-
+    Technical Director, Asia Pacific Center of Excellence.
+
+    For the past 16 years, Ali has held technical presales, architect and industry consulting roles in BEA Systems and Oracle across Asia Pacific, focusing on middleware and application development. Although he pretends to be Thor, his real areas of expertise are Application Development, Integration, SOA (Service Oriented Architecture) and BPM (Business Process Management). An early and worthy Docker and Kubernetes adopter, Ali also leads a few open source projects (namely [terraform-oci-oke](https://github.com/oracle-terraform-modules/terraform-oci-oke)) aimed at facilitating the adoption of Kubernetes and other cloud native technologies on Oracle Cloud Infrastructure.
   linkedin: alimukadam
