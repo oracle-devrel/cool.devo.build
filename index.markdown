@@ -5,6 +5,10 @@ classes:
     - dark-theme
 pagination:
     enabled: true
+header:
+    overlay_color: "#035368"
+    search: true
+excerpt: Developer tutorials from your friends at Oracle and the developer community.
 ---
-Developer tutorials from your friends at Oracle and the developer community.
+
 

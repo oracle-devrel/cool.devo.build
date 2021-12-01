@@ -33,32 +33,32 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .animated-link {
-  position: relative;
-  display: inline-block;
+  // position: relative;
+  // display: inline-block;
 
-  &:before {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    height: 2px;
-    background: $link-color;
-    width: 100%;
-    -webkit-transition: $global-transition;
-    transition: $global-transition;
-    -webkit-transform: scaleX(0) translate3d(0, 0, 0);
-    transform: scaleX(0) translate3d(0, 0, 0);
-    transform-origin: 0;
-  }
+  // &:before {
+  //   content: "";
+  //   position: absolute;
+  //   left: 0;
+  //   bottom: 0;
+  //   height: 1px;
+  //   background: $link-color;
+  //   width: 100%;
+  //   -webkit-transition: $global-transition;
+  //   transition: $global-transition;
+  //   -webkit-transform: scaleX(0) translate3d(0, 0, 0);
+  //   transform: scaleX(0) translate3d(0, 0, 0);
+  //   transform-origin: 0;
+  // }
 
-  &.tag:before {
-    background: $color-green;
-    border-radius: 0 0 4px 0;
-  }
+  // &.tag:before {
+  //   background: $color-green;
+  //   border-radius: 0 0 4px 0;
+  // }
 
-  &:hover:before {
-    -webkit-transform: scaleX(1);
-    -ms-transform: scaleX(1);
-    transform: scaleX(1);
-  }
+  // &:hover:before {
+  //   -webkit-transform: scaleX(1);
+  //   -ms-transform: scaleX(1);
+  //   transform: scaleX(1);
+  // }
 }

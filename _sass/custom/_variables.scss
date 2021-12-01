@@ -62,12 +62,17 @@ $h-size-6: 1em; // ~16px
    ========================================================================== */
 $oracle-bg: #2b2825;
 $color-red: #c03d2e;
-$color-blue: #47857D;
+$color-blue: #006B8F;
 $color-purple: #914275;
 $color-green: #264759;
 $color-yellow: #EFD564;
 $color-orange: #F35E18;
 $link-color: $color-blue;
+$tag-fill: #D4E6EC;
+$subtitle-color: #C74634;
+$series-color: $subtitle-color;
+$supercollection-color: $color-blue;
+$card-bg: #E8E8E8;
 
 $gray: #7a8288;
 $dark-gray: mix(#000, $gray, 50%);
@@ -84,7 +89,7 @@ $border-color: $lighter-gray;
 $form-background-color: $lighter-gray;
 $footer-background-color: $lighter-gray;
 
-$primary-color: #6f777d;
+$primary-color: #1A1816;
 $success-color: $color-green;
 $warning-color: $color-yellow;
 $danger-color: $color-red;

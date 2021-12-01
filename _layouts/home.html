@@ -4,22 +4,26 @@ layout: archive
 
 {{ content | markdownify }}
 
-<h2>Collections</h2>
-
-{% include collections.html %}
-
 <section class="all-collections">
-  <h2>Latest tutorials</h2>
+  <h2>Latest Content</h2>
 
   <div class="all-projects__cards cards">
-    {% assign site_pages = site.pages | where_exp: "item", "item.parent != null" | sort: "date" | reverse %}
+    {% assign site_pages = site.pages | sort: "date" | reverse %}
 
       {% for pg in site_pages %}
-      {% if pg.draft != true and pg.published != false %}
-          {% assign parent_series = pg.parent.last | default: pg.parent %}
-          {% assign series = site.pages | where_exp: "item", "item.series == parent_series" | first %}
-          {% include card.html class="card all-projects__card" source=pg series=series %}
 
+      {% if pg.draft != true and pg.published != false %}
+        {% if pg.series != null and pg.series != 'tutorials' and pg.series != 'frameworks' %}
+          {% assign parent_series = pg.series %}
+          {% include card.html class="card all-projects__card series" source=pg series=pg %}
+        {% elsif pg.parent.size > 0 %}
+          {% assign parent = pg.parent | join %}
+          {% if parent == 'tutorials' or parent == 'frameworks' %}
+            {% assign parent_series = pg.parent.first | default: pg.parent %}
+            {% assign series = site.pages | where_exp: "item", "item.series == parent_series" | first %}
+            {% include card.html class="card all-projects__card" source=pg series=series %}
+          {% endif %}
+        {% endif %}
       {% endif %}
       {% endfor %}
   </div>

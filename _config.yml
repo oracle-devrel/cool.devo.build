@@ -1,3 +1,6 @@
+# Copyright (c) 2020 Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+#
 # Welcome to Jekyll!
 #
 # This config file is meant for settings that affect your whole blog, values
@@ -34,14 +37,14 @@ author: Oracle Developer Community
 
 permalink: /:year/:month/:title.html
 
-breadcrumbs: true
+breadcrumbs: false
 breadcrumb_home_label: Dev.O
 
 tag_page_layout: topic
 tag_page_dir: topics
 
 urls:
-  always_free: https://www.oracle.com/cloud/free/?source=:ow:o:s:nav::DevoGetStarted&intcmp=:ow:o:s:nav::DevoGetStarted
+  always_free: https://signup.cloud.oracle.com/?language=en&sourceType=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted&intcmp=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted
 
 after_footer_scripts:
   - /assets/js/plugins/readmore.min.js

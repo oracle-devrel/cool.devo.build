@@ -11,17 +11,22 @@ layout: archive
     {% assign pages = site.pages | sort: "date" | reverse %}
   {% endif %}
 
-  {% for pg in pages  %}
-  {% if pg.parent contains page.series and pg.draft != true and pg.published != false %}
+  {% for pg in pages %}
 
-  {% assign thumb = '' %}
-  {% if pg.thumbnail %}
-    {% assign thumb = pg.thumbnail %}
-  {% elsif pg.image %}
-    {% assign thumb = pg.image %}
-  {% endif %}
-
-  {% include card.html collection=true class="card all-projects__card" source=pg series=page.series %}
+  {% if pg.draft != true and pg.published != false %}
+    {% if pg.series != null %}
+      {% assign parent = pg.parent | join %}
+      {% if parent == page.series %}
+        {% include card.html class="card all-projects__card series" source=pg series=pg %}
+      {% endif %}
+    {% elsif pg.parent.size > 0 %}
+      {% assign parent = pg.parent.last %}
+      {% if parent == page.series %}
+        {% assign parent_series = pg.parent.first | default: pg.parent %}
+        {% assign series = site.pages | where_exp: "item", "item.series == parent_series" | first %}
+        {% include card.html class="card all-projects__card" source=pg series=series %}
+      {% endif %}
+    {% endif %}
   {% endif %}
   {% endfor %}
 </div>

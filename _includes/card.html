@@ -1,8 +1,12 @@
 {% assign pg = include.source %}
+{% assign parent = pg.parent | join: '' %}
 {% assign series = include.series %}
 <div class="{{ include.class }} {{ pg.tags | tag_classes }} {{ series.series }} color-{{ series.color | default: 'green' }}" data-category="{{ pg.categories | join: ' ' }}" data-tags="{{ pg.tags | join: ' ' }}">
   <header>
-    <h4><a class="" href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></h4>
+
+    <h4><a class="" href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }} {% if include.collection == null and pg.series != null %}
+      <span class="">Series</span>
+    {% endif %}</a></h4>
     <div class="date">
       {% if pg.date %}
       <span class="published"><time datetime="{{ pg.date | iso }}">{{ pg.date | format_date: "ordinal" }}</time></span>
@@ -14,17 +18,7 @@
       {% endif %}
     </div>
   </header>
-    {% assign thumb = '' %}
-    {% if pg.thumbnail %}
-      {% assign thumb = pg.thumbnail %}
-    {% elsif pg.image %}
-      {% assign thumb = pg.image %}
-    {% endif %}
-    {% unless thumb == '' %}
-    <a class="thumbnail" href="{{ site.baseurl }}{{ pg.url }}" style="background-image:url('{{ thumb | relative_to: pg.url }}');"></a>
-    {% else %}
-    <a class="thumbnail placeholder {{ pg.title | placeholder_class }}" href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title | first_letter }}</a>
-    {% endunless %}
+
     <div class="desc">
       {{ pg.description | markdownify }}
 
@@ -32,8 +26,10 @@
           <span class="tags">
           {% for tag in pg.tags %}
           <a class="animated-link tag" href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }}</a>{% endfor %}
+          {% if pg.parent contains 'frameworks' %}
+            <a class="animated-link tag tag--frameworks" href="{{ site.baseurl }}/frameworks">Frameworks</a>
+          {% endif %}
           </span>
-          {% unless include.collection %}<a class="card__titleparent" href="{{ site.baseurl }}{{ series.url }}">{{ series.title }}</a>{% endunless %}
       </footer>
     </div>
 </div>
