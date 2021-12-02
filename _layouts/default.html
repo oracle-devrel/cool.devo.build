@@ -20,7 +20,7 @@
     {% include_cached masthead.html %}
 
     <div class="initial-content">
-      {{ content }}
+      {{ content | link_mrm: page.mrm }}
     </div>
 
     {% if site.search == true %}

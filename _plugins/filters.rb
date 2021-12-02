@@ -5,9 +5,24 @@ class String
     converter = Iconv.new 'UTF-8//IGNORE', 'UTF-8'
     converter.iconv(self)
   end
+
+  def append_query(string)
+    if self =~ /\?/
+      "#{self}&#{string.sub(/^[?&]/, '')}"
+    else
+      "#{self}?#{string.sub(/^[?&]/, '')}"
+    end
+  end
 end
 
 module BTLiquidFilters
+  def link_mrm(input, mrm)
+    input.gsub(%r{(?<=")https?://.*?oracle(cloud)?\.com/.*?(?=")}) do
+      url = Regexp.last_match(0)
+      url =~ /:::::/ ? url : url.append_query("source=:ex:tb:::::#{mrm}:WW_FY22_DevRel_DotBuild&SC=:ex:tb:::::#{mrm}:WW_FY22_DevRel_DotBuild&pcode=#{mrm}")
+    end
+  end
+
   def fixer(input)
     input.fix_encoding || input
   end
