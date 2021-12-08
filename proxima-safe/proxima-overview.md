@@ -3,7 +3,7 @@ title: Mr. Stark's Briefcase and ProximaSafe
 categories: [arvr]
 tags: [oci, iot, streaming, serverless, rpi, full-stack]
 thumbnail: assets/bread.jpeg
-parent: proxima-safe
+parent: [tutorials, proxima-safe]
 date: 2021-08-20 08:00
 modified: 2021-09-01 12:00
 sidebar:
