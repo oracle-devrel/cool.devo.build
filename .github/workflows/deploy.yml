@@ -11,7 +11,7 @@ on:
 jobs:
   deploy:
     name: github-pages
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
     steps:
       - name: Clone repository
