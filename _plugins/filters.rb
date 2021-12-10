@@ -16,6 +16,18 @@ class String
 end
 
 module BTLiquidFilters
+  def prepend_author(input, author)
+    "By #{author}: #{input}"
+  end
+
+  def append_author(input, author)
+    "#{input} By #{author}"
+  end
+
+  def compress_spaces(input)
+    input.gsub(/ +/, ' ')
+  end
+
   def link_mrm(input, mrm)
     input.gsub(%r{(?<=")https?://.*?oracle(cloud)?\.com/.*?(?=")}) do
       url = Regexp.last_match(0)
