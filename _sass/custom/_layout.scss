@@ -757,15 +757,48 @@ blockquote {
 }
 
 .page__hero--overlay {
+  h1,
+  .page__lead {
+    margin-bottom: 20px;
+    font-size: 20px;
+  }
+
+  .search-content__form {
+    padding: 0;
+  }
+
+  .page__title {
+    @include breakpoint($small) {
+      font-size: 36px;
+    }
+  }
+
   .wrapper {
     font-size: 14px;
     max-width: 800px;
     text-align: center;
 
     .search-input {
+      font-size: 16px;
+      height: 48px;
       max-width: 400px;
-      height: 32px;
       padding: 0 8px;
+    }
+  }
+
+  .list__item {
+    padding-left: 2em;
+    padding-right: 2em;
+    max-width: 1200px;
+  }
+
+  #results {
+    p {
+      padding: 0;
+    }
+
+    .results__found {
+      padding: .5em 2em;
     }
   }
 }
@@ -792,13 +825,6 @@ blockquote {
   background: #fff;
   width: 100%;
   color: $primary-color;
-  p {
-    padding: 0 2em;
-  }
-
-  .list__item {
-    padding: 0 2em;
-  }
 
   a {
     color: $link-color;
