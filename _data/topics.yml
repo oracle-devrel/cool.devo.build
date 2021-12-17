@@ -1,7 +1,10 @@
 topics:
   - always-free
+  - analytics
   - apache
   - apex
+  - api
+  - data-visualization
   - get-started
   - hardware
   - iac
@@ -17,8 +20,9 @@ topics:
   - serverless
   - streaming
   - ubuntu
-  - data-visualization
-  - analytics
+  - verrazzano
+  - gaming
+  - docker
 personas:
   - architect
   - arvr
@@ -43,13 +47,14 @@ languages:
   - terraform
   - typescript
 frameworks:
+  - ansible
   - express
   - flask
+  - graalvm
   - kubernetes
   - micronaut
   - nodejs
   - spark
   - spring
   - tensorflow
-  - ansible
 

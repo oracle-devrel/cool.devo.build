@@ -214,41 +214,61 @@ I'm including the list --- as it exists at the time of this writing --- for refe
 
 ```yaml
 topics:
-  - hardware
-  - oci
-  - pytorch
-  - iot
-  - streaming
-  - serverless
-  - rpi
+  - always-free
+  - apache
   - apex
-  - alwaysfree
+  - get-started
+  - hardware
+  - iac
+  - iot
   - jupyter
+  - machine-learning
+  - oci
+  - oke
+  - open-source
+  - orm
+  - pytorch
+  - rpi
+  - serverless
+  - streaming
+  - ubuntu
+  - data-visualization
+  - analytics
+  - verrazzano
 personas:
-  - fullstack
-  - frontend
-  - devops
-  - backend
   - architect
-  - robotics
   - arvr
-  - datascience
-  - gamedev
-  - dbre
+  - back-end
   - community
+  - data-management
+  - data-science
+  - dbre
+  - devops
+  - front-end
+  - full-stack
+  - game-dev
+  - robotics
 languages:
-  - python
-  - javascript
-  - typescript
   - go
+  - java
+  - javascript
+  - mysql
+  - php
+  - python
   - ruby
   - terraform
+  - typescript
 frameworks:
-  - tensorflow
+  - graalvm
+  - express
+  - flask
+  - kubernetes
   - micronaut
   - nodejs
   - spark
-  - flask
+  - spring
+  - tensorflow
+  - ansible
 ```
 
 ## Assets
