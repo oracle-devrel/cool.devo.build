@@ -77,7 +77,6 @@ module BTLiquidFilters
     site_url = site.config['url']
     site_url = File.join(site_url, site.config['baseurl'])
     site_url = File.join(site_url, File.dirname(source))
-    puts site_url
     converter = site.find_converter_instance(::Jekyll::Converters::Markdown)
     input.gsub!(/!\[(.*?)\]\(((?!http).*?\))/) do
       m = Regexp.last_match
