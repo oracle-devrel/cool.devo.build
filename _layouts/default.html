@@ -10,9 +10,21 @@
 -->
 <html lang="{{ site.locale | slice: 0,2 | default: "en" }}" class="no-js">
   <head>
+    {% if page.redirect %}
+    <title>Redirecting to {{ page.redirect }}</title>
+    <meta http-equiv="refresh" content="0; URL={{ page.redirect }}">
+    <link rel="canonical" href="{{ page.redirect }}">
+    {% else %}
     {% include head.html %}
+    {% endif %}
     {% include head/custom.html %}
   </head>
+
+  {% if page.redirect %}
+  <body>
+    <p>This page has moved to <a href="{{ page.redirect }}">{{ page.redirect }}</a></p>
+  </body>
+  {% else %}
 
   <body class="layout--{{ page.layout | default: layout.layout }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}">
     {% include_cached skip-links.html %}
@@ -39,4 +51,5 @@
     {% include scripts.html %}
 
   </body>
+  {% endif %}
 </html>
