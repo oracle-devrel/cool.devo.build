@@ -20,7 +20,7 @@ their knowledge and expertise.
 
 By using this Slack Channel, you agree to abide by the following Code of
 Conduct, the [Slack Acceptable Use
-Policy](ttps://slack.com/acceptable-use-policy), and the [Oracle privacy
+Policy](https://slack.com/acceptable-use-policy), and the [Oracle privacy
 policy](https://www.oracle.com/legal/privacy/) (pinned to the #general
 channel). We reserve the right to update this code of conduct at any
 time. When updates do occur, a message will be posted in the proper
