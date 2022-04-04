@@ -8,39 +8,35 @@ We don't have a good staging system right now. We'll be able to show you your wo
 
 To use the Jekyll setup, you'll need a Ruby setup with `bundler` installed. `gem install bundler` should do the trick.
 
-- Clone this repo
-- Add your content repo as a submodule in the `/collections` directory
+- Clone this repo using `git clone --recursive https://github.com/oracle-devrel/cool.devo.build/`
+- Add your content in the `tutorials` directory (which is actually a submodule)
 - Run `bundle install` in the root of the repo
 - Run `bundle exec jekyll serve -l`
 - Open a web browser to `http://localhost:4000`
 
-The `-l` flag turns on LiveReload and incremental builds, so as you edit your content the web browser should automatically refresh when you save the document. Only pages being modified are rendered again, so if you change a title and it doesn't show up properly on an index page, you need to `touch` the index page to regenerate it. Or kill the server and run `jekyll build` to force the entire site to render.
+The `-l` flag turns on LiveReload and incremental builds, so as you edit your content the web browser should automatically refresh when you save the document. Only pages being modified are rendered again, so if you change a title and it doesn't show up properly on an index page, you need to `touch` the index page to regenerate it. Or kill the server (CTRL-C in your terminal) and run `jekyll build` to force the entire site to render.
 
 ## Where your content will exist on the web
 
-Once it's edited and merged, your content will be available at `https://cool.devo.build/collections/...`. The `...` will be the directory path from the parent repo you contributed to. If you're creating in the Tutorials repo and your markdown file is called `my-cool-tutorial.md` in the root of that repository, the url would be `https://cool.devo.build/collections/tutorials/my-cool-tutorial`.
-
-The front matter included in your content will determine where else on the site your content is surfaced. It will be available under its parent collection and in the content listing the Collections page, under tag pages for the tags you specified, and under the Use Case category you specified.
+Once it's edited and merged, your content will be available at `https://cool.devo.build/tutorials/...`. The `...` will be the directory path from the parent repo you contributed to. If you're creating in the Tutorials repo and your markdown file is called `my-cool-tutorial.md` in the root of that repository, the url would be `https://cool.devo.build/tutorials/my-cool-tutorial`. Once your content is converted to Oracle's content management system, a redirect will be added to point to its new location on developers.oracle.com.
 
 ## Content comes from repositories
 
-The root devo.build site is fairly spartan. Most content in it is provided by external GitHub repositories that are added as submodules and imported when rendering the site.
+The root devo.build site is fairly spartan. Most content in it is provided by external GitHub repositories that are added as submodules and imported when rendering the site. The primary location for content is the [tutorials repository](https://github.com/oracle-devrel/devo.tutorials/) where most new content should be added.
 
 A content repository is a repository containing nothing but Markdown and image assets. It contains an `index.md`, Markdown pages for each piece of content (optionally sorted into subdirectories), and an `assets` folder which contains any media assets used in the pages (images, PDFs, videos, audio). Each of these types has a few specific requirements that need to be adhered to.
 
 ```console
-/collections/REPO_SUBMODULE/
-                            index.md (see below)
-                            Markdown.md (see below)
-                            assets/* 
+/REPO_SUBMODULE/
+    index.md (see below)
+    Markdown.md (see below)
+    assets/* 
 ```
-
-(Note that we're using the word "collections" to represent like groups of content, more akin to "series" than what "collections" means to Jekyll.)
 
 ### Collection index.md
 
-Each collection repository _must_ contain an `index.md` file in its root. This file serves as the project overview. In addition to the required front matter, any content in this page will be displayed above a listing of the pages that comprise it. Only the front matter is required.
-
+Each collection repository _must_ contain an `index.md` file in its root. This file serves as the project overview. In addition to the required front matter, any content in this page will be displayed above a listing of the pages that comprise it. Only the front matter is required. If your content is a series and isn't in its own repo, create a subdirectory and include an `index.md` file in the root of the subdirectory.
+ 
 A submodule repository can have more than one collection. The `index.md` file is what will be served if the url path to the parent directory is called, but additional `.md` files with the same front matter keys can also exist and will be displayed as additional collections. Each piece of content can only belong to one collection, though.
 
 #### Project front matter
@@ -76,9 +72,7 @@ The URL for the Getting Started collection would be "https://.../collections/tut
 
 Each project repo (and the root repo) can contain as many pages written in Markdown as you like. The only technical requirement for a page is that it contain the appropriate front matter. There are stylistic guidelines that will be enforced in the content, but any text file with the `.md` extension and the requisite front matter will render as part of the site.
 
-Within a project repo, directories become parts of the url (permalink) for the page. Submodule repos are added within the `/collections` directory, and the base URL for any collection is `devo.build/collections/PROJECT-SLUG`. The slug will be assigned by the maintainers when the submodule is added.
-
-(The `collections` directory is purely for organization. It's entirely possible to create other parent directories. As long as they contain the right formatting, there can be as many as needed. Room for future expansion, as needed.)
+Within a project repo, directories become parts of the url (permalink) for the page. Submodule repos are added within the root directory, and the base URL for any collection is `cool.devo.build/PROJECT-SLUG`. The slug will be assigned by the maintainers when the submodule is added.
 
 ### Required front matter
 
@@ -273,7 +267,7 @@ frameworks:
 
 ## Assets
 
-Assets are stored in an `assets` directory in each repository. All links to these assets should be relative to the location of the linking page. If your page is at `/collections/tutorials/page-1.md` and your assets folder is at `/collections/tutorials/assets/`, then your link to an image from `page-1.md` would look like `assets/my_image.jpg`.
+Assets are stored in an `assets` directory in each repository. All links to these assets should be relative to the location of the linking page. If your page is at `/tutorials/page-1.md` and your assets folder is at `/tutorials/assets/`, then your link to an image from `page-1.md` would look like `assets/my_image.jpg`.
 
 Please name assets with a prefix based on the page they're being used in. This is to avoid name clashes with other content. If you're writing a tutorial called "Node on OCI," any asset used should be named with the prefix `node-on-oci-*`.
 
