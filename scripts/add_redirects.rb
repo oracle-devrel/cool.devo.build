@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env ruby -W1
 
 require 'csv'
 require 'yaml'
@@ -24,7 +24,7 @@ raise "Missing file #{csv}" unless File.exist?(csv)
 CSV.open(csv) do |data|
   data.each do |line|
     file = line[0]
-    puts "Updating file: #{file}"
+    warn "Updating file: #{file}"
     header, body = file.split_header
     yaml = YAML.load(header)
     yaml['redirect'] = line[2]
