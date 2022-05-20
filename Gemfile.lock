@@ -1,10 +1,3 @@
-GIT
-  remote: https://github.com/ffi/ffi.git
-  revision: 08fca4deba219567a834cf0e3d1f00c514ebb378
-  submodules: true
-  specs:
-    ffi (1.15.5)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -40,6 +33,7 @@ GEM
     faraday-patron (1.0.0)
     faraday-rack (1.0.0)
     faraday-retry (1.0.3)
+    ffi (1.15.5)
     forwardable-extended (2.6.0)
     http_parser.rb (0.8.0)
     i18n (1.10.0)
@@ -123,7 +117,6 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  ffi!
   jekyll (~> 4.2.0)
   jekyll-asciidoc
   jekyll-feed (~> 0.12)
