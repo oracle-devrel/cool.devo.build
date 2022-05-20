@@ -1,6 +1,6 @@
 # Staging your content in a local container
 
-If you want to see how things will render _while_ you're working on them, you can run ___cool.devo.build___ staging site in a Docker container on your local machine.
+If you want to see how things will render _while_ you're working on them, you can run the <cool.devo.build> staging site in a Docker container on your local machine.
 
 ## Build the docker image
 
@@ -22,12 +22,15 @@ docker build --no-cache -f jekyll.dockerfile . -t cool.devo.build:latest
 In order to start the staging site and test your changes to _devo.tutorials_  in real time you have to start the container, run the below command, replacing _<local_path_to_devo.tutorial>_  with the content path on your machine.
 
 ```shell
-docker run -d  --rm -p 4000:4000 -v <local_path_to_devo.tutorial>:/cool.devo.build/collections/tutorials  --name cool.devo.build  cool.devo.build:latest
+docker run -it --rm -p 4000:4000 -p 35729:35729 \
+  -v <LOCAL_TUTORIALS_PATH>:/cool.devo.build/tutorials \
+  --name cool.devo.build cool.devo.build:latest
 ```
 
 Now you can open a browser to http://localhost:4000
 
-The staging site run with live reload and incremental builds turned on. So as you edit your content the web browser should automatically refresh when you save the document. Only pages being modified are rendered again, so if you change a title and it doesn't show up properly on an index page, you need to `touch` the index page to regenerate it.
+The staging site run with live reload and incremental builds turned on. So as you edit your content the web browser should automatically refresh when you save the document. Only pages being modified are rendered again, so if you change a title and it doesn't show up properly on an index page, you need to `touch` the index page to regenerate it.
+
 If you want to force the entire site to rebuild you should stop and start the container.
 
 ## Stop the staging site
