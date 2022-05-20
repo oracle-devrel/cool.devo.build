@@ -20,7 +20,7 @@ raise "Invalid number of arguments. Usage: rename_key.rb ORIG_KEY NEW_KEY" unles
 orig_key = ARGV[0]
 new_key = ARGV[1]
 
-Dir.glob('*.md').each do |file|
+Dir.glob(['*.md', '**/*.md']).each do |file|
   begin
     header, body = file.split_header
     yaml = YAML.load(header)
