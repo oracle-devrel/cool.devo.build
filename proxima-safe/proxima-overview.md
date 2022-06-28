@@ -24,6 +24,7 @@ sidebar:
   - url: https://developer.oracle.com/proximasafe-part-3/
     title: Proxima Safe Part 3
 redirect: https://developer.oracle.com/proxima-safe/proxima-overvieww/
+slug: proxima-overview
 ---
 
 ## Welcome to ProximaSafe, an evolution of Smart Cities!
