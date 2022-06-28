@@ -1,55 +1,7 @@
 ---
 ---
 
-<!doctype html>
-<!--
-  Minimal Mistakes Jekyll Theme 4.23.0 by Michael Rose
-  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
-  Free for personal and commercial use under the MIT license
-  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
--->
-<html lang="{{ site.locale | slice: 0,2 | default: "en" }}" class="no-js">
-  <head>
-    {% if page.redirect %}
-    <title>Redirecting to {{ page.redirect }}</title>
-    <meta http-equiv="refresh" content="0; URL={{ page.redirect }}">
-    <link rel="canonical" href="{{ page.redirect }}">
-    {% else %}
-    {% include head.html %}
-    {% endif %}
-    {% include head/custom.html %}
-  </head>
+<div class="initial-content">
+  {{ content | link_mrm: page.mrm }}
+</div>
 
-  {% if page.redirect %}
-  <body>
-    <p>This page has moved to <a href="{{ page.redirect }}">{{ page.redirect }}</a></p>
-  </body>
-  {% else %}
-
-  <body class="layout--{{ page.layout | default: layout.layout }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}">
-    {% include_cached skip-links.html %}
-    {% include_cached browser-upgrade.html %}
-    {% include_cached masthead.html %}
-
-    <div class="initial-content">
-      {{ content | link_mrm: page.mrm }}
-    </div>
-
-    {% if site.search == true %}
-      <div class="search-content">
-        {% include_cached search/search_form.html %}
-      </div>
-    {% endif %}
-
-    <div id="footer" class="page__footer">
-      <footer>
-        {% include footer/custom.html %}
-        {% include_cached footer.html %}
-      </footer>
-    </div>
-
-    {% include scripts.html %}
-
-  </body>
-  {% endif %}
-</html>

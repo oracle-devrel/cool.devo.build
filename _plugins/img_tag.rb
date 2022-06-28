@@ -48,13 +48,13 @@ module Jekyll
           @img['src'] = image
           @img['data-original'] = image
 
-          if image =~ /@2x\./
-            image2 = image
-          else
-            image2 = image.sub(/\.(png|jpe?g|gif)$/, '@2x.\1')
-          end
+          # if image =~ /@2x\./
+          #   image2 = image
+          # else
+          #   image2 = image.sub(/\.(png|jpe?g|gif)$/, '@2x.\1')
+          # end
 
-          @img['data-at2x'] = image2
+          # @img['data-at2x'] = image2
 
           if title && title !~ /^[\s"]*$/
             if /(?mi)"(?<xtitle>.*?)?"\s+"(?<alt>.*?)?"/ =~ title
@@ -77,11 +77,11 @@ module Jekyll
     def render(context)
       unless @img.empty?
         dir = File.dirname(context.environments.first['page']['path'])
-        warn "@2x: #{File.join(dir, @img['data-at2x'])}"
+        # warn "@2x: #{File.join(dir, @img['data-at2x'])}"
         srcset = %(<source srcset="#{@img['data-original']} 1x)
-        if File.exist?(File.join(dir, @img['data-at2x']))
-          srcset += %(, #{@img['data-at2x']} 2x)
-        end
+        # if File.exist?(File.join(dir, @img['data-at2x']))
+        #   srcset += %(, #{@img['data-at2x']} 2x)
+        # end
         srcset += %(" />)
 
         if @img.key?('title')
