@@ -685,9 +685,17 @@ module Jekyll
 end
 
 =begin notes
-Would be really nice if it didn't take 30s to realize an article and all its images were already uploaded...
-currently downloading images first, uploading missing images, then downloading page and all images again, then
-uploading even if they already exist. Horribly slow.
+# Current Steps
+
+1. Trigger after rendering HTML and all Liquid tags
+2. Scan for images, download them all
+3. Check downloads to see if any images are missing, upload missing images
+4. Download OCM article if it exists, as well as all images (again)
+5. If HTML is different than what we have locally, update the HTML field
+6. If updated, upload the article and all images back to server with changes
+7. If article is marked unpublished, archive the server copy to remove it from the site
+
+Very inefficient, but works. Slowly.
 
 # Jekyll
 
@@ -696,12 +704,8 @@ uploading even if they already exist. Horribly slow.
 - [x] test for page.data['slug'], if empty generate slug from page.basename (apply to original page as slug front matter for permanence?)
 - [x] modify template to output only main content block, no header or footer
 - [?] if page.data['author'] is a string, look up author data in _data/authors.yml, if hash, use that (irrelevant if using page.output where it's already rendered, and could maybe use the author template to render a separate block using #render_liquid)
-- [?] I forget, are we just including the sidebar in the HTML or does that need to be extracted?
 - [x] modify image plugin to output simpler image tag with easily scannable paths, easy to substitute with OCM macro (remove srcset and data-*)
 - [x] scan for images, output list of local paths (remove raw github url if present)
-- [?] how to deal with series
-- [?] how to add author slug
-- [?] does the slug I use end up being the url, or can that be controlled separately?
 - [ ] does the mrm plugin need updating? Still has dotbuild in the urls
 - [ ] handle inter-document links, e.g. a series index. URLs need to point to dev.o
 
@@ -709,15 +713,26 @@ uploading even if they already exist. Horribly slow.
 
 - [x] method for generating manifests and zip files
 - [x] test for existing pages/images using slugs
-- [?] archive if not #published?
+- [x] archive if not #published?
 - [x] upload images and replace src with macro
 - [x] upload html
-- [?] possible to publish via toolkit?
-- [?] what to do with tags and categories?
-- [?] how do I view the results on the web?
-# Jenkins
 
-- [?] how to install CEC Toolkit and init in _cec in Jenkins job
-- [?] can the Jenkins job notify me by email if an error occurs? (The script will raise an exception and jekyll should return a non-zero exit code if it does)
+# Questions/Blockers
+
+- [?] does the slug I use when uploading an article end up being the url, or can that be controlled separately?
+- [?] how do I view the results on the web?
+- [?] possible to publish via toolkit? (controlled by status: "draft" in metadata? isPublished?)
+- [?] If an article has changes, it gets re-uploaded. if an article is published and then I upload a new version, it unpublishes. I really need a way to publish via the Jekyll integration.
+- [?] if I archive an article and then try to republish it, I can't because the slug is already in use, even though it doesn't download when requested (so I have no way to know it exists). How can I re-publish an archived article? Should I use hardDelete instead of archive and upload a new copy if its publish status changes on the Jekyll side?
+- [?] is there a list of endpoints for execute-post and other commands somewhere? E.g. items, archive
+- [?] what did we decide about TOC? If I'm not generating it, what do I need to do to enable it?
+- [?] I forget, are we just including the left sidebar in the HTML or does that need to be extracted and uploaded as a separate field? That would include tags and author info. Sorry, lost my notes from previous conversation.
+- [?] what to do with tags and categories? (taxonomies in metadata?, or can I update the tag template in Jekyll to point to OCM versions of the tag indexes? I don't think we have those landing pages yet anyway, might just remove tags for now based on your answer)
+- [?] do I need to add an author slug? am I just rendering that in the sidebar? I noticed there's a field for it in the downloaded JSON for a post
+- [?] how to deal with series? Each series has an index page and links to other articles in the series. These links will obviously break. Also, we used to only show the series index in the content list, with its articles only visible from that index page. I assume that's not possible on OCM
+- [?] can I retrieve a page's live url using its slug? Is there a macro for inserting a link to another page? That would at least let me update the links between articles on the same site.
+- [?] I need info on how to install CEC Toolkit and init in the directory `_cec` in the Jenkins job. Hoping there's an expert who can help me out with that part.
 - [?] how do you trigger a Jenkins job with a GitHub Action? Or can Jenkins watch the tutorials repo for updates itself?
+- [?] can the Jenkins job notify me by email if an error occurs? (The script will raise an exception and jekyll should return a non-zero exit code if it does)
+
 =end
