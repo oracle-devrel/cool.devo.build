@@ -9,6 +9,8 @@ source 'https://rubygems.org'
 # Happy Jekylling!
 gem 'jekyll', '~> 4.2.0'
 gem 'webrick'
+gem 'html_press', '~> 0.8.2'
+
 # This is the default theme for new Jekyll sites. You may change this to anything you like.
 gem 'minima', '~> 2.5'
 # gem 'ffi', github: 'ffi/ffi', submodules: true

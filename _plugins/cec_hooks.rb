@@ -3,6 +3,8 @@
 require 'yaml'
 require 'json'
 require 'fileutils'
+require 'html_press'
+
 require_relative 'colors'
 
 DEBUG_CEC = ENV['DEBUG_CEC'] || 1
@@ -659,7 +661,7 @@ module Jekyll
         title = page.data['title']
         info("===== Rendering #{slug} (#{title})", type: :start)
         if published?(page)
-          html = page.output
+          html = HtmlPress.press page.output
           images = gather_images(page.dir, html)
           html = update_html_images(images, html)
           info("=== Creating article #{slug} with #{images.count} images", type: :action)
@@ -701,6 +703,7 @@ uploading even if they already exist. Horribly slow.
 - [?] how to add author slug
 - [?] does the slug I use end up being the url, or can that be controlled separately?
 - [ ] does the mrm plugin need updating? Still has dotbuild in the urls
+- [ ] handle inter-document links, e.g. a series index. URLs need to point to dev.o
 
 # CEC Toolkit
 
