@@ -41,3 +41,6 @@ vendor
 *.taskpaper
 *.buildnotes
 .doingrc
+_cec
+_draft
+_temp
