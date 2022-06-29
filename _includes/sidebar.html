@@ -1,10 +1,10 @@
   <div class="sidebar sticky">
-    <p><strong>Tags:</strong> <span class="tags">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
 
             {% for tag in page.tags %}
             <a class="animated-link tag" href="{{ site.baseurl }}/{{ site.tag_page_dir }}/{{ tag | slugify }}">{{ tag }}</a>{% endfor %}
             </span>
-    </p>
+    </p> -->
   {% if page.author or layout.author_profile %}{% include author-profile.html %}{% endif %}
   {% if page.sidebar == 'series' %}
     {% include series-nav.html series=page.parent.last %}
@@ -29,7 +29,8 @@
       {% include nav_list nav=page.sidebar.nav %}
     {% endif %}
   {% else %}
-  {% assign site_pages = site.pages | where_exp: "item", "item.author" != '' | where_exp:"item", "item.author == page.author" | where_exp:"item", "item.url != page.url" %}
+  {% comment %}
+  <!-- {% assign site_pages = site.pages | where_exp: "item", "item.author" != '' | where_exp:"item", "item.author == page.author" | where_exp:"item", "item.url != page.url" %}
   {% if site_pages.size > 0 %}
   <p><strong>From this author:</strong>
     <ul>
@@ -37,7 +38,8 @@
         <li><a href="{{ site.baseurl }}{{ pg.url }}">{{ pg.title }}</a></li>
       {% endfor %}
     </ul>
-  {% endif %}
+  {% endif %} -->
+  {% endcomment %}
   {% endif %}
 
   </div>
