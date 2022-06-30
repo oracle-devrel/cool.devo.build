@@ -29,10 +29,11 @@ module BTLiquidFilters
   end
 
   def link_mrm(input, mrm)
-    input.gsub(%r{(?<=")https?://.*?oracle(cloud)?\.com/.*?(?=")}) do
-      url = Regexp.last_match(0)
-      url =~ /:::::/ ? url : url.append_query("source=:ex:tb:::::#{mrm}:WW_FY22_DevRel_DotBuild&SC=:ex:tb:::::#{mrm}:WW_FY22_DevRel_DotBuild&pcode=#{mrm}")
-    end
+    input
+    # input.gsub(%r{(?<=")https?://.*?oracle(cloud)?\.com/.*?(?=")}) do
+    #   url = Regexp.last_match(0)
+    #   url =~ /:::::/ ? url : url.append_query("source=:ex:tb:::::#{mrm}:WW_FY22_DevRel_DotBuild&SC=:ex:tb:::::#{mrm}:WW_FY22_DevRel_DotBuild&pcode=#{mrm}")
+    # end
   end
 
   def fixer(input)

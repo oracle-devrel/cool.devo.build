@@ -123,6 +123,8 @@ GEM
       faraday (> 0.8, < 2.0)
     terminal-table (2.0.0)
       unicode-display_width (~> 1.1, >= 1.1.1)
+    tty-screen (0.8.1)
+    tty-which (0.5.0)
     uglifier (2.7.2)
       execjs (>= 0.3.0)
       json (>= 1.8.0)
@@ -146,6 +148,8 @@ DEPENDENCIES
   jekyll-seo-tag (~> 2.7, >= 2.7.1)
   jekyll-sitemap (~> 1.4)
   minima (~> 2.5)
+  tty-screen
+  tty-which
   tzinfo (~> 1.2)
   tzinfo-data
   wdm (~> 0.1.1)
