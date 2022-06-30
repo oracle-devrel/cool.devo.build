@@ -4,9 +4,13 @@ require 'yaml'
 require 'json'
 require 'fileutils'
 require 'html_press'
+require 'io/console' unless IO.method_defined?(:winsize)
+require 'tty-screen'
+require 'tty-which'
 
 require_relative 'colors'
-
+require_relative 'logger'
+require_relative 'cec_util'
 # Must set the CEC_DEPLOY environment variable to trigger
 # `CEC_DEPLOY=true bundle exec jekyll build`
 
@@ -25,66 +29,28 @@ RETRY_DELAY = 5
 module Jekyll
   # CEC Hooks class
   class CECHooks
-    attr_accessor :errors, :pwd, :published, :metadata, :images
+    attr_accessor :images
 
     class << self
-      LOG_LEVELS = %i[error warning info debug].freeze
-      LOG_COLORS = {
-        normal: 'boldwhite',
-        start: 'boldbggreen black',
-        command: 'cyan',
-        console: 'boldblack',
-        action: 'yellow',
-        result: 'purple',
-        failure: 'boldbgred boldwhite',
-        warning: 'boldred',
-        success: 'boldgreen',
-        aux: 'magenta',
-        finish: 'boldbggreen boldwhite'
-      }.freeze
-
-      def log_message(msg, type: :normal, level: :log)
-        return nil unless LOG_LEVELS.index(level.to_sym) <= DEBUG_CEC.to_i
-
-        colors = []
-        LOG_COLORS[type.to_sym].split(' ').each { |c| colors.push(Color.send(c)) }
-
-        msg = msg.split(/\n/).slice(0,20).join("\n")
-        puts "#{colors.join('')}#{msg}#{Color.reset}"
-        nil
-      end
-
-      def debug(msg, type: :normal)
-        log_message(msg, type: type, level: :debug)
-      end
-
-      def info(msg, type: :normal)
-        log_message(msg, type: type, level: :info)
-      end
-
-      def alert(msg, type: :normal)
-        log_message(msg, type: type, level: :warning)
-      end
-
-      def error(msg, type: :normal)
-        @errors.push(msg)
-        log_message(msg, type: type, level: :error)
-      end
-
+      include Util
       ##
       ## Execute a CEC Toolkit command
       ##
       ## @param      command  The command
       ##
       def cec(command, repo: true)
-        Dir.chdir(File.join(@pwd, '_cec'))
+        operation = command.match(/^(\S+) /)[1]
+        Util.clock(:operation, :start)
+        Dir.chdir(File.join(Util.pwd, '_cec'))
         cmd = [%(cec #{command})]
         cmd.push(%(-s #{SERVER_NAME}))
         cmd.push(%(-r #{REPOSITORY})) if repo
-        debug(cmd.join(' '), type: :command)
+        debug("> #{cmd.join(' ')}", type: :command)
         res = `#{cmd.join(' ')}`
-        debug(res, type: :console)
-        Dir.chdir(@pwd)
+        debug(border(res), type: :console)
+        Dir.chdir(Util.pwd)
+        Util.clock(:operation, :finish)
+        Util.print_bench(:operation, title: "#{operation} completed in", border: false, level: :debug)
         res
       end
 
@@ -216,16 +182,25 @@ module Jekyll
       ##             draft or unpublished
       ##
       def published?(page)
-        page.data['draft'] != true && page.data['published'] != false && page.data['archive'] != true && page.data['archived'] != true
+        return false if page.data['draft'] == true || page.data['published'] == false
+
+        return false if page.data['archive'] == true || page.data['archived'] == true
+
+        return false if Time.parse(page.data['date']) > Time.now
+
+        true
       end
 
       ##
-      ## Convert a relative image path to fully qualified path
+      ## Convert a relative image path to fully qualified
+      ## path
       ##
       ## @param      base  The base directory for the page
       ## @param      img   The image path
       ##
-      ## @return     [Hash] file: absolute path, slug: slugified title, alt: alt description
+      ## @return     [Hash] :src => src tag value, :file => absolute
+      ##             path, :slug => slugified title, :alt => alt
+      ##             description
       ##
       def expand_image(base, img)
         new_img = ".#{base}#{img[0].sub(%r{^https://github.com/oracle-devrel/devo.tutorials/raw/main/}, '')}"
@@ -361,7 +336,11 @@ module Jekyll
       end
 
       ##
-      ## Download multiple assets
+      ## Download multiple assets.
+      ##
+      ## Ugly bit of code, but I haven't had much luck
+      ## refactoring it without just making it MORE complex.
+      ## It won't hurt my feelings if you fix it.
       ##
       ## @return     [Hash] :existing (Array of images that exist on
       ##             server) and :missing (Array of images that need
@@ -420,7 +399,7 @@ module Jekyll
         return nil if downloaded.nil? || downloaded['total'].to_i.zero?
 
         dest = res.match(/- the assets are available at (?<dir>.*?)(?:\n|\Z)/)
-        dest['dir']
+        dest.nil? ? nil : dest['dir']
       end
 
       ##
@@ -481,17 +460,15 @@ module Jekyll
       ##
       ## Generate hash for empty article JSON payload
       ##
-      ## @param      title  [String] Article title
-      ##
       ## @return     [Hash] values for JSON payload
       ##
-      def empty_article_payload(title)
+      def empty_article_payload
         {
-          'name' => title,
+          'name' => Util.meta[:title],
           'type' => 'DEVO_GitHub-Technical-Content',
           'description' => '',
           'repositoryId' => DEVO_REPOSITORY_ID,
-          'slug' => @metadata[:slug],
+          'slug' => Util.meta[:slug],
           'language' => 'en',
           'translatable' => true,
           'fields' => { 'html' => 'DEFINE' }
@@ -501,11 +478,9 @@ module Jekyll
       ##
       ## Creates an empty article.
       ##
-      ## @param      title [String] Article title
-      ##
-      def create_empty_article(title)
+      def create_empty_article
         info('=== Creating empty article', type: :action)
-        temp_json('uploadPayload', empty_article_payload(title).to_json)
+        temp_json('uploadPayload', empty_article_payload.to_json)
         cec(%(execute-post "/content/management/api/v1.1/items" -b ../_temp/uploadPayload.json), repo: false)
         clean_up_temp_files
         sleep 5
@@ -524,9 +499,9 @@ module Jekyll
         article = nil
 
         tries.times do |try|
-          info("=== Downloading contents for #{@metadata[:slug]}", type: :action)
+          info("=== Downloading contents for #{Util.meta[:slug]}", type: :action)
 
-          existing = download_contents([@metadata[:slug]].concat(images.map { |img| img[:slug] }))
+          existing = download_contents([Util.meta[:slug]].concat(images.map { |img| img[:slug] }))
 
           if existing
             path = File.join(existing, 'contentexport', 'ContentItems', 'DEVO_GitHub-Technical-Content', '*.json')
@@ -535,12 +510,12 @@ module Jekyll
 
           break unless article.nil?
 
-          alert("=== Failed to download #{@metadata[:slug]} (try #{try}), trying again in #{RETRY_DELAY} seconds",
+          alert("=== Failed to download #{Util.meta[:slug]} (try #{try}), trying again in #{RETRY_DELAY} seconds",
                 type: :warning)
           sleep RETRY_DELAY
         end
 
-        return info("#{@metadata[:slug]} doesn't exist, ignoring", type: :result) if existing.nil?
+        return info("#{Util.meta[:slug]} doesn't exist, ignoring", type: :result) if existing.nil?
 
         [existing, article]
       end
@@ -551,11 +526,11 @@ module Jekyll
 
       def publish_status(res, type: :image)
         if res =~ /- no item to publish/
-          info("=== Failed to publish #{type == :image ? 'images' : 'article page'} for #{@metadata[:slug]}",
-               type: :failure)
+          error("=== Failed to publish #{type == :image ? 'images' : 'article page'} for #{Util.meta[:slug]}",
+                type: :failure) || false
         else
-          info("=== Published #{type == :image ? 'images' : 'article page'} for #{@metadata[:slug]}",
-               type: :success)
+          info("=== Published #{type == :image ? 'images' : 'article page'} for #{Util.meta[:slug]}",
+               type: :success) || true
         end
       end
 
@@ -563,38 +538,38 @@ module Jekyll
       ## Publish an article to live site
       ##
       def publish_article
-        info("=== Publishing #{@metadata[:slug]}", type: :action)
+        if @images.count.positive?
+          info("=== Publishing #{@images.count} images", type: :action)
 
-        res = publish(%(slug eq "#{@metadata[:slug]}"))
+          query = array_to_slug_query(@images.map { |i| i[:slug] })
+          res = publish(query)
+          publish_status(res, type: :image)
+        end
+
+        info("=== Publishing #{Util.meta[:slug]}", type: :action)
+
+        res = publish(%(slug eq "#{Util.meta[:slug]}"))
         publish_status(res, type: :page)
-
-        return unless @images.count.positive?
-
-        info("=== Publishing #{@images.count} images", type: :action)
-
-        slugs = @images.map { |i| i[:slug] }
-        query = slugs.map { |s| %(slug eq "#{s}") }.join(' or ')
-        res = publish(query)
-        publish_status(res, type: :image)
       end
 
       ##
       ## Unpublish an article from the live site
       ##
       def unpublish_article
-        info("=== Unpublishing #{@metadata[:slug]}", type: :action)
+        info("=== Unpublishing #{Util.meta[:slug]}", type: :action)
 
-        query = %(slug eq "#{@metadata[:slug]}")
+        query = %(slug eq "#{Util.meta[:slug]}")
         cec(%(control-content unpublish -q '#{query}' -c #{CHANNEL}))
 
-        info("=== Unpublished #{@metadata[:slug]}", type: :success)
+        info("=== Unpublished #{Util.meta[:slug]}", type: :success) || true
       end
 
       ##
-      ## Fully archive an article and its images. This makes them invisible to the web interface as well.
+      ## Fully archive an article and its images. This makes
+      ## them invisible to the web interface as well.
       ##
       def archive_article
-        info("=== #{@metadata[:slug]} not published, archiving", type: :action)
+        info("=== #{Util.meta[:slug]} not published, archiving", type: :action)
 
         _, article = article_data([], 2)
 
@@ -607,40 +582,76 @@ module Jekyll
 
         cec(%(execute-post "/content/management/api/v1.1/bulkItemsOperations/archive" -b ../#{json}), repo: false)
 
-        info("=== Archived #{@metadata[:slug]} and images", type: :success)
+        info("=== Archived #{Util.meta[:slug]} and images", type: :success)
         clean_up_temp_files
       end
 
+      ##
+      ## Generate a query string from article and image ids. Called by #archive_article
+      ##
+      ## @param      article_id  [String] The article identifier
+      ##
       def generate_batch_query(article_id)
         image_ids = @images.map { |image| image[:id] }
         [article_id].concat(image_ids).map { |id| %(id eq "#{id}") }.join(' or ')
       end
 
+      ##
+      ## Test whether the local and server versions of an
+      ## article differ. Called by #upload_article.
+      ##
+      ## @param      data  [Hash]  The article data
+      ## @param      html  [String] The html
+      ##
+      ## @return     [Boolean] true if content differs
+      ##
       def article_changed?(data, html)
         return true if data['fields']['html'] != html
 
-        return true if data['display_chapters'] != @metadata[:toc_enabled]
+        return true if data['display_chapters'] != Util.meta[:toc_enabled]
 
         false
       end
 
+      ##
+      ## Upload a new article by generating a manifest,
+      ## updating fields, and zipping/pushing to the server.
+      ##
+      ## @param      html     [String] The article html
+      ##                      content
+      ## @param      base     [String] The base directory of
+      ##                      the assets to be zipped
+      ## @param      article  [String] Path to the article
+      ##                      manifest
+      ##
       def upload_article(html, base, article)
         data = JSON.parse(IO.read(article))
 
-        return info("=== No change in #{@metadata[:slug]}", type: :success) unless article_changed?(data, html)
+        return info("=== No change in #{Util.meta[:slug]}", type: :success) unless article_changed?(data, html)
 
-        data['fields']['html'] = html
-        data['fields']['display_chapters'] = @metadata[:toc_enabled]
-        data['fields']['author_slug'] = @metadata[:author]
+        data = update_field(data, 'html', html)
+        data = update_field(data, 'display_chapters', Util.meta[:toc_enabled])
+        data = update_field(data, 'author_slug', Util.meta[:author])
 
-        article_id = data['id']
         File.open(article, 'w') { |f| f.puts data.to_json }
 
-        data, assets, path = generate_assets(base, article_id)
-        update_manifest(data, assets, path)
-        zip_and_publish(base)
+        generate_assets(base, data['id'])
       end
 
+      ##
+      ## Called by #upload_article
+      ##
+      def update_field(data, key, value)
+        data['fields'][key] = value
+        data
+      end
+
+      ##
+      ## Convert @images array to a single JSON field. Called by #upload_article
+      ##
+      ## @param      base        [String] The base path
+      ## @param      article_id  [String] The article identifier
+      ##
       def generate_assets(base, article_id)
         path = File.join(base, 'contentexport', 'metadata.json')
         data = JSON.parse(IO.read(path))
@@ -648,9 +659,17 @@ module Jekyll
         assets = @images.map { |img| "ImageAsset:#{img[:id]}" }
         assets.push("DEVO_GitHub-Technical-Content:#{article_id}")
 
-        [data, assets, path]
+        update_manifest(data, assets, path)
+        zip_and_publish(base)
       end
 
+      ##
+      ## Called by #generate_assets
+      ##
+      ## @param      data    The data
+      ## @param      assets  The assets
+      ## @param      path    The path
+      ##
       def update_manifest(data, assets, path)
         data['groups'].to_i.times { |x| data.delete("group#{x}") }
 
@@ -665,88 +684,128 @@ module Jekyll
         File.open(path, 'w') { |f| f.puts data.to_json }
       end
 
+      ##
+      ## Zip and upload the manifest. Called by #generate_assets
+      ##
+      ## @param      base  [String] The base path to zip
+      ##
       def zip_and_publish(base)
         Dir.chdir(base)
-        `zip -r payload.zip *`
-        Dir.chdir(@pwd)
+        zip = TTY::Which.which('zip')
+        `#{zip} -r payload.zip *`
+        Dir.chdir(Util.pwd)
         res = cec(%(upload-content #{File.join(base, 'payload.zip')} -f -u -c #{CHANNEL}))
 
         if res =~ /ERROR: import failed/
-          error("=== Failed to create #{@metadata[:slug]}", type: :failure)
-          false
+          error("=== Failed to create #{Util.meta[:slug]}", type: :failure) || false
         else
-          info("=== Successfully uploaded #{@metadata[:slug]}", type: :success)
-          true
+          info("=== Successfully uploaded #{Util.meta[:slug]}", type: :success) || true
         end
       end
 
       ##
       ## Create an article on the server
       ##
-      ## @param      title   [String] The title
       ## @param      html    [String] The html
       ##
-      def create_article(title, html)
-        create_empty_article(title) if download_content(@metadata[:slug]).nil?
+      def create_article(html, published)
+        create_empty_article if download_content(Util.meta[:slug]).nil?
         base, article = article_data(@images, 4)
 
-        return error("Failed to retrieve article for #{@metadata[:slug]}", type: :failure) if article.nil?
+        return error("Failed to retrieve article for #{Util.meta[:slug]}", type: :failure) if article.nil?
 
-        upload_article(html, base, article)
+        res = upload_article(html, base, article)
+
+        return false unless res
+
+        published ? publish_article : unpublish_article
+
+        res
+      end
+
+      ##
+      ## Prepare, create, and publish a Jekyll page. Called by #process_page
+      ##
+      ## @param      page  [Page] The page to publish
+      ##
+      def render_page(page)
+        html = HtmlPress.press page.output
+        @images = gather_images(page.dir, html)
+        html = update_html_images(html)
+
+        info("=== Creating article #{Util.meta[:slug]} with #{@images.count} images", type: :action)
+        create_article(html, published?(page))
+
+        info("===== Finished #{Util.meta[:slug]}", type: :finish)
+        Util.clock(:page, :finish)
+        Util.print_bench(:page, border: true, title: Util.meta[:slug], level: :debug)
+      end
+
+      ##
+      ## Figure out the author slug if available. Called by #process_page
+      ##
+      ## @param      page  [Page] The page
+      ##
+      def get_page_author(page)
+        author = ''
+        if page.data['author']
+          author = if page.data['author'].is_a?(String)
+                     page.data['author']
+                   elsif page.data['author'].key?('name')
+                     page.data['author']['name'].gsub(/ +/, '-').downcase
+                   end
+        end
+        author
+      end
+
+      ##
+      ## Set up meta based on page values for use by all methods
+      ##
+      ## @param      page  [Page] The page
+      ##
+      def process_page(page)
+        Util.meta = {
+          slug: slugify(page),
+          title: page.data['title'],
+          author: get_page_author(page),
+          toc_enabled: page.data['toc']
+        }
+        Util.clock(:page, :start)
+        Util.timestamp("Starting page render")
+
+        info("===== Rendering #{Util.meta[:slug]} (#{Util.meta[:title]})", type: :start)
+        render_page(page)
       end
     end
 
-    # Post-render hook activates after each page is rendered
+    # Post-render Jekyll hook activates after each page is
+    # rendered. Receives the page object and all its
+    # methods, including rendered content and meta
     Jekyll::Hooks.register :pages, :post_render do |page|
       if ENV['CEC_DEPLOY'] =~ /(1|true)/
+        raise 'This plugin requires the zip command to be in PATH' unless TTY::Which.exist?('zip')
 
-        Color.coloring = $stdout.isatty
-        @pwd = Dir.pwd
-        @errors = []
-        @metadata = {}
-        if page.data['parent']
-          slug = slugify(page)
-          title = page.data['title']
-          author = if page.data['author']
-                     if page.data['author'].is_a?(String)
-                       page.data['author']
-                     else
-                       page.data['author']['name'].gsub(/ +/, '-').downcase
-                     end
-                   else
-                     ''
-                   end
+        process_page(page) if page.data['parent']
+      end
+    end
 
+    Jekyll::Hooks.register :site, :pre_render do
+      Color.coloring = $stdout.isatty
+      # tee = TeeIO.new $stdout, File.new("#{Time.now.strftime('%F_%T')}-CEC_LOG.txt", 'w')
+      # $stdout = tee
+      Util.clock(:total, :start)
+      Util.timestamp("Deploy started")
+      Util.pwd
+    end
 
-          @metadata = {
-            slug: slug,
-            title: title,
-            author: author,
-            toc_enabled: page.data['toc']
-          }
+    Jekyll::Hooks.register :site, :post_write do
+      Util.clock(:total, :finish)
+      Util.print_bench(:total, border: true, level: :info, type: :finish)
 
-          info("===== Rendering #{@metadata[:slug]} (#{title})", type: :start)
-          if published?(page)
-            html = HtmlPress.press page.output
-            @images = gather_images(page.dir, html)
-            html = update_html_images(html)
-
-            info("=== Creating article #{@metadata[:slug]} with #{@images.count} images", type: :action)
-            res = create_article(title, html)
-            publish_article if res
-            page.output = html
-          else
-            unpublish_article
-            # TODO: Archive page if unpublished
-          end
-          # TODO: Clean up cec/src/content/DevO_QA folder?
-          info("===== Finished #{@metadata[:slug]}", type: :finish)
-          # if @errors.count.positive?
-          #   puts 'ERRORS:'
-          #   puts @errors
-          #   raise 'Errors occurred'
-          # end
-        end
+      if Util.errors.count.positive?
+        puts 'ERRORS:'
+        puts Util.errors
+        raise StandardError, 'Errors occurred', []
       end
     end
   end
@@ -760,14 +819,14 @@ end
 3. Check downloads to see if any images are missing, upload missing images
 4. Download OCM article if it exists, as well as all images (again)
 5. If HTML is different than what we have locally, update the HTML field
-6. If updated, upload the article and all images back to server with changes
-7. Publish or unpublish the article based on metadata
+6. If new or updated, upload the article and all images back to server with changes
+7. Publish or unpublish the article based on meta
 
 Very inefficient, but works. Slowly.
 
 # Jekyll
 
-- [ ] only initiate hook when running a build. Must run build with CEC_DEPLOY=true
+- [x] only initiate hook when running a build. Must run build with CEC_DEPLOY=true
 - [x] test for page.data['parent'] to determine if tutorial
 - [x] test for page.data['published'] == false or page.data['draft'] == true
 - [x] test for page.data['slug'], if empty generate slug from page.basename (apply to original page as slug front matter for permanence?)
@@ -775,8 +834,9 @@ Very inefficient, but works. Slowly.
 - [x] if page.data['author'] is a string, use it for author_slug, if hash, use slugified author.name
 - [x] modify image plugin to output simpler image tag with easily scannable paths, easy to substitute with OCM macro (remove srcset and data-*)
 - [x] scan for images, output list of local paths (remove raw github url if present)
-- [ ] does the mrm plugin need updating? Still has dotbuild in the urls
+- [x] remove MRM plugin
 - [ ] handle inter-document links, e.g. a series index. URLs need to point to dev.o
+- [x] collect errors without exiting, but display them at the end of the build and exit non-zero
 
 # CEC Toolkit
 
@@ -791,10 +851,13 @@ Very inefficient, but works. Slowly.
 - [x] possible to publish via toolkit? (implemented)
 - [x] if I archive an article and then try to republish it, I can't because the slug is already in use (switched to using unpublish instead of archive for now)
 - [x] enable OCM-generated TOC
-- [x] Adjust sidebar to contain author metadata inline with the article (at bottom)
-- [?] what to do with tags and categories? (taxonomies in metadata?, or can I update the tag template in Jekyll to point to OCM versions of the tag indexes? I don't think we have those landing pages yet anyway, might just remove tags for now based on your answer)
+- [x] Adjust sidebar to contain author meta inline with the article (at bottom)
+- [?] what to do with tags and categories? (taxonomies in meta?, or can I update the tag template in Jekyll to point to OCM versions of the tag indexes? I don't think we have those landing pages yet anyway, might just remove tags for now based on your answer)
 - [?] how to deal with series? Each series has an index page and links to other articles in the series. These links will obviously break. Also, we used to only show the series index in the content list, with its articles only visible from that index page. I assume that's not possible on OCM
 - [?] can I retrieve a page's live url using its slug? Is there a macro for inserting a link to another page? That would at least let me update the links between articles on the same site.
+
+# Osvaldo
+
 - [?] I need info on how to install CEC Toolkit and init in the directory `_cec` in the Jenkins job. Hoping there's an expert who can help me out with that part.
 - [?] how do you trigger a Jenkins job with a GitHub Action? Or can Jenkins watch the tutorials repo for updates itself?
 - [?] can the Jenkins job notify me by email if an error occurs? (The script will raise an exception and jekyll should return a non-zero exit code if it does)

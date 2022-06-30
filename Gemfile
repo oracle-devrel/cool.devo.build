@@ -10,6 +10,8 @@ source 'https://rubygems.org'
 gem 'jekyll', '~> 4.2.0'
 gem 'webrick'
 gem 'html_press', '~> 0.8.2'
+gem 'tty-screen'
+gem 'tty-which'
 
 # This is the default theme for new Jekyll sites. You may change this to anything you like.
 gem 'minima', '~> 2.5'
