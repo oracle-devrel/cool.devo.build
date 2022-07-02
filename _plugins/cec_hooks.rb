@@ -17,6 +17,11 @@ require_relative 'cec_util'
 # Run Jekyll with DEBUG_CEC set to 0-3 for logging. 0 = no messages, 3 = all messages (debug)
 # `CEC_DEPLOY=true DEBUG_CEC=3 bundle exec jekyll build`
 
+# Script will skip any articles that cause an error and
+# report all errors at the end of the run. If there are any
+# errors, an exception will be raised and Jekyll will exit
+# non-zero.
+
 DEBUG_CEC = ENV['DEBUG_CEC'] || 1
 IMAGE_SLUG_PREFIX = 'jekyll-'
 ARTICLE_SLUG_PREFIX = 'devo-'
@@ -221,7 +226,7 @@ module Jekyll
       ## @return     [Array] Array of expanded image hashes
       ##
       def gather_images(base, html)
-        images = html.scan(/<img.*?src="(.*?)".*?alt="(.*?)"/)
+        images = html.scan(/<img.*?src="(.*?)".*?(?:alt="(.*?)")?/)
 
         new_images = images.map do |img|
           if img[0] =~ /^http/ && img[0] !~ %r{^https://github.com/oracle-devrel/devo.tutorials/raw/main/}

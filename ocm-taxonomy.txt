@@ -1,0 +1,90 @@
+## Need to create on OCM
+
+The first batch of tags belong in an existing parent category on OCM but don't have an appropriate child category. Please create a child category in the appropriate parent and fill in the name of the category you create in each tag below.
+
+- get-started => Complexity/
+- architect => Developer Persona/
+- community => Developer Persona/
+- data-management => Developer Persona/
+- data-science => Developer Persona/
+- dbre => Developer Persona/
+- go => Language/
+- mysql => Language/
+- php => Language/
+- ruby => Language/
+- terraform => Language/
+- typescript => Language/
+- ansible => Framework/
+- express => Framework/
+- flask => Framework/
+- graalvm => Framework/
+- kubernetes => Framework/
+- micronaut => Framework/
+- nodejs => Framework/
+- spark => Framework/
+- spring => Framework/
+- tensorflow => Framework/
+
+## Need to determine whether to keep/create
+
+The next bunch of these with no parent group listed and just a number are "topics", which don't really fit into existing parent categories (Use Cases? Some of them, maybe). Either we need to create a new "Topics" parent category to map these to, or we should remove them from our posts. The number shows how many tutorials currently use the tag. If there is only one post using a tag, I would say let's just delete it, unless there's an obvious case that more content will make use of the same tag.
+
+I definitely think there should be tags in the system for open-source, and machine-learning (or ai/ml). analytics is also a strong contender.
+
+Some of these seem groupable, such as apache, apex, jupyter, verrazzano, postman and docker. Like a "Software/Services" category? Another group would be machine-learning, data-visualization, and analytics. And maybe gaming. But those truly are "topics", so I'm not sure what other category I would suggest.
+
+"oci" is the most popular tag, but that's because it applies to almost EVERYTHING we do and as such is kind of a useless tag. It doesn't really filter anything out, other than articles that forgot to add it.
+
+- always-free => 8
+- analytics => 6
+- apache => 1
+- apex => 1
+- api => 2
+- automation => 4
+- data-visualization => 1
+- hardware => 1
+- iac => 5
+- iot => 1
+- jupyter => 2
+- machine-learning => 3
+- oci => 27
+- oke => 4
+- open-source => 24
+- orm => 1
+- rpi => 1
+- serverless => 2
+- streaming => 1
+- ubuntu => 2
+- verrazzano => 5
+- gaming => 3
+- docker => 3
+- postman => 1
+
+Note: There's an existing category "Framework/PiTorch" which I think is misspelled? I think it should be PyTorch. Don't know if that's easy to correct or not.
+
+# Existing Mappings
+
+No action is needed on these.
+
+topics:
+  - intermediate => Complexity/Intermediate
+  - advanced => Complexity/Advanced
+  - etl => Use Case/ETL
+  - scripting => Use Case/Scripting
+personas:
+  - arvr => Developer Persona/VR-AR Engineer
+  - back-end => Developer Persona/Back-End
+  - devops => Developer Persona/DevOps Manager
+  - front-end => Developer Persona/Front-End
+  - full-stack => Developer Persona/Full Stack
+  - game-dev => Developer Persona/Game Dev
+  - robotics => Developer Persona/Robotics Engineer
+  - secops => Developer Persona/Dev SecOps Manager
+languages:
+  - java => Language/Java
+  - javascript => Language/JavaScript
+  - nodejs => Framework/NodeJS
+  - python => Language/Python
+frameworks:
+  - dotnet => Framework/.NET
+  - pytorch => Framework/PiTorch
