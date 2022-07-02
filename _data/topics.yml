@@ -5,6 +5,7 @@ topics:
   - apache
   - apex
   - api
+  - automation
   - data-visualization
   - get-started
   - hardware
@@ -25,6 +26,8 @@ topics:
   - gaming
   - docker
   - postman
+  - scripting
+  - etl
 personas:
   - architect
   - arvr
@@ -38,11 +41,13 @@ personas:
   - full-stack
   - game-dev
   - robotics
+  - secops
 languages:
   - go
   - java
   - javascript
   - mysql
+  - nodejs
   - php
   - python
   - ruby
@@ -50,13 +55,13 @@ languages:
   - typescript
 frameworks:
   - ansible
+  - dotnet
   - express
   - flask
   - graalvm
   - kubernetes
   - micronaut
-  - nodejs
+  - pitorch
   - spark
   - spring
   - tensorflow
-

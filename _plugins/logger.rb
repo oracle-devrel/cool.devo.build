@@ -1,17 +1,21 @@
+# frozen_string_literal: true
+
 # Tee method
 class TeeIO < IO
-  def initialize orig, file
+  def initialize(orig, file)
+    super
     @orig = orig
     @file = file
   end
 
-  def write string
+  def write(string)
     @file.write string
     @orig.write Color.uncolor(string)
   end
 end
 
 module Jekyll
+  # CEHooks Console Logger
   class CECHooks
     class << self
       LOG_LEVELS = %i[error warning info debug].freeze
@@ -55,11 +59,19 @@ module Jekyll
         log_message(msg, type: type, level: :info)
       end
 
-      def alert(msg, type: :normal)
+      def alert(msg, type: :warning)
         log_message(msg, type: type, level: :warning)
       end
 
-      def error(msg, type: :normal)
+      ##
+      ## Calling #error will log the message to console and
+      ## also record the error. On exit errors will be
+      ## output and a generic exception raised.
+      ##
+      ## @param      msg   The log message
+      ## @param      type  The type (for coloring)
+      ##
+      def error(msg, type: :failure)
         Util.errors.push(msg)
         log_message(msg, type: type, level: :error)
       end
