@@ -4,7 +4,7 @@ module Jekyll
   class CECHooks
     module Util
       class << self
-        attr_accessor :meta
+        attr_accessor :meta, :taxonomy
         ##
         ## Record a benchmark time
         ##

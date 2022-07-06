@@ -29,6 +29,7 @@ DEVO_REPOSITORY_ID = '5F7FC00725C0482F9353308765B9FEF8'
 REPOSITORY = 'DevO_QA'
 SERVER_NAME = 'ost'
 CHANNEL = 'DevO_QA'
+CHANNEL_TOKEN = '3505dae9c4f248d9ab42fd41662fc51a'
 RETRY_DELAY = 5
 
 module Jekyll
@@ -341,6 +342,66 @@ module Jekyll
       end
 
       ##
+      ## Download the site taxonomy and store it once in Util module
+      ##
+      ## @return     [Hash] taxanomy Hash
+      ##
+      def taxonomy
+        Util.taxonomy ||= download_taxonomy
+      end
+
+      def download_taxonomy
+        taxonomy_file = File.expand_path('_temp/taxonomy.json')
+        FileUtils.mkdir_p(File.dirname(taxonomy_file))
+        cec("describe-taxonomy 'DevO-Developer Relations' -f #{taxonomy_file}", repo: false)
+        data = JSON.parse(IO.read(taxonomy_file))
+        tax_id = data['data']['id']
+        cec("exeg '/content/published/api/v1.1/taxonomies/#{tax_id}/categories?limit=100&channelToken=#{CHANNEL_TOKEN}' -f #{taxonomy_file}", repo: false)
+        json = JSON.parse(IO.read(taxonomy_file))
+        clean_up_temp_files
+        { id: tax_id, tags: json['items'] }
+      end
+
+      ##
+      ## Translate a list of Jekyll tags to OCM ids
+      ##
+      ## @param      tags  The tags to translate
+      ##
+      def translate_tags(tags)
+        Util.meta[:tags] = tags.map { |tag| cec_id_for_tag(tag) }.delete_if(&:nil?)
+      end
+
+      ##
+      ## Get OCM tag name from local mapping in _data/cec_tags.yaml
+      ##
+      ## @param      tag   [String] The OCM tag to translate
+      ##
+      def cec_name_for_tag(tag)
+        tags = YAML.safe_load(IO.read(File.expand_path('_data/cec_tags.yaml')))
+        tags.key?(tag) ? tags[tag] : nil
+      end
+
+      ##
+      ## Find the OCM ID for the tag name
+      ##
+      ## @param      tag   [String] The Jekyll tag name
+      ##
+      def cec_id_for_tag(tag)
+        cec_name = cec_name_for_tag(tag)
+        return nil if cec_name.nil? || cec_name.empty?
+
+        id = nil
+        taxonomy[:tags].each do |tax|
+          if tax['name'] =~ /#{cec_name}/i
+            id = tax['id']
+            break
+          end
+        end
+
+        id
+      end
+
+      ##
       ## Download multiple assets.
       ##
       ## Ugly bit of code, but I haven't had much luck
@@ -615,7 +676,22 @@ module Jekyll
 
         return true if data['display_chapters'] != Util.meta[:toc_enabled]
 
+        return true if data['taxonomies'] != tags_to_struct
+
         false
+      end
+
+      def tags_to_struct
+        return {} if Util.meta[:tags].nil? || Util.meta[:tags].empty?
+
+        {
+          'data' => [
+            {
+              'id' => taxonomy[:id],
+              'categories' => Util.meta[:tags].map { |id| { 'id' => id } }
+            }
+          ]
+        }
       end
 
       ##
@@ -637,6 +713,7 @@ module Jekyll
         data = update_field(data, 'html', html)
         data = update_field(data, 'display_chapters', Util.meta[:toc_enabled])
         data = update_field(data, 'author_slug', Util.meta[:author])
+        data['taxonomies'] = tags_to_struct
 
         File.open(article, 'w') { |f| f.puts data.to_json }
 
@@ -734,9 +811,10 @@ module Jekyll
       ## @param      page  [Page] The page to publish
       ##
       def render_page(page)
-        html = HtmlPress.press page.output
-        @images = gather_images(page.dir, html)
-        html = update_html_images(html)
+        translate_tags(page.data['tags'])
+
+        @images = gather_images(page.dir, page.output)
+        html = HtmlPress.press(update_html_images(page.output))
 
         info("=== Creating article #{Util.meta[:slug]} with #{@images.count} images", type: :action)
         create_article(html, published?(page))
@@ -755,7 +833,7 @@ module Jekyll
         author = ''
         if page.data['author']
           author = if page.data['author'].is_a?(String)
-                     page.data['author']
+                     page.data['author'].gsub(/ +/, '-').downcase
                    elsif page.data['author'].key?('name')
                      page.data['author']['name'].gsub(/ +/, '-').downcase
                    end
@@ -773,10 +851,11 @@ module Jekyll
           slug: slugify(page),
           title: page.data['title'],
           author: get_page_author(page),
-          toc_enabled: page.data['toc']
+          toc_enabled: page.data['toc'],
+          tags: []
         }
         Util.clock(:page, :start)
-        Util.timestamp("Starting page render")
+        Util.timestamp('Starting page render')
 
         info("===== Rendering #{Util.meta[:slug]} (#{Util.meta[:title]})", type: :start)
         render_page(page)
