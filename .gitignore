@@ -44,3 +44,5 @@ vendor
 _cec
 _draft
 _temp
+cec.secret
+cec_secret.rb

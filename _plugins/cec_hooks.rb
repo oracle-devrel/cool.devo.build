@@ -22,14 +22,11 @@ require_relative 'cec_util'
 # errors, an exception will be raised and Jekyll will exit
 # non-zero.
 
+require_relative '../cec_secret'
+
 DEBUG_CEC = ENV['DEBUG_CEC'] || 1
 IMAGE_SLUG_PREFIX = 'jekyll-'
 ARTICLE_SLUG_PREFIX = 'devo-'
-DEVO_REPOSITORY_ID = '5F7FC00725C0482F9353308765B9FEF8'
-REPOSITORY = 'DevO_QA'
-SERVER_NAME = 'ost'
-CHANNEL = 'DevO_QA'
-CHANNEL_TOKEN = '3505dae9c4f248d9ab42fd41662fc51a'
 RETRY_DELAY = 5
 
 module Jekyll
