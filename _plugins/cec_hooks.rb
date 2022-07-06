@@ -23,6 +23,14 @@ require_relative 'cec_util'
 # non-zero.
 
 require_relative '../cec_secret'
+# cec_secret.rb contains:
+#
+# DEVO_REPOSITORY_ID = 'XXXXXXXXXXXXX'
+# REPOSITORY = 'XXXXX'
+# SERVER_NAME = 'xxx'
+# CHANNEL = 'XXXXXX'
+# CHANNEL_TOKEN = 'XXXXXXXXXXXXXXXXXX'
+
 
 DEBUG_CEC = ENV['DEBUG_CEC'] || 1
 IMAGE_SLUG_PREFIX = 'jekyll-'
