@@ -2,9 +2,11 @@
 
 module Jekyll
   class CECHooks
+    # Util module for CEC Hooks
     module Util
       class << self
-        attr_accessor :meta, :taxonomy
+        attr_accessor :meta, :taxonomy, :channel_token, :repository_id
+
         ##
         ## Record a benchmark time
         ##
@@ -14,7 +16,10 @@ module Jekyll
         def clock(timer, position = :start)
           raise 'Invalid timer' unless benchmark.keys.include?(timer.to_sym)
 
-          raise "Invalid position argument #{position}, must be :start or :finish" unless position.to_s =~ /(start|finish)/
+          unless position.to_s =~ /(start|finish)/
+            raise "Invalid position argument #{position}, must be :start or :finish"
+
+          end
 
           benchmark[timer][position] = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         end
@@ -49,6 +54,7 @@ module Jekyll
           Jekyll::CECHooks.send(level.to_s, border ? Jekyll::CECHooks.border(msg) : msg, type: type)
         end
 
+        # String helpers
         class ::String
           ##
           ## Pluralize a string based on quantity

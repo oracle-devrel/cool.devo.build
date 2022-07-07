@@ -14,7 +14,8 @@ require_relative 'cec_util'
 # Must set the CEC_DEPLOY environment variable to trigger
 # `CEC_DEPLOY=true bundle exec jekyll build`
 
-# Run Jekyll with DEBUG_CEC set to 0-3 for logging. 0 = no messages, 3 = all messages (debug)
+# Run Jekyll with DEBUG_CEC set to 0-3 for logging.
+# 0 = no messages, 3 = all messages (debug)
 # `CEC_DEPLOY=true DEBUG_CEC=3 bundle exec jekyll build`
 
 # Script will skip any articles that cause an error and
@@ -25,16 +26,13 @@ require_relative 'cec_util'
 require_relative '../cec_secret'
 # cec_secret.rb contains:
 #
-# DEVO_REPOSITORY_ID = 'XXXXXXXXXXXXX'
 # REPOSITORY = 'XXXXX'
 # SERVER_NAME = 'xxx'
 # CHANNEL = 'XXXXXX'
-# CHANNEL_TOKEN = 'XXXXXXXXXXXXXXXXXX'
-
+# IMAGE_SLUG_PREFIX = 'jekyll-'
+# ARTICLE_SLUG_PREFIX = 'devo-'
 
 DEBUG_CEC = ENV['DEBUG_CEC'] || 1
-IMAGE_SLUG_PREFIX = 'jekyll-'
-ARTICLE_SLUG_PREFIX = 'devo-'
 RETRY_DELAY = 5
 
 module Jekyll
@@ -355,16 +353,68 @@ module Jekyll
         Util.taxonomy ||= download_taxonomy
       end
 
+      ##
+      ## Download site taxonomy
+      ##
+      ## @return     [Hash] taxonomy hash
+      ##
       def download_taxonomy
         taxonomy_file = File.expand_path('_temp/taxonomy.json')
         FileUtils.mkdir_p(File.dirname(taxonomy_file))
         cec("describe-taxonomy 'DevO-Developer Relations' -f #{taxonomy_file}", repo: false)
         data = JSON.parse(IO.read(taxonomy_file))
         tax_id = data['data']['id']
-        cec("exeg '/content/published/api/v1.1/taxonomies/#{tax_id}/categories?limit=100&channelToken=#{CHANNEL_TOKEN}' -f #{taxonomy_file}", repo: false)
+        url = "/content/published/api/v1.1/taxonomies/#{tax_id}/categories"
+        query = ['limit=100', "channelToken=#{channel_token}"]
+        cec("exeg '#{url}?#{query.join('&')}' -f #{taxonomy_file}", repo: false)
         json = JSON.parse(IO.read(taxonomy_file))
         clean_up_temp_files
+
         { id: tax_id, tags: json['items'] }
+      end
+
+      ##
+      ## The repository ID
+      ##
+      def repository_id
+        Util.repository_id ||= retrieve_repository_id
+      end
+
+      ##
+      ## Download repository id
+      ##
+      ## @return     [String] The repository identifier.
+      ##
+      def retrieve_repository_id
+        repo_file = File.expand_path('_temp/repo.json')
+        FileUtils.mkdir_p(File.dirname(repo_file))
+        cec("exeg '/sites/management/api/v1/sites/name:#{REPOSITORY}/repository' -f #{repo_file}", repo: false)
+        data = JSON.parse(IO.read(repo_file))
+
+        data['id']
+      end
+
+      ##
+      ## The channel token
+      ##
+      ## @return     [String] channel token
+      ##
+      def channel_token
+        Util.channel_token ||= retrieve_channel_token
+      end
+
+      ##
+      ## Download the channel token from authorized server
+      ##
+      ## @return     [String] The channel token
+      ##
+      def retrieve_channel_token
+        channel_file = File.expand_path('_temp/channel.json')
+        FileUtils.mkdir_p(File.dirname(channel_file))
+        cec("exeg '/sites/management/api/v1/sites/name:#{CHANNEL}/channel' -f #{channel_file}", repo: false)
+        data = JSON.parse(IO.read(channel_file))
+
+        data['channelTokens'][0]['token']
       end
 
       ##
@@ -538,7 +588,7 @@ module Jekyll
           'name' => Util.meta[:title],
           'type' => 'DEVO_GitHub-Technical-Content',
           'description' => '',
-          'repositoryId' => DEVO_REPOSITORY_ID,
+          'repositoryId' => repository_id,
           'slug' => Util.meta[:slug],
           'language' => 'en',
           'translatable' => true,
@@ -907,11 +957,21 @@ end
 2. Scan for images, download them all
 3. Check downloads to see if any images are missing, upload missing images
 4. Download OCM article if it exists, as well as all images (again)
-5. If HTML is different than what we have locally, update the HTML field
-6. If new or updated, upload the article and all images back to server with changes
-7. Publish or unpublish the article based on meta
+5. Update HTML image tags with OCM macros
+6. If HTML is different than what we have locally, update the HTML field
+7. Add tags as taxonomy categories
+8. If new or updated, upload the article and all images back to server with changes
+9. Publish or unpublish the article based on meta
 
 Very inefficient, but works. Slowly.
+
+Recommend running once to publish all articles, then moving
+articles into a _draft or _published folder to avoid
+re-rendering them when not needed. To modify or add an
+article, move it or add it to the tutorials folder and run
+a build. Once successfully published, move it into
+the _draft folder. To unpublish an article, add `draft:
+true` or `published: false` to the front matter.
 
 # Jekyll
 
@@ -926,6 +986,7 @@ Very inefficient, but works. Slowly.
 - [x] remove MRM plugin
 - [ ] handle inter-document links, e.g. a series index. URLs need to point to dev.o
 - [x] collect errors without exiting, but display them at the end of the build and exit non-zero
+- [x] hide tags in output (phase 2), apply tags as taxonomy to published post
 
 # CEC Toolkit
 
@@ -941,14 +1002,16 @@ Very inefficient, but works. Slowly.
 - [x] if I archive an article and then try to republish it, I can't because the slug is already in use (switched to using unpublish instead of archive for now)
 - [x] enable OCM-generated TOC
 - [x] Adjust sidebar to contain author meta inline with the article (at bottom)
-- [?] what to do with tags and categories? (taxonomies in meta?, or can I update the tag template in Jekyll to point to OCM versions of the tag indexes? I don't think we have those landing pages yet anyway, might just remove tags for now based on your answer)
 - [?] how to deal with series? Each series has an index page and links to other articles in the series. These links will obviously break. Also, we used to only show the series index in the content list, with its articles only visible from that index page. I assume that's not possible on OCM
 - [?] can I retrieve a page's live url using its slug? Is there a macro for inserting a link to another page? That would at least let me update the links between articles on the same site.
 
 # Osvaldo
 
 - [?] I need info on how to install CEC Toolkit and init in the directory `_cec` in the Jenkins job. Hoping there's an expert who can help me out with that part.
+
+# Jenkins
+
 - [?] how do you trigger a Jenkins job with a GitHub Action? Or can Jenkins watch the tutorials repo for updates itself?
 - [?] can the Jenkins job notify me by email if an error occurs? (The script will raise an exception and jekyll should return a non-zero exit code if it does)
-
+- [?] does Jenkins have Secrets I can use to populate my constants?
 =end
