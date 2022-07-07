@@ -1,5 +1,11 @@
 # frozen_string_literal: true
 
+REPOSITORY = 'DevO_QA'
+SERVER_NAME = 'ost'
+CHANNEL = 'DevO_QA'
+IMAGE_SLUG_PREFIX = 'jekyll-'
+ARTICLE_SLUG_PREFIX = 'devo-'
+
 require 'yaml'
 require 'json'
 require 'fileutils'
@@ -22,15 +28,6 @@ require_relative 'cec_util'
 # report all errors at the end of the run. If there are any
 # errors, an exception will be raised and Jekyll will exit
 # non-zero.
-
-require_relative '../cec_secret'
-# cec_secret.rb contains:
-#
-# REPOSITORY = 'XXXXX'
-# SERVER_NAME = 'xxx'
-# CHANNEL = 'XXXXXX'
-# IMAGE_SLUG_PREFIX = 'jekyll-'
-# ARTICLE_SLUG_PREFIX = 'devo-'
 
 DEBUG_CEC = ENV['DEBUG_CEC'] || 1
 RETRY_DELAY = 5
