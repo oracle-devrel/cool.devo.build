@@ -86,7 +86,7 @@ module Jekyll
         if i < sects.length - 1
           output += %( <a href="javascript:cool.slides.goToSlide(#{i+2})">Continue &raquo;</a></div>)
         else
-          output += "</div>"
+          output += '</div>'
         end
         output += %(\n\n</div>\n\n)
         toc << %(<li data-target-slide="#{i+1}"><a href="javascript:cool.slides.goToSlide(#{i+1})">#{headline.strip}</a></li>)
@@ -95,7 +95,7 @@ module Jekyll
 
       output += %(</div>\n\n)
 
-      table_of_contents = %(<nav class="slides-nav"><ul>) + toc.join("\n") + "</ul></nav>"
+      table_of_contents = %(<nav class="slides-nav"><ul>) + toc.join("\n") + '</ul></nav>'
 
       context.environments.first['page']['slides_nav'] = table_of_contents
 
