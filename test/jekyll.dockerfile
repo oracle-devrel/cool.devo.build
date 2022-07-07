@@ -9,11 +9,7 @@ RUN bundle install
 #####
 
 FROM ruby:3.0.2-alpine3.14 as jekyll
-COPY --from=jekyll-setup /usr/local/bundle/bin /usr/local/bundle/bin
-COPY --from=jekyll-setup /usr/local/bundle/gems /usr/local/bundle/gems
-COPY --from=jekyll-setup /usr/local/bundle/bundler/gems /usr/local/bundle/bundler/gems
-COPY --from=jekyll-setup /usr/local/bundle/extensions /usr/local/bundle/extensions
-COPY --from=jekyll-setup /usr/local/bundle/specifications /usr/local/bundle/specifications
+COPY --from=jekyll-setup /usr/local/bundle /usr/local/bundle
 COPY --from=jekyll-setup /cool.devo.build /cool.devo.build
 WORKDIR /cool.devo.build
 RUN apk add git
