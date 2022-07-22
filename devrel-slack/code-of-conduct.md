@@ -41,7 +41,6 @@ for the betterment of the community.
 The current admins are:
 
 -   Kim McMahon, Head of Communities, OCI DevRel
--   Val Carvalho, Community Manager, OCI DevRel
 
 We want this to be a fun, pleasant, and harassment-free experience for
 everyone, regardless of gender, gender identity and expression, sexual
