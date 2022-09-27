@@ -931,6 +931,7 @@ module Jekyll
       # $stdout = tee
       Util.clock(:total, :start)
       Util.timestamp("Deploy started")
+      # Stores the current directory as Util.pwd for reference after chdir commands
       Util.pwd
     end
 
