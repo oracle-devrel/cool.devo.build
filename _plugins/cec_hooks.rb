@@ -1,33 +1,54 @@
 # frozen_string_literal: true
 
-REPOSITORY = 'DevO_QA'
-SERVER_NAME = 'ost'
-CHANNEL = 'DevO_QA'
-IMAGE_SLUG_PREFIX = 'jekyll-'
-ARTICLE_SLUG_PREFIX = 'devo-'
-
-require 'yaml'
-require 'json'
-require 'fileutils'
-require 'html_press'
-require 'io/console' unless IO.method_defined?(:winsize)
-require 'tty-screen'
-require 'tty-which'
-
-require_relative 'colors'
-require_relative 'logger'
-require_relative 'cec_util'
-# Must set the CEC_DEPLOY environment variable to trigger
-# `CEC_DEPLOY=true bundle exec jekyll build`
-
+# This plugin requires that the CEC toolkit be installed in
+# _cec/ off the root directory. Path can be modified by
+# editing the #cec method.
+#
+# Gems used by this plugin are installed via the Gemfile
+# using `bundle install`. It makes use of tty-screen and
+# tty-which for prettier console output.
+#
+# You must set the CEC_DEPLOY environment variable to
+# trigger the OCM deploy.
+#
+#   CEC_DEPLOY=true bundle exec jekyll build`
+#
 # Run Jekyll with DEBUG_CEC set to 0-3 for logging.
 # 0 = no messages, 3 = all messages (debug)
-# `CEC_DEPLOY=true DEBUG_CEC=3 bundle exec jekyll build`
-
+#
+#   CEC_DEPLOY=true DEBUG_CEC=3 bundle exec jekyll build
+#
 # Script will skip any articles that cause an error and
 # report all errors at the end of the run. If there are any
 # errors, an exception will be raised and Jekyll will exit
 # non-zero.
+
+# OCM Repository name
+REPOSITORY = 'DevO_QA'
+# OCM Server name as set up with cec toolkit
+SERVER_NAME = 'ost'
+# OCM Channel name
+CHANNEL = 'DevO_QA'
+# Prefix to apply to Image assets in OCM
+IMAGE_SLUG_PREFIX = 'jekyll-'
+# Prefix to apply to Article assets in OCM
+ARTICLE_SLUG_PREFIX = 'devo-'
+
+# Standard libraries
+require 'yaml'
+require 'json'
+require 'fileutils'
+# HTML Compression
+require 'html_press'
+# For pretty console output
+require 'io/console' unless IO.method_defined?(:winsize)
+require 'tty-screen'
+require 'tty-which'
+
+# Local libraries for colorization, benchmarking, strings
+require_relative 'colors'
+require_relative 'logger'
+require_relative 'cec_util'
 
 DEBUG_CEC = ENV['DEBUG_CEC'] || 1
 RETRY_DELAY = 5
@@ -169,10 +190,10 @@ module Jekyll
       ## @return     [Array] header, body
       ##
       def split_header(file)
-        raise "Invalid file: #{self}" unless File.exist? file
+        raise "Invalid file: #{file}" unless File.exist? file
 
-        parts = IO.read(self).split(/^---/)
-        raise "Invalid YAML in #{self}" unless parts.count > 2
+        parts = IO.read(file).split(/^---/)
+        raise "Invalid YAML in #{file}" unless parts.count > 2
 
         header = parts[1]
         body = parts[2..-1].join('---')
@@ -443,7 +464,7 @@ module Jekyll
         return nil if cec_name.nil? || cec_name.empty?
 
         id = nil
-        taxonomy[:tags].each do |tax|
+        taxonomy[:tags]&.each do |tax|
           if tax['name'] =~ /#{cec_name}/i
             id = tax['id']
             break
@@ -858,7 +879,8 @@ module Jekyll
       end
 
       ##
-      ## Prepare, create, and publish a Jekyll page. Called by #process_page
+      ## Prepare, create, and publish a Jekyll page. Called
+      ## by #process_page. HtmlPress is used to compress output.
       ##
       ## @param      page  [Page] The page to publish
       ##
