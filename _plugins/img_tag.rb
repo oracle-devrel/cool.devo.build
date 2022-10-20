@@ -32,7 +32,7 @@ module Jekyll
         unless m['path'].nil?
           imgclass = m['class'] || nil
           image = m['path']
-          image = "https://github.com/oracle-devrel/devo.tutorials/raw/main/#{image}" unless image =~ /^http/
+          # image = "https://github.com/oracle-devrel/devo.tutorials/raw/main/#{image}" unless image =~ /^http/
           width = m['width'] || nil
           height = m['height'] || nil
           title = m['title'] || nil
