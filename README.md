@@ -30,13 +30,13 @@ A content repository is a repository containing nothing but Markdown and image a
 /REPO_SUBMODULE/
     index.md (see below)
     Markdown.md (see below)
-    assets/* 
+    assets/*
 ```
 
 ### Collection index.md
 
 Each collection repository _must_ contain an `index.md` file in its root. This file serves as the project overview. In addition to the required front matter, any content in this page will be displayed above a listing of the pages that comprise it. Only the front matter is required. If your content is a series and isn't in its own repo, create a subdirectory and include an `index.md` file in the root of the subdirectory.
- 
+
 A submodule repository can have more than one collection. The `index.md` file is what will be served if the url path to the parent directory is called, but additional `.md` files with the same front matter keys can also exist and will be displayed as additional collections. Each piece of content can only belong to one collection, though.
 
 #### Project front matter
@@ -64,7 +64,7 @@ The `sort` key determines in what order the child pages of the collection will b
 
 If you wanted to break a repository up into multiple collections, you would simply add a new index file with a different name.
 
-For example, if the directory is "/collections/tutorials", the `index.md` file in that directory would be for "Tutorials." But if you wanted a "Getting Started" collection as well, you would create `getting-started.md` and add the appropriate front matter. As long as it has the `series` key, it will be viewed as a collection. 
+For example, if the directory is "/collections/tutorials", the `index.md` file in that directory would be for "Tutorials." But if you wanted a "Getting Started" collection as well, you would create `getting-started.md` and add the appropriate front matter. As long as it has the `series` key, it will be viewed as a collection.
 
 The URL for the Getting Started collection would be "https://.../collections/tutorials/getting-started" but it would appear at the same level as all other collections in navigation.
 
@@ -87,7 +87,7 @@ description: ONE_LINE_SUMMARY
 ---
 ```
 
-The date should be the date you plan to publish. If there's any delay in publishing, we'll update the date for you. 
+The date should be the date you plan to publish. If there's any delay in publishing, we'll update the date for you.
 
 The thumbnail can be any image from your content that can represent it, no resizing necessary. If you want to generate a custom thumbnail, just make an image at least 800px x 800px and include it in the assets folder. Thumbnails are displayed cropped, and cropped differently in different views, so your image shouldn't try to convey vital information.
 
@@ -98,7 +98,7 @@ See [Tagging Pages](#tagging-pages)
 - `modified`: If you update a post with new content (or corrections), you can add a `modified` key with a new date. Don't change the publish date, though. The modified key will be enough to let us surface updated content without disrupting the (mostly) chronological publishing system. (hint: there's [a script](https://github.com/oracle-devrel/cool.devo.build/blob/main/update_modified.rb) in the cool.devo.build repo that can use to update the modified key for all changed markdown files prior to doing a commit.)
 - `categories:` is an array containing one or more category tags. See [Tagging Pages](#tagging-pages) for a list of available categories.
 - `author:` can be a block of YAML data, or if the author has been permanently added to the site by the maintainers, a slug will be provided for the author to use.
-    
+
     To specify author data in the front matter, use a block like this. Other than "name," all fields are optional; fill out what's appropriate and leave out what's not:
 
     ```yaml
@@ -137,7 +137,7 @@ See [Tagging Pages](#tagging-pages)
 - `toc: true` will enable a sidebar table of contents, automatically generated from headers in the page
 
 - You can manually add links to the left sidebar, below any author bio, using:
-    
+
     ```yaml
     sidebar:
       - links:
@@ -150,7 +150,7 @@ See [Tagging Pages](#tagging-pages)
     ```
 
 - To disable either or both sidebars and make content wider:
-    
+
     ```yaml
     toc: false
     author_profile: false
@@ -173,7 +173,7 @@ categories: [clouddev, java, games]
 Available Categories, use all that apply. Only include the short version (slug):
 
 - __Build and Run Cloud Native Apps__
-  
+
     slug: `cloudapps`
 - __Cloud-Native Software Development on OCI__
 
@@ -369,7 +369,7 @@ These are very random notes I've collected while editing some of the initial cop
 ### Emphasis
 
 - Use italics for emphasis in prose copy (`I *emphasized* this`). Either asterisks (\*) or underscores (\_) are fine
-- Use bold for things like 
+- Use bold for things like
     - emphasizing a key word
     - product names
     - menu/button titles
