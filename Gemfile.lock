@@ -6,10 +6,15 @@ GEM
     asciidoctor (2.0.17)
     colorator (1.1.0)
     concurrent-ruby (1.1.10)
+    css_press (0.3.2)
+      csspool-st (= 3.1.2)
+      json
+    csspool-st (3.1.2)
     em-websocket (0.5.3)
       eventmachine (>= 0.12.9)
       http_parser.rb (~> 0)
     eventmachine (1.2.7)
+    execjs (2.8.1)
     faraday (1.10.0)
       faraday-em_http (~> 1.0)
       faraday-em_synchrony (~> 1.0)
@@ -35,6 +40,11 @@ GEM
     faraday-retry (1.0.3)
     ffi (1.15.5)
     forwardable-extended (2.6.0)
+    html_press (0.8.2)
+      htmlentities
+      multi_css (>= 0.1.0)
+      multi_js (>= 0.1.0)
+    htmlentities (4.3.4)
     http_parser.rb (0.8.0)
     i18n (1.10.0)
       concurrent-ruby (~> 1.0)
@@ -74,6 +84,7 @@ GEM
       jekyll (>= 3.7, < 5.0)
     jekyll-watch (2.2.1)
       listen (~> 3.0)
+    json (2.6.2)
     kramdown (2.4.0)
       rexml
     kramdown-parser-gfm (1.1.0)
@@ -87,6 +98,10 @@ GEM
       jekyll (>= 3.5, < 5.0)
       jekyll-feed (~> 0.9)
       jekyll-seo-tag (~> 2.1)
+    multi_css (0.1.0)
+      css_press
+    multi_js (0.1.0)
+      uglifier (~> 2)
     multipart-post (2.1.1)
     octokit (4.22.0)
       faraday (>= 0.9)
@@ -108,6 +123,11 @@ GEM
       faraday (> 0.8, < 2.0)
     terminal-table (2.0.0)
       unicode-display_width (~> 1.1, >= 1.1.1)
+    tty-screen (0.8.1)
+    tty-which (0.5.0)
+    uglifier (2.7.2)
+      execjs (>= 0.3.0)
+      json (>= 1.8.0)
     unicode-display_width (1.8.0)
     webrick (1.7.0)
 
@@ -117,6 +137,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  html_press (~> 0.8.2)
   jekyll (~> 4.2.0)
   jekyll-asciidoc
   jekyll-feed (~> 0.12)
@@ -127,6 +148,8 @@ DEPENDENCIES
   jekyll-seo-tag (~> 2.7, >= 2.7.1)
   jekyll-sitemap (~> 1.4)
   minima (~> 2.5)
+  tty-screen
+  tty-which
   tzinfo (~> 1.2)
   tzinfo-data
   wdm (~> 0.1.1)
