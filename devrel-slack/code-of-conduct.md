@@ -40,7 +40,7 @@ for the betterment of the community.
 
 The current admins are:
 
--   Kim McMahon, Head of Communities, OCI DevRel
+-   Caroline Caldwell, Head of Developer Marketing Global (DevAMP)
 -   Niki Chen, Operations Manager
 
 We want this to be a fun, pleasant, and harassment-free experience for
