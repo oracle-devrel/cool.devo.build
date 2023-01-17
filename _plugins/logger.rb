@@ -79,7 +79,7 @@ module Jekyll
       def border(msg)
         begin
           width = $stdout.winsize[1]
-        rescue ENOTTY
+        rescue StandardError
           width = 80
         end
 
