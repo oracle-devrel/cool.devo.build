@@ -1,0 +1,1245 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Oracle Cloud Infrastructure Functions in Go and Using the OCI Go SDK for accessing OCI services from Go">
+    
+    <meta itemprop="datePublished" content="2022-05-26T11:00:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Oracle Cloud Infrastructure Functions in Go and Using the OCI Go SDK for accessing OCI services from Go
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <!-- <picture class="alignright">
+                <source srcset="assets/landing-zone.png 1x" />
+                <img loading="lazy" width="400" height="400" src="assets/landing-zone.png" data-original="assets/landing-zone.png" alt="OCLOUD landing zone" title="OCLOUD landing zone" />
+            </picture> -->
+
+<p>This is the third installment in a five part series about Go and Oracle Cloud Infrastructure. This series discusses how Go applications can be created and run on Oracle Cloud Infrastructure (OCI) in Compute Instances (VMs), containerized on Kubernetes, or as serverless Functions. The articles show how to automate the build and deployment of these Go applications using OCI DevOps. An important topic is how to use OCI services from Go applications, both those running on OCI as well as Go code running elsewhere. Some of the OCI services discussed are Object Storage, Streaming, Key Vault and Autonomous Database.</p>
+
+<p>In order to follow along with these articles, readers should have at least basic knowledge of how to create Go applications. It is assumed that readers have access to their own Go development environment. Some of the examples and screenshots will specifically mention VS Code as development tool. However, other editors and IDEs can be used as well. The Go code presented in these articles demonstrates a number of mechanisms in their simplest form for maximum clarity and with the least dependencies. Readers should not expect meaningful functionality or production ready code.</p>
+
+<p>The articles describe how to get Going on OCI. To try out the examples, readers will need to have access to an OCI tenancy with permissions to create the OCI resources discussed in these articles. Most of the resources used are available in the <em>Aways Free Tier</em> (Compute Instance, VCN, Autonomous Database, Object Storage, Logging, Resource Manager), or have a free allotment tier for limited monthly usage (Functions, API Gateway, Streaming, Vault, DevOps).</p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>The first part of this series describes provisioning of a Compute Instance based on the Oracle Linux Cloud Developer image, opening it up for inbound and outbound network activity, creating and running a Go application that serves HTTP requests, and connecting logging produced by the application to OCI Logging. Part two deals with software engineering, automation of build, and deployment of the application with the OCI DevOps service. This service is used for storing the Go source code, building the application executable, storing it as deployable artifact, and deploying that artifact to a Compute Instance. The second article also shows how to expose an HTTP endpoint for the application through an OCI API Gateway.</p>
+
+<p>This third part shows how to create serverless functions in Go and deploy them on OCI. The Go SDK for OCI is introduced – first for local, stand alone Go applications and subsequently for use from functions – leveraging resource principal authentication. This SDK is used to interact with the OCI Object Storage service for creating buckets and writing and reading files.</p>
+
+<p>Initially the function is built and deployed manually. A route is added to the deployment in API Gateway for invoking the function from a client external to OCI. Then an OCI DevOps Deployment Pipeline is created for deploying the function from an image in the Container Image Registry. Finally, a build pipeline is set up to take sources in the code repository, build and publish a container image, and then trigger the deployment pipeline for end-to-end build and deploy.</p>
+
+<h2 id="oci-functions-in-go">OCI Functions in Go</h2>
+
+<p>Serverless function in OCI are based on the technology of the open source Project Fn. The business logic of the function is written in your favorite language – in this case Go – and embedded in the Fn framework that handles the life cycle of the function and the interactions with the function. The Fn framework can be run anywhere: on your local machine, in a VM on any cloud, or on premises. Oracle Cloud Infrastructure offers a fully managed PaaS service OCI Functions for serverless functions based on that same technology.</p>
+
+<p>A Function is built into a container image. This image is pushed to a container image registry. To publish the function, this image is transferred to an Fn Server. Whenever the function is invoked, a container is started from the image and the request is processed. Containers are kept running for some time after handling an invocation, in a hot state ready to handle additional requests. When the number of concurrent requests increases, additional containers for the same function will be started by the Fn Server to ensure all requests can be handled.</p>
+
+<p>The attraction of functions for developers and application operators is the fact that no energy needs to be poured into designing, creating and managing the platform that runs the business logic. All focus can be on writing that logic.</p>
+
+<p>We will now look at creating the function in Go, building it into a container image, deploying and running it locally. Then we will take this function to the OCI Functions service and make it run cloud side.</p>
+
+<h3 id="the-fn-development-environment">The Fn Development Environment</h3>
+
+<p>To develop functions, you will need an environment that supports Project Fn. Fn is a lightweight Docker-based serverless functions platform you can run on your laptop, server, or cloud. You can install Fn easily on Linux or MacOS by following the instructions in <a href="https://fnproject.io/tutorials/install/">Fn Project Tutorials – Install Fn</a>.</p>
+
+<p>You can choose to work on the <code class="language-plaintext highlighter-rouge">go-app-vm</code> compute instance that we have created in the first and used also in the second installment of this series. This Oracle Linux environment does not come with Fn set up, but installing it is fairly simple.</p>
+
+<p>Alternatively, you can work in OCI Cloud Shell. This browser-accessible environment is set up with Fn. For working with Fn in OCI Cloud Shell, see <a href="https://docs.oracle.com/en-us/iaas/developer-tutorials/tutorials/functions/func-setup-cs/01-summary.htm">OCI Documentation Functions: Get Started using Cloud Shell</a>.</p>
+
+<h3 id="develop-an-fn-function">Develop an Fn Function</h3>
+
+<p>In the development environment with Fn CLI installed, navigate to a directory where you want to create the function’s subdirectory. On the command line, enter this command and execute it:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fn init --runtime go --trigger http greeter
+</code></pre></div></div>
+
+<p>A subdirectory called <em>greeter</em> is created. Navigate into it and check its contents:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd greeter
+ls -l 
+</code></pre></div></div>
+
+<p>The file <code class="language-plaintext highlighter-rouge">func.yaml</code> contains the meta data about the function, to be interpreted by the Fn framework when building, and later on when running the function. File <code class="language-plaintext highlighter-rouge">go.mod</code> contains the dependency the function has on the <code class="language-plaintext highlighter-rouge">fdk-go</code> package. The actual function itself is in <code class="language-plaintext highlighter-rouge">func.go</code>. The structure of the function and its interaction with the Fn runtime can be seen here: function <code class="language-plaintext highlighter-rouge">main</code> registers the function <code class="language-plaintext highlighter-rouge">myHandler</code> with the Fn runtime, which instructs and enables the runtime to invoke this function for any HTTP request received. The function receives the body of the request in an <code class="language-plaintext highlighter-rouge">io.Reader</code> parameter. It also receives the output of <code class="language-plaintext highlighter-rouge">io.Writer</code>, to which the response body can be written. The <code class="language-plaintext highlighter-rouge">context.Context</code> parameter <code class="language-plaintext highlighter-rouge">ctx</code> contains meta data for the original request, including HTTP headers, the full URL, the request method, and the function itself, including all configuration variables defined for it.</p>
+
+<p>Currently, the <code class="language-plaintext highlighter-rouge">myHandler</code> function decodes the request body, expecting it to contain a JSON payload with a field called <em>name</em>. It creates a <em>Person</em> with their name set to the value of this field or, in its absence, defaults to <em>World</em>. It then creates the expected response: a JSON object with a single field called <em>message</em>, which contains a string composed from <em>Hello</em> and the <em>name</em> value.</p>
+
+<p>Although it does not do anything truly spectacular, the function is sound and complete and we can locally deploy and invoke it. For this we need a local context and the local Fn server up and running. Check the contexts using:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn list contexts
+</span></code></pre></div></div>
+
+<p>This shows a list of at least one context – possibly more than one. To work with the local Fn server, make sure that the <em>default</em> context is the active one. If needed to set the current context to <em>default</em>, use:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn use context default 
+</span></code></pre></div></div>
+
+<p>Now create an <em>application</em> as the host for the function:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn create app go-oci-app
+fn list apps
+</span></code></pre></div></div>
+
+<p>If the first of these statements fails with <em>connection refused</em>, then the server is probably not yet running. Use the next command for starting the server, then try again to create the application.</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn start
+</span></code></pre></div></div>
+
+<p>With the application successfully created, the function can now be deployed into it. The next command takes care of this deployment; it’s preceded by the container image build process.</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn --verbose deploy --app go-oci-app --local
+</span></code></pre></div></div>
+
+<p>Specifying <code class="language-plaintext highlighter-rouge">--local</code> does the deployment to the local server but does not push the function image to a Docker registry, which would be necessary if we were deploying to a remote Fn server.</p>
+
+<p>Because it unleashes an impressive amount of log messages to be produced, the <code class="language-plaintext highlighter-rouge">--verbose</code> flag is not one you will use all the time. However, it gives you pretty good insight into what’s going on. Several container images are pulled, then a two-stage container build process is executed for creating a container image for the <em>greeter</em> function. Predefined Fn project images are used for the build stage (<em>fnproject/go:1.15-dev</em> at the time of writing) and as the foundation for the runtime image (<em>fnproject/go:1.15</em>).</p>
+
+<p>The final output will look like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Updating function greeter using image greeter:0.0.2...
+Successfully created function: greeter with greeter:0.0.2
+Successfully created trigger: greeter
+Trigger Endpoint: http://localhost:8080/t/go-oci-app/greeter
+</code></pre></div></div>
+
+<p>The function image is called <em>greeter:0.0.2</em>. You will find this image in the local container registry with:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">docker images | grep greeter
+</span></code></pre></div></div>
+
+<p>The function can be invoked through the Fn CLI, using its name and application, like this:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn invoke go-oci-app greeter
+</span></code></pre></div></div>
+
+<p>The function expects a JSON payload that contains a <em>name</em> field, so let us provide it with exactly that:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">echo -n '{"name":"Clark Kent"}' | fn invoke go-oci-app greeter --content-type application/json
+</span></code></pre></div></div>
+
+<p>The output from the function deployment also gave us the <em>Trigger Endpoint</em> for the function. This is an HTTP endpoint to which we can send an HTTP request and have it trigger the function. We have no (visible) interaction with Fn, although the endpoint we invoke is really the Fn Server endpoint. The URL path tells Fn the application and specific function to trigger.</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">curl -X "POST" -H "Content-Type: application/json" -d '{"name":"Mickey Mouse"}' http://localhost:8080/t/go-oci-app/greeter
+</span></code></pre></div></div>
+
+<h3 id="create-oci-function">Create OCI Function</h3>
+
+<p>Now, let’s create this Function on OCI instead of just in our development environment. The steps are very similar to the ones we used for creating the function locally; we only need to use a different context. Not the <em>local</em> context but one for OCI.</p>
+
+<h4 id="create-application">Create Application</h4>
+
+<p>Let’s first create the application through the OCI Console. Type <em>app</em> in the search box and click on <em>Applications &gt; Functions</em> in the Services Area.</p>
+
+<p>Click on button <em>Create Application</em>. Type the name for the application: <em>go-on-oci-app</em>. Select the VCN that was created in part one of the article series and its one public subnet. Then click on <em>Create</em> to create the application.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-create-application.jpg 1x" />
+                <img loading="lazy" width="1200" height="469" src="assets/way-to-go-on-oci-article-3-create-application.jpg" data-original="assets/way-to-go-on-oci-article-3-create-application.jpg" alt="way-to-go-on-oci-article-3-create-application.jpg" title="way-to-go-on-oci-article-3-create-application.jpg" />
+            </picture>
+
+<h4 id="prepare-local-environment-for-oci-interaction-and-function-image-push">Prepare Local Environment for OCI Interaction and Function Image Push</h4>
+
+<p>Once the application is created, the General Information for the application is presented. The page also contains instructions for creating your first function, either in the OCI Cloud Shell, or in a local setup (which could, of course, also be the <em>go-app-vm</em> compute instance).</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-create-function-from-app.jpg 1x" />
+                <img loading="lazy" width="1200" height="681" src="assets/way-to-go-on-oci-article-3-create-function-from-app.jpg" data-original="assets/way-to-go-on-oci-article-3-create-function-from-app.jpg" alt="way-to-go-on-oci-article-3-create-function-from-app.jpg" title="way-to-go-on-oci-article-3-create-function-from-app.jpg" />
+            </picture>
+
+<p>If you are using the OCI Cloud Shell, the steps for creating this context are slightly different (and simpler) than when you work in a regular development environment. Feel free to follow the OCI Shell setup. In this article, we will take the other path, used for any local development environment.</p>
+
+<p>There are a number of steps to take in a local environment (in which Fn CLI was previously installed):</p>
+
+<ol>
+  <li>Set up an API Signing Key and store the private key in a <em>.pem</em> file in the local <em>HOME/.oci</em> directory and upload the public key to the OCI Console – see instructions in <a href="https://docs.oracle.com/en-us/iaas/Content/API/Concepts/apisigningkey.htm">OCI Documentation – Required Keys</a>.</li>
+  <li>Create file <code class="language-plaintext highlighter-rouge">config</code> in the <code class="language-plaintext highlighter-rouge">.oci</code> directory in the local environment; copy the <em>Configuration File Preview</em> snippet to the config file. Update the <em>key_file</em> entry in the file: make it refer to the private key’s <em>pem</em> file.   <a href="https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdkconfig.htm">OCI Documentation – SDK and CLI Configuration File</a>.</li>
+  <li>In order to push container images to the OCI Container Image Registry, you need an authentication token. In part one of this article series, you created a token to use for logging in to the DevOps Code Repository from the <em>git</em> client. You can reuse that token for logging the Docker client into the container image registry, or you can can create a new authention token. In the latter case, see <a href="https://docs.oracle.com/en-us/iaas/Content/Registry/Tasks/registrygettingauthtoken.htm#Getting_an_Auth_Token">OCI Documentation – Getting an Authentication Token</a>.</li>
+  <li>You will need the OCI CLI. Instructions to install this tool can be found in the OCI Documentation: <a href="https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/cliinstall.htm">Working with the OCI Command Line Interface – Quickstart </a>. The OCI CLI will use the HOME/.oci/config file and the referenced private key for making secure connections to the OCI APIs.</li>
+</ol>
+
+<p>After these steps, you can try out the success of steps 1, 2, and 4 with this command, which should return a list of the compartments in your tenancy:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">oci iam compartment list
+</span></code></pre></div></div>
+
+<h4 id="optional-create-container-image-registry-repository">Optional: Create Container Image Registry Repository</h4>
+
+<p>If the user account used for deploying the function has the necessary IAM permissions, then deployment will create the repository for the function images in the Container Image Registry. In case those privileges are not available or you want to prepare the repository, you can do so as follows.</p>
+
+<ol>
+  <li>Type <em>regi</em> in the search bar. Click on link <em>Container Registry &gt; Containers &amp; Artifacts</em>.</li>
+  <li>
+    <p>Click <em>Create repository</em>. Type the name of the repository: <em>go-on-oci/greeter</em>. This is comprised of the repository prefix and the name of the function, in which the repository will contain the images. Set the Access to <em>Public</em>.</p>
+
+    <picture class="aligncenter">
+             <source srcset="assets/way-to-go-on-oci-article-3-create-repository.jpg 1x" />
+             <img loading="lazy" width="1200" height="464" src="assets/way-to-go-on-oci-article-3-create-repository.jpg" data-original="assets/way-to-go-on-oci-article-3-create-repository.jpg" alt="way-to-go-on-oci-article-3-create-repository.jpg" title="way-to-go-on-oci-article-3-create-repository.jpg" />
+         </picture>
+  </li>
+  <li>Click on button <em>Create repository</em>. After a few seconds, a new and empty container image repository is created, ready to receive the function (container) images that we will push using the Fn CLI.</li>
+</ol>
+
+<h4 id="create-a-context-for-oci-in-fn-cli">Create a Context for OCI in Fn CLI</h4>
+
+<p>Moving back to the command line of the local environment, we need to create a Fn context for the current compartment on OCI, and subsequently select it for use in Fn operations. Execute these commands (which you can copy from the <em>Getting Started</em> tab on the <em>go-on-oci-app</em> page):</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn create context go-on-oci --provider oracle
+fn use context go-on-oci
+</span></code></pre></div></div>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-getting-started-with-app.jpg 1x" />
+                <img loading="lazy" width="1200" height="554" src="assets/way-to-go-on-oci-article-3-getting-started-with-app.jpg" data-original="assets/way-to-go-on-oci-article-3-getting-started-with-app.jpg" alt="way-to-go-on-oci-article-3-getting-started-with-app.jpg" title="way-to-go-on-oci-article-3-getting-started-with-app.jpg" />
+            </picture>
+
+<p>Copy the commands under step 4 to update the context with the compartment OCID and the Oracle Functions API URL. In my case:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn update context oracle.compartment-id ocid1.compartment.oc1..aaaaaaaaqb4vxvxuho5h7eewd3fl6dmlh4xg5qaqmtlcmzjtpxszfc7nzbyq
+fn update context api-url https://functions.us-ashburn-1.oraclecloud.com
+</span></code></pre></div></div>
+
+<p>The command will be similar but different for you.</p>
+
+<p>Provide the unique repository name prefix. Use <em>go-on-oci</em> and specify the compartment that contains the image registry repository to which the function image must be published:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn update context registry iad.ocir.io/idtwlqf2hanz/go-on-oci
+</span><span class="gp">fn update context oracle.image-compartment-id &lt;compartment-ocid&gt;</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Log into the Registry using the Auth Token as your password:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">docker login iad.ocir.io
+</span></code></pre></div></div>
+
+<p>In my case, the region I work in is Ashburn, identified by the region key <em>iad.ocir.io</em>. I am prompted for the username. This is a string that includes the namespace prefix included in the name of the Container Image Registry and each repository. Subsequently the password is requested. Here, you provide an authentication token set up for the user, which we used before in the previous article when the login was performed in the code repository.</p>
+
+<p>The next command shows a listing of the applications in the current Fn context:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn list apps
+</span></code></pre></div></div>
+
+<p>The list contains one application, called <em>go-on-oci-app</em>.</p>
+
+<p>The function <code class="language-plaintext highlighter-rouge">greeter</code> that was created, locally deployed, and invoked earlier can now also be deployed to the OCI Application to become a cloud-native, serverless function. The command we use for deployment is the same as we used before. Its effect is dramatically different due to the changed context. Instead of a local context, there is now a context based on an OCI Provider and linked to an OCI Tenancy and Compartment. The container image is pushed to the OCI Container Image Registry, and the Function is created in the OCI Function service.</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn -v deploy --app go-on-oci-app
+</span></code></pre></div></div>
+
+<p>The output is similar to what was generated before, but the build process is exactly the same. Once the function container image is ready, things start to deviate. The image is pushed to the OCI Container Image Registry, and the function is deployed to the cloud. The related lines in the output:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>=&gt; exporting to image                                                                        0.0s
+ =&gt; =&gt; exporting layers                                                                       0.0s
+ =&gt; =&gt; writing image sha256:008dc3b990f1e69d67a7dd8649fbd63649d72f0bf1a161b2c2e073064f16c918  0.0s
+ =&gt; =&gt; naming to iad.ocir.io/idtwlqf2hanz/go-on-oci/greeter:0.0.3                             0.0s
+
+Parts:  [iad.ocir.io idtwlqf2hanz go-on-oci greeter:0.0.3]
+Using Container engine docker to push
+Pushing iad.ocir.io/idtwlqf2hanz/go-on-oci/greeter:0.0.3 to docker registry...The push refers to repository [iad.ocir.io/idtwlqf2hanz/go-on-oci/greeter]
+...
+e57f007acf74: Pushed 
+0.0.3: digest: sha256:bb4f2abde44d97517520571a21c407e349ddfc6572583a8ba53717436fd0b7f5 size: 1155
+Updating function greeter using image iad.ocir.io/idtwlqf2hanz/go-on-oci/greeter:0.0.3...
+Successfully created function: greeter with iad.ocir.io/idtwlqf2hanz/go-on-oci/greeter:0.0.3
+
+Fn: HTTP Triggers are not supported on Oracle Functions
+</code></pre></div></div>
+
+<p>At this point, the function is in the cloud, and it can be invoked (still using the Fn CLI):</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn invoke go-on-oci-app greeter
+</span></code></pre></div></div>
+
+<p>The first call will take quite some time because the function starts out cold and the underlying container image needs to be instantiated into a running container. Every subsequent invocation of the function will be much faster. Note that if you wait for ten minutes and the function goes <em>cold</em>, the container is stopped.</p>
+
+<p>This image describes the situation we have arrived at:</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-local-dev-oci-functions.jpg 1x" />
+                <img loading="lazy" width="585" height="431" src="assets/way-to-go-on-oci-article-3-local-dev-oci-functions.jpg" data-original="assets/way-to-go-on-oci-article-3-local-dev-oci-functions.jpg" alt="way-to-go-on-oci-article-3-local-dev-oci-functions.jpg" title="way-to-go-on-oci-article-3-local-dev-oci-functions.jpg" />
+            </picture>
+
+<p>You can check in the OCI Console for the evidence of what just happened. Type <em>greeter</em> in the search box in the console. Under <em>Resources</em> there will be an entry <em>greeter &gt; Functions</em>. Click on the link to go to the page showing details for the function. You will find references to the function image, the memory setting and the endpoint for invoking the function. Under metrics you should find evidence of the call to the function made using the Fn CLI.</p>
+
+<p>In the search results for <em>greeter</em>, you’ll also find the Container Repository <em>go-on-oci/greeter</em>. When you navigate to the repository, you’ll find details for the image(s) published to it.</p>
+
+<h3 id="create-api-gateway-route-for-function">Create API Gateway Route for Function</h3>
+
+<p>OCI Functions can not just be invoked. Even though they have an HTTP endpoint that seems to suggest you can just call them from your browser or curl on the command line, it’s not actually quite that simple. HTTP calls to functions need to be signed, and this signing process is not simple and straightforward.</p>
+
+<p>A better way to allow consumers to invoke functions is through an API Gateway. We used an API Gateway in the previous article to open up a public route to the <em>myserver</em> application running on a (potentially) private compute instance. Now we will do the same for the <em>greeter</em> function using an additional route in the API Gateway <em>the-api-gateway</em> and the deployment <em>myserver-api</em> created in the previous article.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-apigateway-function.jpg 1x" />
+                <img loading="lazy" width="1170" height="250" src="assets/way-to-go-on-oci-article-3-apigateway-function.jpg" data-original="assets/way-to-go-on-oci-article-3-apigateway-function.jpg" alt="way-to-go-on-oci-article-3-apigateway-function.jpg" title="way-to-go-on-oci-article-3-apigateway-function.jpg" />
+            </picture>
+
+<h4 id="setup-iam-access-for-the-api-gateway">Setup IAM Access for the API Gateway</h4>
+
+<p>The API Gateway needs to be allowed to invoke the function, using a policy that provides permission for the API Gateway to invoke functions.</p>
+
+<p>Create the policy for API Gateway to invoke functions. To go create a policy in the console: type <em>poli</em> in the search bar and click on <em>Policies &gt; Identity</em> in the <em>Services</em> area of the search results popup. This takes you to the <em>Policies</em> overview page for the current compartment.</p>
+
+<p>The policy defines the permission for the API Gateways to access resources in the compartment. Create a new policy, type a name (<em>invoke-function-for-api-gateway</em>), a description, and the following statement:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ALLOW any-user to use functions-family in compartment &lt;compartment-name&gt; where ALL {request.principal.type= 'ApiGateway', request.resource.compartment.id = '&lt;compartment-id'}
+</code></pre></div></div>
+
+<p>Replace <code class="language-plaintext highlighter-rouge">&lt;compartment-name&gt;</code> with the name of the compartment, which is probably <em>go-on-oci</em>. Replace <code class="language-plaintext highlighter-rouge">&lt;compartment_id&gt;</code> with the identifier of the compartment you are working in.</p>
+
+<h4 id="define-the-route-for-the-function-in-the-deployment-on-the-api-gateway">Define the Route for the Function in the Deployment on the API Gateway</h4>
+
+<p>With the permissions taken care of, we can now define the route on the API Gateway. Type <em>gat</em> into the search bar in the console. Click on <em>Gateways &gt; API Management</em>. Click on the link for <em>the-api-gateway</em>. Click on <em>Deployments</em>. In the list of deployments (which contains a single deployment), click on the link <em>myserver-api</em>.</p>
+
+<p>Click on button <em>Edit</em> to open the deployment specification. Click on the link for the second step: <em>Routes</em>. Scroll down and click on the button <em>+ Another Route</em>.</p>
+
+<p>Type <em>/greeting</em> as the path for this new route. Select <em>GET</em> as the method and <em>Oracle Functions</em> as the Type (of backend). Select application <em>go-on-oci-app</em> and then set <em>Function Name</em> to <em>greeter</em>.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-define-apigateway-route-to-greeterfunction.jpg 1x" />
+                <img loading="lazy" width="1200" height="836" src="assets/way-to-go-on-oci-article-3-define-apigateway-route-to-greeterfunction.jpg" data-original="assets/way-to-go-on-oci-article-3-define-apigateway-route-to-greeterfunction.jpg" alt="way-to-go-on-oci-article-3-define-apigateway-route-to-greeterfunction.jpg" title="way-to-go-on-oci-article-3-define-apigateway-route-to-greeterfunction.jpg" />
+            </picture>
+
+<p>Press <em>Next</em>. Then press <em>Save Changes</em> to apply the changes and make the new route real.</p>
+
+<h4 id="invoke-the-function-through-the-api-gateway">Invoke the Function through the API Gateway</h4>
+
+<p>With the new route set up and the deployment refreshed on the API Gateway, we can now make a simple, straightforward HTTP request to the public endpoint of the API Gateway, indirectly triggering the function <em>greeter</em> and receiving its response.</p>
+
+<p>Using this URL in any browser, you should be able to get the function’s response:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://&lt;URL for API Gateway&gt;/my-api/greeting
+</code></pre></div></div>
+
+<p>The response is a little underwhelming, but that’s expected with such a simplistic function.</p>
+
+<p>Using <code class="language-plaintext highlighter-rouge">curl</code>, you can send a JSON payload to the function and receive a slightly more interesting response.</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">curl -X "GET" -H "Content-Type: application/json" -d '{"name":"Mickey Mouse"}' https://&lt;URL for API Gateway&gt;</span>/my-api/greeting
+</code></pre></div></div>
+
+<p>The response reads <code class="language-plaintext highlighter-rouge">{"message":"Hello Mickey Mouse"}</code>.</p>
+
+<p>So now we have established the end to end flow from the API Gateway to the serverless function. And we have a way to manually deploy the function based on the sources in our local development environment. To leverage our work, you can make some changes to the source code in <code class="language-plaintext highlighter-rouge">func.go</code> and then deploy the function once more – a single command with the Fn CLI – and invoke the <em>greeting</em> route on the API Gateway to see that our change is <em>live</em>.</p>
+
+<p>For example: change the line that sets the value for <code class="language-plaintext highlighter-rouge">Msg</code> to</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    Msg: fmt.Sprintf("Warmest greetings from your function dear %s", p.Name),
+</code></pre></div></div>
+
+<p>Save the updated <code class="language-plaintext highlighter-rouge">func.go</code> source. Then execute these commands to deploy the updated function and subsequently invoke it:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn -v deploy --app go-on-oci-app
+</span><span class="gp">curl -X "GET" -H "Content-Type: application/json" -d '{"name":"Mickey Mouse"}' https://&lt;URL for API Gateway&gt;</span>/my-api/greeting
+</code></pre></div></div>
+
+<p>This should result in the improved response. The build and deploy process are condensed to a single manual command in a prepared environment. Next we will look at an automated deployment process for functions using OCI DevOps, followed by the preceding automated build process based on source in a code repository. Then we will move onto functions that do a little bit more than return simple greetings.</p>
+
+<h2 id="automated-deployment-of-functions">Automated Deployment of Functions</h2>
+
+<p>In the previous installment in this series, we saw the use of OCI DevOps Deployment Pipelines for deploying an application to a compute instance. Now we’ll use a pipeline for automated deployment of a function. The overall approach and ingredients are similar. We need an artifact, a (target) environment, and the deployment pipeline with a Function Deployment stage, as well as IAM permissions for the pipeline to read the artifact and deploy the function.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-ingredients-function-deployment-pipeline.jpg 1x" />
+                <img loading="lazy" width="696" height="515" src="assets/way-to-go-on-oci-article-3-ingredients-function-deployment-pipeline.jpg" data-original="assets/way-to-go-on-oci-article-3-ingredients-function-deployment-pipeline.jpg" alt="way-to-go-on-oci-article-3-ingredients-function-deployment-pipeline.jpg" title="way-to-go-on-oci-article-3-ingredients-function-deployment-pipeline.jpg" />
+            </picture>
+
+<p>These ingredients in more detail:</p>
+
+<ol>
+  <li>An <strong>Artifact</strong>: the reference to, in this case, a specific Container Image in the OCI Container Image Registry, using the fully qualified path to the repository and the specific image and version.</li>
+  <li>An <strong>Environment</strong>: the reference to the Function I want to (re)deploy. The Environment in the case of Function deployment is not the compartment or an application in a compartment (as one might surmise), but the function itself which therefore already needs to exist before it can be deployed through an OCI DevOps Deployment Pipeline. (Note that the Function does not have to be useful – it can be based on the Scratch container image.)</li>
+  <li>A <strong>Deployment Pipeline</strong> with a Deployment Pipeline Stage of type <em>Function Deployment</em> that connects the Artifact and the Environment.</li>
+  <li>A dynamic group that contains the deployment pipeline, and IAM policies that allow the dynamic group to read artifacts (such as function container images) and to deploy functions (broadly speaking, manage OCI resources).</li>
+</ol>
+
+<h3 id="create-devops-artifact-for-the-function-container-image">Create DevOps Artifact for the Function Container Image</h3>
+
+<p>In the OCI Console, navigate to the home page for the DevOps Project <em>go-on-oci</em>. Open the <em>Artifacts</em> tab. Click on button <em>Add artifact</em>.  Note that what we define here is a link or a proxy from the DevOps Project to an actual artifact, not the artifact itself.</p>
+
+<p>Enter <em>greeter-function</em> as the name of the DevOps artifact. The type should be set to <em>Container image repository</em>. The fully qualified path to the image consists of the region key, the repository namespace and prefix, the function name and the function version tag. In this case, use a placeholder for the version tag. The path is now defined as follows:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;region key&gt;/&lt;namespace&gt;/&lt;repository prefix&gt;/greeter:${imageVersion
+</code></pre></div></div>
+
+<p>Set the drop down field <em>Replace parameters used in this artifact</em> to <em>Yes, substitute placeholders</em>.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-create-artifact-for-function-image.jpg 1x" />
+                <img loading="lazy" width="1200" height="474" src="assets/way-to-go-on-oci-article-3-create-artifact-for-function-image.jpg" data-original="assets/way-to-go-on-oci-article-3-create-artifact-for-function-image.jpg" alt="way-to-go-on-oci-article-3-create-artifact-for-function-image.jpg" title="way-to-go-on-oci-article-3-create-artifact-for-function-image.jpg" />
+            </picture>
+
+<p>Click on button <em>Add</em> to complete and save the definition of the artifact.</p>
+
+<h3 id="define-the-devops-environment-for-the-function">Define the DevOps Environment for the Function</h3>
+
+<p>Open the <em>Environments</em> tab in the DevOps project. It contains the <em>go-on-oci-vm</em> environment that was created for the deployment of <em>myserver</em> to the Compute instance (in the previous article). Click on button <em>Create environment</em>.</p>
+
+<p>In the first step, <em>Basic information</em>, click on the tile <em>Functions - Create an environment for a Function</em>. Enter <em>greeter-function-in-app-go-on-oci-app</em> as the name of the environment. Press <em>Next</em> to go to the second step with <em>Environment details</em>. Confirm the Region, Compartment, Application and Function – you probably do not have to change any of these settings. If you do, ensure that function <em>greeter</em> in application <em>go-on-oci-app</em> is selected.</p>
+
+<p>Click on <em>Create environment</em> to save the definition.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-define-environment-for-function.jpg 1x" />
+                <img loading="lazy" width="1200" height="608" src="assets/way-to-go-on-oci-article-3-define-environment-for-function.jpg" data-original="assets/way-to-go-on-oci-article-3-define-environment-for-function.jpg" alt="way-to-go-on-oci-article-3-define-environment-for-function.jpg" title="way-to-go-on-oci-article-3-define-environment-for-function.jpg" />
+            </picture>
+
+<h3 id="create-the-deploy-pipeline-for-deploying-the-function">Create the Deploy Pipeline for Deploying the Function</h3>
+
+<p>On the DevOps Project’s overview page, click on <em>Create pipeline</em>. The <em>Create pipeline</em> form is presented. Type a name (<em>deploy-greeter-function-to-go-on-oci-app</em>) and optionally a description. Then click on <em>Create pipeline</em>. The deployment pipeline is created, though it’s quite empty: not an environment into which it should deploy, no artifacts that are to be deployed, and no configuration file to define the steps to execute.</p>
+
+<p>In the pipeline editor that appears, click on the <em>Add Stage</em> tile (or on the plus icon). The next page shows a list of stage types. Click on the tile labeled <em>Uses the built-in Functions update strategy</em>.</p>
+
+<p>Press button <em>Next</em>.</p>
+
+<p>Type the stage name, e.g. <em>update-function-greeter</em>. Select the environment that was defined earlier for the function: <em>greeter-function-in-app-go-on-oci-app</em>.</p>
+
+<p>Under the heading <em>Artifact</em>, click on <em>Select Artifact</em>. A list of all artifacts in the DevOps project of type <em>Docker Image</em> is presented. Select the only entry, the one that was created earlier for the Function Container Image.</p>
+
+<p>Note that the button <em>Select Artifact</em> is no longer enabled: only a single container image can be associated with this stage.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-deployment-pipeline-stage-update-greeter-function.jpg 1x" />
+                <img loading="lazy" width="1200" height="487" src="assets/way-to-go-on-oci-article-3-deployment-pipeline-stage-update-greeter-function.jpg" data-original="assets/way-to-go-on-oci-article-3-deployment-pipeline-stage-update-greeter-function.jpg" alt="way-to-go-on-oci-article-3-deployment-pipeline-stage-update-greeter-function.jpg" title="way-to-go-on-oci-article-3-deployment-pipeline-stage-update-greeter-function.jpg" />
+            </picture>
+
+<p>Click on <em>Add</em>. The pipeline stage is created in the pipeline. And the pipeline is now ready to be executed – its definition is complete. Or is it? The artifact this pipeline makes use of is not unequivocally defined: the version label in the path for the container image contains the placeholder <code class="language-plaintext highlighter-rouge">${imageVersion}</code>. To ensure the proper version is used for deployment, this placeholder needs to be replaced with the right value. And that is arranged by defining a parameter in the pipeline that is called <code class="language-plaintext highlighter-rouge">imageVersion</code> and is set to an existing version label.</p>
+
+<p>Click on the <em>Parameters</em> tab for the pipeline. Define a new parameter called <code class="language-plaintext highlighter-rouge">imageVersion</code>. Its default value can be anything, but it might as well correspond to an existing version label for the greeter function container image. Save the parameter definition.</p>
+
+<p>It would seem that the pipeline is ready to be executed, but we still have to make sure that it’s allowed to do its job. Before you try anything rash, read the next section.</p>
+
+<h3 id="dynamic-group-and-policies">Dynamic Group and Policies</h3>
+
+<p>In the previous article, a dynamic group was defined for all deployment pipelines in the compartment. The new pipeline is automatically a member of that group. We also defined a policy that granted permissions to the dynamic group to read all artifacts, which includes (Function) Container Images in the compartment’s Container Image Registry repositories. Another policy that was also already created grants the dynamic group the very broad permission to manage all resources in the compartment. We can benefit from the broad scope of that policy, as it also covers creation and update of functions.</p>
+
+<h3 id="run-the-deployment-pipeline">Run the Deployment Pipeline</h3>
+
+<p>Run the Deployment Pipeline by pressing <em>Run pipeline</em>.</p>
+
+<p>Once the deployment is complete, you will see the green markers that proclaim success. However, there is no other obvious indication of this success because the end result is exactly the situation we had achieved with manual deployment of the function from the Fn CLI command line.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-function-deploymentpipeline-done.jpg 1x" />
+                <img loading="lazy" width="1200" height="555" src="assets/way-to-go-on-oci-article-3-function-deploymentpipeline-done.jpg" data-original="assets/way-to-go-on-oci-article-3-function-deploymentpipeline-done.jpg" alt="way-to-go-on-oci-article-3-function-deploymentpipeline-done.jpg" title="way-to-go-on-oci-article-3-function-deploymentpipeline-done.jpg" />
+            </picture>
+
+<p>To make things a little bit more interesting, we will make a change to the function’s code. Then, build the container image for the function (locally) and push the new function image to the container image registry. Then we’ll start the deployment pipeline once again; this time, when successful, it will render a new situation which we can experience by invoking the <em>my-api/greeting</em> route on the API Gateway.</p>
+
+<h4 id="change-function-implementation">Change Function Implementation</h4>
+
+<p>Make a small but visible change to <code class="language-plaintext highlighter-rouge">func.go</code> in your local environment: ensure that the response from the new version of the function looks noticeably different from the current version. Save the change.</p>
+
+<p>In the next sections, we will build a new version of the function container image from the changed source and eventually make it run on OCI Functions.</p>
+
+<h4 id="build-a-new-function-container-image-locally">Build a new Function Container Image (locally)</h4>
+
+<p>These next commands will first modify the version label used to tag the function with an increase in the third digit (<code class="language-plaintext highlighter-rouge">bm</code> is short for <code class="language-plaintext highlighter-rouge">bump</code>). Next, the function container image is built using the changed sources. The third command lists the local container images, filtering on images with <em>greeter</em> in their name. Now please execute the commands.</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn bm
+fn build 
+docker images | grep greeter
+</span></code></pre></div></div>
+
+<p>You should be able to find the newly built image with its fully qualified name, including the OCI region key, the namespace, the repository prefix, and the function name <em>greeter</em>, with the version label appended.</p>
+
+<h4 id="tag-container-image-with-a-new-version-label-and-push-to-registry">Tag Container Image with a New Version Label and Push to Registry</h4>
+
+<p>Let’s define a new identifier for the image, using this command that sets the version label to <em>0.1.0</em>:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">docker tag &lt;fully qualified image name&gt;</span>:&lt;newly assigned bumped version label&gt;  &lt;fully qualified image name&gt;:0.1.0
+</code></pre></div></div>
+
+<p>Then push the new function container image to the OCI Container Image Registry repository, using:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">docker push &lt;fully qualified image name&gt;</span>:0.1.0
+</code></pre></div></div>
+
+<p>Note that at this point we have not redeployed the function based on this new version of the container image. All we did is build the image and push it to the registry on OCI. Invoking the OCI Function will not show any difference.</p>
+
+<h4 id="run-the-deployment-pipeline-for-the-new-function-image">Run the Deployment Pipeline (for the new Function Image)</h4>
+
+<p>Run the deployment pipeline one more time. Set the value of parameter <code class="language-plaintext highlighter-rouge">imageVersion</code> to <em>0.1.0</em>.</p>
+
+<p>When the pipeline is successfully completed, the new version of the function with all the exciting changes you applied to it is live.</p>
+
+<h4 id="invoke-the-newly-deployed-function">Invoke the Newly Deployed Function</h4>
+
+<p>You can see the new function version in action by invoking it on the command line using Fn CLI:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn invoke go-on-oci-app greeter
+</span></code></pre></div></div>
+
+<p>(Because the Fn CLI’s context is still <em>go-on-oci</em> from the Oracle provider and configured for the <em>go-on-oci</em> compartment that contains the <em>greeter</em> function, this call will be directed to the OCI Function, which at this point is based on new version of the container image.)</p>
+
+<p>Alternatively you can <code class="language-plaintext highlighter-rouge">curl</code> to the route on the API Gateway that invokes the function:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">curl -X "GET" -H "Content-Type: application/json" -d '{"name":"Mickey Mouse"}' https://&lt;API Gateway endpoint&gt;</span>/my-api/greeting
+</code></pre></div></div>
+
+<h2 id="automated-build-of-functions">Automated Build of Functions</h2>
+
+<p>Until now, we’ve built the function container image by hand in the local development environment using the Fn CLI. However, just as we did in the previous article for the Go application that was produced as an executable by a Build Pipeline, we will now turn the building of the function into an automated process. An OCI DevOps Build Pipeline is created to take sources from the Code Repository, run a managed build stage that produces a local container image, and then publish this image as an artifact to the Container Image Registry repository. As a last step, the Build Pipeline triggers the Deployment Pipeline to publish the latest definition of the function to the runtime OCI Functions environment.</p>
+
+<p>When all the elements are in place, the total interconnected set of OCI components looks as visualized in the next figure.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-tying-function-build-and-deploy-together.jpg 1x" />
+                <img loading="lazy" width="1022" height="833" src="assets/way-to-go-on-oci-article-3-tying-function-build-and-deploy-together.jpg" data-original="assets/way-to-go-on-oci-article-3-tying-function-build-and-deploy-together.jpg" alt="way-to-go-on-oci-article-3-tying-function-build-and-deploy-together.jpg" title="way-to-go-on-oci-article-3-tying-function-build-and-deploy-together.jpg" />
+            </picture>
+
+<p>The artifact and the deployment pipeline shown in this figure are already defined in the DevOps project, as are the Application, Function, and Container Image Registry repository for the images for the function.  We will use the Code Repository set up in the previous article. All we need to create is the Build Pipeline <em>build-greeter-function</em> with its three stages.</p>
+
+<h4 id="create-the-build-pipeline">Create the Build Pipeline</h4>
+
+<p>On the overview page for DevOps Project <em>go-on-oci</em>, click on button <em>Create build pipeline</em>. A page is presented for specifying the name – e.g. <em>build-greeter-function</em> – and a description. Press <em>Create</em> to have the build pipeline added to the DevOps Project.</p>
+
+<p>Click on the link <em>build-greeter-function</em> in the list to navigate to the details page.</p>
+
+<h4 id="first-stage--managed-build">First Stage – Managed Build</h4>
+
+<p>The first stage in any build pipeline is a <em>Managed Build</em> stage. This stage provides instructions for the pipeline to get hold of a build server, copy specified sources from code repositories to the server, and run through a number of actions on that server. At the time of this writing, we can use a single image for the build server. It is an Oracle Linux image (8 GB memory, 1 OCPU) that has a number of pre installed tools and language run times. For building the function container image, it is relevant that the build server is equipped with both Docker and Fn CLI.</p>
+
+<p>Click on either the plus icon or the <em>Add Stage</em> card. The two-step <em>Add a stage</em> wizard appears. On step one in the wizard, make sure that the <em>Managed Build</em> card is selected for the type of stage. Press <em>Next</em>.</p>
+
+<p>The second page is shown. Define a name for the build stage: <em>build-go-source-to-function-container-image</em>. Optionally add a description.</p>
+
+<p>At present, we cannot select a different build image, so we settle for the one available, which is fine for our purposes.</p>
+
+<p>Set the <em>Build spec file path</em> to <code class="language-plaintext highlighter-rouge">/functions/greeter/go-function-build-spec.yaml</code>. This file contains the instructions for building the Go sources in the <em>greeter</em> function (or any other Go function) and finally building the function container image.</p>
+
+<p>Click on the <em>Select</em> button under <em>Primary code repository</em>. We can now specify from which code repository the build will get its sources. Select <em>OCI Code Repository</em> as the <em>Source Connection Type</em>. Then select the <em>go-on-oci-repo</em> repository. We will work with sources on the main branch, so do not change that default. Type <em>go-on-oci-sources</em> as the value for <em>Build source name</em>. A managed build stage can use sources from multiple repositories. In the build specification, we can refer to each of these sources’ root locations using the label defined as <em>Build source name</em>. Click on <em>Save</em>.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-define-managed-build-stage-greeter-function.jpg 1x" />
+                <img loading="lazy" width="1200" height="501" src="assets/way-to-go-on-oci-article-3-define-managed-build-stage-greeter-function.jpg" data-original="assets/way-to-go-on-oci-article-3-define-managed-build-stage-greeter-function.jpg" alt="way-to-go-on-oci-article-3-define-managed-build-stage-greeter-function.jpg" title="way-to-go-on-oci-article-3-define-managed-build-stage-greeter-function.jpg" />
+            </picture>
+
+<p>Press button <em>Add</em>. This completes the definition of the managed build stage. This is all that’s needed to take sources and process them into artifacts. The detailed instructions executed by this managed build stage and on the build server are defined in the <code class="language-plaintext highlighter-rouge">go-function-build-spec.yaml</code> file. It is this file that contains the instructions for the actual detailed steps executed on the build server.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">version</span><span class="pi">:</span> <span class="m">0.1</span>
+<span class="na">component</span><span class="pi">:</span> <span class="s">build</span>
+<span class="na">timeoutInSeconds</span><span class="pi">:</span> <span class="m">6000</span>
+<span class="na">runAs</span><span class="pi">:</span> <span class="s">root</span>
+<span class="na">shell</span><span class="pi">:</span> <span class="s">bash</span>
+<span class="na">env</span><span class="pi">:</span>
+  <span class="c1"># these are local variables to the build config</span>
+  <span class="na">variables</span><span class="pi">:</span>
+     <span class="na">SOURCE_DIRECTORY</span><span class="pi">:</span> <span class="s2">"</span><span class="s">go-on-oci-sources/functions/greeter"</span>
+     <span class="na">FUNCTION_NAME</span><span class="pi">:</span> <span class="s2">"</span><span class="s">greeter"</span>
+
+  <span class="c1"># # the value of a vaultVariable is the secret-id (in OCI ID format) stored in the OCI Vault service</span>
+  <span class="c1"># you can then access the value of that secret in your build_spec.yaml commands</span>
+  <span class="na">vaultVariables</span><span class="pi">:</span>
+
+  <span class="c1"># exportedVariables are made available to use in sucessor stages in this Build Pipeline</span>
+  <span class="c1"># For this Build to run, the Build Pipeline needs to have a BUILDRUN_HASH parameter set</span>
+  <span class="na">exportedVariables</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">BUILDRUN_HASH</span>
+
+
+<span class="na">steps</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">Command</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Export</span><span class="nv"> </span><span class="s">variables"</span>
+    <span class="na">timeoutInSeconds</span><span class="pi">:</span> <span class="m">40</span>
+    <span class="na">command</span><span class="pi">:</span> <span class="pi">|</span>
+      <span class="s">export BUILDRUN_HASH=`echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7`</span>
+      <span class="s">echo "BUILDRUN_HASH: " $BUILDRUN_HASH</span>
+      <span class="s">echo "fully qual sources" ${OCI_WORKSPACE_DIR}/${SOURCE_DIRECTORY}</span>
+      <span class="s">echo "container image version from build pipeline parameter" ${imageVersion}      </span>
+      <span class="s">go version</span>
+
+  <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">Command</span>
+    <span class="na">timeoutInSeconds</span><span class="pi">:</span> <span class="m">600</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Install</span><span class="nv"> </span><span class="s">golangci-lint"</span>
+    <span class="na">command</span><span class="pi">:</span> <span class="pi">|</span>
+      <span class="s">curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.37.1</span>
+
+  <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">Command</span>
+    <span class="na">timeoutInSeconds</span><span class="pi">:</span> <span class="m">600</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Verify</span><span class="nv"> </span><span class="s">golangci-lint</span><span class="nv"> </span><span class="s">version"</span>
+    <span class="na">command</span><span class="pi">:</span> <span class="pi">|</span>
+      <span class="s">/root/go/bin/golangci-lint version</span>
+
+  <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">Command</span>
+    <span class="na">timeoutInSeconds</span><span class="pi">:</span> <span class="m">600</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Run</span><span class="nv"> </span><span class="s">go</span><span class="nv"> </span><span class="s">mod</span><span class="nv"> </span><span class="s">tidy</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Go</span><span class="nv"> </span><span class="s">Application"</span>
+    <span class="na">command</span><span class="pi">:</span> <span class="pi">|</span>
+      <span class="s">cd ${OCI_WORKSPACE_DIR}/${SOURCE_DIRECTORY}</span>
+      <span class="s">go mod tidy</span>
+
+  <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">Command</span>
+    <span class="na">timeoutInSeconds</span><span class="pi">:</span> <span class="m">600</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Run</span><span class="nv"> </span><span class="s">go</span><span class="nv"> </span><span class="s">vet</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Go</span><span class="nv"> </span><span class="s">Application"</span>
+    <span class="na">command</span><span class="pi">:</span> <span class="pi">|</span>
+      <span class="s">cd ${OCI_WORKSPACE_DIR}/${SOURCE_DIRECTORY}</span>
+      <span class="s">go vet .</span>
+
+  <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">Command</span>
+    <span class="na">timeoutInSeconds</span><span class="pi">:</span> <span class="m">600</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Run</span><span class="nv"> </span><span class="s">gofmt</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Go</span><span class="nv"> </span><span class="s">Application"</span>
+    <span class="na">command</span><span class="pi">:</span> <span class="pi">|</span>
+      <span class="s">gofmt -w ${OCI_WORKSPACE_DIR}/${SOURCE_DIRECTORY}</span>
+
+  <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">Command</span>
+    <span class="na">timeoutInSeconds</span><span class="pi">:</span> <span class="m">600</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Run</span><span class="nv"> </span><span class="s">Lint</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Go</span><span class="nv"> </span><span class="s">Application"</span>
+    <span class="na">command</span><span class="pi">:</span> <span class="pi">|</span>
+      <span class="s">cd ${OCI_WORKSPACE_DIR}/${SOURCE_DIRECTORY}</span>
+      <span class="s">/root/go/bin/golangci-lint run .</span>
+
+  <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">Command</span>
+    <span class="na">timeoutInSeconds</span><span class="pi">:</span> <span class="m">600</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Run</span><span class="nv"> </span><span class="s">Unit</span><span class="nv"> </span><span class="s">Tests</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Go</span><span class="nv"> </span><span class="s">Application</span><span class="nv"> </span><span class="s">(with</span><span class="nv"> </span><span class="s">verbose</span><span class="nv"> </span><span class="s">output)"</span>
+    <span class="na">command</span><span class="pi">:</span> <span class="pi">|</span>
+      <span class="s">cd ${OCI_WORKSPACE_DIR}/${SOURCE_DIRECTORY}</span>
+      <span class="s">go test -v </span>
+  
+  <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">Command</span>
+    <span class="na">timeoutInSeconds</span><span class="pi">:</span> <span class="m">600</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Build</span><span class="nv"> </span><span class="s">Go</span><span class="nv"> </span><span class="s">Function</span><span class="nv"> </span><span class="s">into</span><span class="nv"> </span><span class="s">Function</span><span class="nv"> </span><span class="s">Container</span><span class="nv"> </span><span class="s">Image"</span>
+    <span class="na">command</span><span class="pi">:</span> <span class="pi">|</span>
+      <span class="s">cd ${OCI_WORKSPACE_DIR}/${SOURCE_DIRECTORY}</span>
+      <span class="s">pwd</span>
+      <span class="s">fn build --verbose</span>
+      <span class="s">image=$(docker images | grep $FUNCTION_NAME  | awk -F ' ' '{print $3}') ; docker tag $image go-function-container-image    </span>
+
+
+<span class="na">outputArtifacts</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">go-function-container-image</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">DOCKER_IMAGE</span>
+    <span class="c1"># this location tag doesn't effect the tag used to deliver the container image</span>
+    <span class="c1"># to the Container Registry</span>
+    <span class="na">location</span><span class="pi">:</span> <span class="s">go-function-container-image:latest</span>
+</code></pre></div></div>
+
+<p>The build specification consists of three parts:</p>
+
+<ol>
+  <li>Set up who to run the script as, which shell to use, and which variables to use</li>
+  <li><strong>Build steps</strong>: Shell commands to execute on the build server</li>
+  <li><strong>Output Artifacts</strong> indicate which files at the end of all build steps are meaningful and to be made available to other steps in the pipeline (for example to publish as artifact)</li>
+</ol>
+
+<p>The build steps can be summarized as:</p>
+
+<ol>
+  <li>Print environment variables and currently installed Go version (on the vanilla build server)</li>
+  <li>Install <code class="language-plaintext highlighter-rouge">golangci-lint</code></li>
+  <li>Verify success and version of <code class="language-plaintext highlighter-rouge">golangci-lint</code> installation</li>
+  <li>Run <code class="language-plaintext highlighter-rouge">go mod tidy</code> to organize the go.mod file with dependencies</li>
+  <li>Run <code class="language-plaintext highlighter-rouge">go vet</code> to run a first inspection on the Go Sources</li>
+  <li>Run <code class="language-plaintext highlighter-rouge">go fmt</code> to format the sources according to generic formatting rules</li>
+  <li>Run <code class="language-plaintext highlighter-rouge">golangci-lint</code> to lint (check) the sources against various linting rules</li>
+  <li>Run unit tests</li>
+  <li>Build function sources into a <em>Function Container Image</em> using the Fn CLI (store in local image registry)</li>
+  <li>Tag the <em>Function Container Image</em> with the name <em>go-function-container-image</em>. This is the name used in the next stage to find the image to publish</li>
+</ol>
+
+<p>These steps are largely equivalent to the managed build defined in the previous article for the Go application that was finally turned into a binary executable deployed on a VM. Steps 9 and 10 are different – these turn the Go application into a <em>Function Container Image</em> that is the final product of the build.</p>
+
+<h4 id="second-stage--publish-artifact">Second Stage – Publish Artifact</h4>
+
+<p>In the overview page for the build pipeline, click on the plus icon at the bottom of the current managed build stage. In the context menu that pops up, click on <em>Add stage</em>. The stage wizard appears.</p>
+
+<p>Click on <em>Deliver artifacts</em>. Then click <em>Next</em>.</p>
+
+<p>Enter the name for this stage: <em>publish-greeter-function-container-image</em>. We need to select the artifact in the DevOps project that we want to publish. This artifact is the container image <em>go-on-oci/greeter:${imageVersion}</em>. Click on <em>Select artifact(s)</em> and select the container image.</p>
+
+<p>In the area <em>Associate artifacts with build result</em>, we have to indicate for each of the artifacts selected which of the outcomes of a managed build stage is the source for publishing the artifact. The build specification defines an output labeled <em>go-function-container-image</em>. This output refers to the container image that is produced on the build server by the function build process. Enter the label <em>go-function-container-image</em> in the field <em>Build config/result artifact name</em>. The press the <em>Add</em> button to create the <em>Deliver Artifacts</em> stage.</p>
+
+<h4 id="third-stage--trigger-deployment-pipeline">Third Stage – Trigger Deployment Pipeline</h4>
+
+<p>In the overview page for the build pipeline, click on the plus icon at the bottom of the <em>Deliver artifacts</em> stage. In the context menu that pops up, click on <em>Add stage</em>. The stage wizard appears.</p>
+
+<p>Click on <em>Trigger deployment</em>. Then click on <em>Next</em>.</p>
+
+<p>Type a name for the stage: <em>trigger-deployment-of-greeter-function-to-go-on-oci-app</em>, and optionally a description. Click on the button <em>Select deployment pipeline</em>. Select the pipeline <em>deploy-greeter-function-to-go-on-oci-app</em>. Details of the pipeline are shown, including parameters (<em>imageVersion</em>) and the artifact used by the deployment.</p>
+
+<p>Click on <em>Add</em> to complete the stage definition and add it to the build pipeline.</p>
+
+<p>This completes the build pipeline: it grabs sources, processes them into a deployable artifact, publishes the artifact to the image repository and triggers the deployment pipeline to take it from there.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-complete-buildpipeline.jpg 1x" />
+                <img loading="lazy" width="941" height="712" src="assets/way-to-go-on-oci-article-3-complete-buildpipeline.jpg" data-original="assets/way-to-go-on-oci-article-3-complete-buildpipeline.jpg" alt="way-to-go-on-oci-article-3-complete-buildpipeline.jpg" title="way-to-go-on-oci-article-3-complete-buildpipeline.jpg" />
+            </picture>
+
+<h3 id="run-build-pipeline-and-trigger-deployment-pipeline">Run Build Pipeline and Trigger Deployment Pipeline</h3>
+
+<p>Click on <em>Start manual run</em>. Define a value for parameter <em>imageVersion</em>, e.g. <em>0.2.0</em>. Click on the button to launch the build pipeline.</p>
+
+<p>It will now take a few minutes to complete the build pipeline and trigger the subsequent deployment of the newly built function image.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-run-of-buildpipeline.jpg 1x" />
+                <img loading="lazy" width="1200" height="564" src="assets/way-to-go-on-oci-article-3-run-of-buildpipeline.jpg" data-original="assets/way-to-go-on-oci-article-3-run-of-buildpipeline.jpg" alt="way-to-go-on-oci-article-3-run-of-buildpipeline.jpg" title="way-to-go-on-oci-article-3-run-of-buildpipeline.jpg" />
+            </picture>
+
+<p>When all is done and success is reported, you can invoke the route on the API Gateway that leads to the <em>greeter</em> function to check if the response is indeed the new one expected.</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">curl -X "GET" -H "Content-Type: application/json" -d '{"name":"Mickey Mouse"}' https://&lt;API Gateway endpoint&gt;</span>/my-api/greeting
+<span class="go">
+{"message":"Extremely hot greetings from your automatically built and deployed function dear  Mickey Mouse"}
+</span></code></pre></div></div>
+
+<p>This is a moment for a little celebration. We have achieved an automated end-to-end process that takes Go application sources from the Code Repository and delivers – after linting, vetting, testing and building – a live running new version of a serverless OCI Function. To produce further updates to the function, all we need to do is commit the change and trigger the build pipeline. And as a next step, we can even trigger the build pipeline automatically when a (specific) commit happens in the Code Repository.</p>
+
+<p>In the second part of this article, we will discuss using OCI services from Go applications in general, and from Go functions in particular. The use of the Go SDK for OCI is introduced and interactions with the OCI Object Storage Service is demonstrated.</p>
+
+<h2 id="go-sdk-for-oci--interaction-with-oci-object-storage-from-go-applications">Go SDK for OCI – Interaction with OCI Object Storage from Go applications</h2>
+
+<p>Oracle Cloud Infrastructure is the platform that can build and run applications developed in Go. Either in compute instances or as serverless functions, and also containerized on a managed Kubernetes cluster (as we will discuss in part five of this series). It is good to realize that OCI is much more for Go development teams than a runtime platform. OCI offers many services that can be leveraged from applications. Services for storing files, relational or “NoSQL” data, for handling publication and consumption of messages. Services for transferring and analyzing data. And services that support operations on applications, such as monitoring.</p>
+
+<p>Interacting with OCI services can be done through the REST APIs available for every aspect of all services. Calling REST services with JSON payloads over HTTP is easy enough from a Go application. There is one complicating factor: these API calls need to be signed. The Oracle Cloud Infrastructure signature uses the “Signature” Authentication scheme (with an Authorization header), and the signing process is not exactly trivial. For details on this signing process, see <a href="https://docs.oracle.com/en-us/iaas/Content/API/Concepts/signingrequests.htm#Request_Signatures">OCI Documentation – OCI REST API Request Signatures </a>.</p>
+
+<p>Fortunately for development of Go applications that call out to OCI services, we can make use of the Go SDK for OCI. This open source development kit facilitates signing the OCI API requests. Using the SDK, the calls to OCI services are made as local calls using strongly-typed predefined structs instead of dealing with JSON request and response bodies. The Go SDK for OCI uses the same <code class="language-plaintext highlighter-rouge">config</code> file that we used earlier for the Fn CLI and the OCI CLI. The default location for this file is <code class="language-plaintext highlighter-rouge">$HOME/.oci</code>. This file directs the Go SDK to a specific tenancy and region for a user account using the private key half of the pair set up for the user. Go applications that use the Go SDK for OCI can simply build on this configuration without having to deal with any of the details.</p>
+
+<p>The documentation for the Go SDK for OCI can be found in the <a href="https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/gosdk.htm">OCI Documentation – SDK for Go</a>.</p>
+
+<p>In this section, we will develop a simple Go application that uses the OCI Object Storage Service for creating and reading files. At first, this is a standalone application that can be compiled and run everywhere (as long as the OCI config file us available). Then we discuss running the Go application inside OCI – on a VM or as Function. This special focus is relevant because when the Go SDK is used inside OCI, it can leverage the identity and privileges of the component running the application. That means that code running on OCI does not need to bring their own OCI config file, and thus is even simpler.</p>
+
+<h3 id="any-go-application-talking-to-oci-object-storage-service">Any Go Application talking to OCI Object Storage Service</h3>
+
+<p>First, let us create a very simple Go application that can connect to OCI through the SDK. Next, we’ll use this foundation to add the interaction with the Object Storage Service.</p>
+
+<h4 id="the-simplest-go-client-of-oci">The Simplest Go Client of OCI</h4>
+
+<p>The simplest Go application that talks to OCI using the Go SDK for OCI is created as follows:</p>
+
+<ol>
+  <li>Create a directory for the application</li>
+  <li>Create <code class="language-plaintext highlighter-rouge">go.mod</code> file with dependencies on Go SDK for OCI package</li>
+  <li>Run <code class="language-plaintext highlighter-rouge">go mod tidy</code> to create <code class="language-plaintext highlighter-rouge">go.sum</code> file and download required packages</li>
+  <li>Create file <code class="language-plaintext highlighter-rouge">oci-client.go</code> with the code for talking to OCI</li>
+</ol>
+
+<p>The assumption is that the OCI configuration file that was discussed earlier in this article is located in the default location with the default name: <code class="language-plaintext highlighter-rouge">$HOME/.oci/config</code>. If the file is in a different location, you can make use of the function <code class="language-plaintext highlighter-rouge">ConfigurationProviderFromFile</code> in the package <em>github.com/oracle/oci-go-sdk/v65/common</em>, which accepts the custom location of the config file.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">go.mod</code> file contains this contents:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">module</span> <span class="n">oci</span><span class="o">-</span><span class="n">client</span>
+
+<span class="k">go</span> <span class="m">1.16</span>
+
+<span class="n">require</span> <span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">oracle</span><span class="o">/</span><span class="n">oci</span><span class="o">-</span><span class="k">go</span><span class="o">-</span><span class="n">sdk</span><span class="o">/</span><span class="n">v65</span> <span class="n">v65</span><span class="m">.2.0</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">github.com/oracle/oci-go-sdk/v65</code> bit references the most recent (at the time of writing) version of the Go SDK. The sources are downloaded based on this reference. In the Go application, this means that we can leverage the packages in the SDK to access various services in the OCI portfolio.</p>
+
+<p>File <code class="language-plaintext highlighter-rouge">oci-client.go</code> contains this code that uses the <em>common</em> and <em>identity</em> packages:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+  <span class="s">"context"</span>
+  <span class="s">"fmt"</span>
+
+  <span class="s">"github.com/oracle/oci-go-sdk/v65/common"</span>
+  <span class="s">"github.com/oracle/oci-go-sdk/v65/identity"</span>
+<span class="p">)</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>    
+  <span class="n">c</span><span class="p">,</span> <span class="n">_</span> <span class="o">:=</span> <span class="n">identity</span><span class="o">.</span><span class="n">NewIdentityClientWithConfigurationProvider</span><span class="p">(</span><span class="n">common</span><span class="o">.</span><span class="n">DefaultConfigProvider</span><span class="p">())</span>
+  <span class="n">tenancyID</span><span class="p">,</span> <span class="n">_</span> <span class="o">:=</span> <span class="n">common</span><span class="o">.</span><span class="n">DefaultConfigProvider</span><span class="p">()</span><span class="o">.</span><span class="n">TenancyOCID</span><span class="p">()</span>
+  <span class="n">request</span> <span class="o">:=</span> <span class="n">identity</span><span class="o">.</span><span class="n">GetCompartmentRequest</span><span class="p">{</span>
+    <span class="n">CompartmentId</span><span class="o">:</span> <span class="o">&amp;</span><span class="n">tenancyID</span><span class="p">,</span>
+  <span class="p">}</span>
+  <span class="n">response</span><span class="p">,</span> <span class="n">_</span> <span class="o">:=</span> <span class="n">c</span><span class="o">.</span><span class="n">GetCompartment</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">Background</span><span class="p">(),</span> <span class="n">request</span><span class="p">)</span>
+  <span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"Name of Root Compartment: %v"</span><span class="p">,</span> <span class="o">*</span><span class="n">response</span><span class="o">.</span><span class="n">Compartment</span><span class="o">.</span><span class="n">Name</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>The first line in the function acquires the client that can subsequently be used for most interactions with OCI, such as the <code class="language-plaintext highlighter-rouge">GetCompartment</code> call that returns the details for the root compartment.</p>
+
+<p>The application can be executed using <code class="language-plaintext highlighter-rouge">go run oci-client.go</code> and will produce very simple output:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Name of Root Compartment: &lt;name of your OCI tenancy&gt;
+</code></pre></div></div>
+
+<p>Even though the result is not especially remarkable, the fact that there is output is proof that the Go SDK for OCI is working and is ready to be leveraged for more lofty activities.</p>
+
+<p>Note that the code completely ignores the errors that can occur. If you run into errors, replace the underscores with a variable to capture and handle that error.</p>
+
+<h4 id="go-application-creating-and-retrieving-objects-in-and-from-oci-object-storage-service">Go Application Creating and Retrieving Objects in and from OCI Object Storage Service</h4>
+
+<p>The OCI Object Storage Service offers cheap and persistent storage for different types of data. Objects, large and small, can programmatically be stored on this service to be retained for short or long periods of time, and to be accessed programmatically or through direct URLs. Object Storage provides versioning, different retention rules, encryption of any stored data, object lifecycle management, automated time-based removal, and different storage tiers.</p>
+
+<p>Objects on Object Storage Service are organized in <em>buckets</em>. A bucket is a logical container of objects that lives in a specific compartment. Some operations can be performed on all objects in a bucket.</p>
+
+<p>The Go SDK for OCI offers functions and types that make it easy and straightforward to work with the Object Storage Service from Go applications. Operations to manipulate buckets and create, delete, and retrieve objects are readily available.</p>
+
+<p>For details on the Object Storage package in the Go SDK for OCI, check out this reference: <a href="https://pkg.go.dev/github.com/oracle/oci-go-sdk/v65@v65.2.0/objectstorage">Documentation for Object Storage Package in Go SDK for OCI</a>.</p>
+
+<p>The source repository for this article contains the folder <code class="language-plaintext highlighter-rouge">applications/store-n-retrieve</code>, which has a simple Go application that connects to your OCI tenancy and creates a bucket, followed by the creation of an object and retrieval of that same object. The application uses the same <code class="language-plaintext highlighter-rouge">DefaultConfigProvider</code> that was used the previous section to sign requests to OCI APIs using the <code class="language-plaintext highlighter-rouge">$HOME/.oci/config</code> file.</p>
+
+<p>The dependency of this application on the Go SDK for OCI is defined in <code class="language-plaintext highlighter-rouge">go.mod</code>.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-goclientapp-object-storage.jpg 1x" />
+                <img loading="lazy" width="825" height="749" src="assets/way-to-go-on-oci-article-3-goclientapp-object-storage.jpg" data-original="assets/way-to-go-on-oci-article-3-goclientapp-object-storage.jpg" alt="way-to-go-on-oci-article-3-goclientapp-object-storage.jpg" title="way-to-go-on-oci-article-3-goclientapp-object-storage.jpg" />
+            </picture>
+
+<p>The first part of the code creates an <code class="language-plaintext highlighter-rouge">ObjectStorageClient</code> instance. Many functions are defined on the underlying interface – all supporting some form of interaction with the Object Storage Service. The <code class="language-plaintext highlighter-rouge">ObjectStorageClient</code> is created using <code class="language-plaintext highlighter-rouge">common.DefaultConfigProvider()</code> (just as before), using the default OCI configuration file with a reference to a file containing the private key.</p>
+
+<p>Function <code class="language-plaintext highlighter-rouge">getNamespace</code> is called to get the <em>namespace</em> for the current tenancy. Then <code class="language-plaintext highlighter-rouge">ensureBucketExists</code> is called with the name of bucket to create the bucket if it does not already exist.</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+  <span class="s">"bytes"</span>
+  <span class="s">"context"</span>
+  <span class="s">"fmt"</span>
+  <span class="s">"io"</span>
+  <span class="s">"io/ioutil"</span>
+
+  <span class="s">"github.com/oracle/oci-go-sdk/v65/common"</span>
+  <span class="s">"github.com/oracle/oci-go-sdk/v65/objectstorage"</span>
+<span class="p">)</span>
+
+<span class="k">const</span> <span class="p">(</span>
+  <span class="n">bucketName</span>      <span class="o">=</span> <span class="s">"go-bucket"</span> <span class="c">// feel free to use a different name for the bucket</span>
+  <span class="n">compartmentOCID</span> <span class="o">=</span> <span class="s">"&lt;compartment-OCID"</span> <span class="c">// replace with the OCID of the go-on-oci compartment in your tenancy</span>
+  <span class="n">objectName</span>      <span class="o">=</span> <span class="s">"welcome.txt"</span> <span class="c">// feel free to use a different name for the object</span>
+<span class="p">)</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">objectStorageClient</span><span class="p">,</span> <span class="n">cerr</span> <span class="o">:=</span> <span class="n">objectstorage</span><span class="o">.</span><span class="n">NewObjectStorageClientWithConfigurationProvider</span><span class="p">(</span><span class="n">common</span><span class="o">.</span><span class="n">DefaultConfigProvider</span><span class="p">())</span>
+  <span class="k">if</span> <span class="n">cerr</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"failed to create ObjectStorageClient : %s"</span><span class="p">,</span> <span class="n">cerr</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="n">ctx</span> <span class="o">:=</span> <span class="n">context</span><span class="o">.</span><span class="n">Background</span><span class="p">()</span>
+  <span class="n">namespace</span><span class="p">,</span> <span class="n">cerr</span> <span class="o">:=</span> <span class="n">getNamespace</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">objectStorageClient</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">cerr</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"failed to get namespace : %s"</span><span class="p">,</span> <span class="n">cerr</span><span class="p">)</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"Namespace : %s"</span><span class="p">,</span> <span class="n">namespace</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="n">err</span> <span class="o">:=</span> <span class="n">ensureBucketExists</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">objectStorageClient</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">bucketName</span><span class="p">,</span> <span class="n">compartmentOCID</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"failed to read or create bucket : %s"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="o">.........................</span>
+</code></pre></div></div>
+
+<p>The functions invoked in this snippet to retrieve the namespace and check the existence of the bucket (and create it if it does not exist) are quite straightforward. They are defined as follows:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">getNamespace</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">client</span> <span class="n">objectstorage</span><span class="o">.</span><span class="n">ObjectStorageClient</span><span class="p">)</span> <span class="p">(</span><span class="kt">string</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">request</span> <span class="o">:=</span> <span class="n">objectstorage</span><span class="o">.</span><span class="n">GetNamespaceRequest</span><span class="p">{}</span>
+  <span class="n">response</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">client</span><span class="o">.</span><span class="n">GetNamespace</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="o">*</span><span class="n">response</span><span class="o">.</span><span class="n">Value</span><span class="p">,</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Errorf</span><span class="p">(</span><span class="s">"failed to retrieve tenancy namespace : %w"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="o">*</span><span class="n">response</span><span class="o">.</span><span class="n">Value</span><span class="p">,</span> <span class="no">nil</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">ensureBucketExists</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">client</span> <span class="n">objectstorage</span><span class="o">.</span><span class="n">ObjectStorageClient</span><span class="p">,</span> <span class="n">namespace</span> <span class="kt">string</span><span class="p">,</span> <span class="n">name</span> <span class="kt">string</span><span class="p">,</span> <span class="n">compartmentOCID</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+  <span class="n">req</span> <span class="o">:=</span> <span class="n">objectstorage</span><span class="o">.</span><span class="n">GetBucketRequest</span><span class="p">{</span>
+    <span class="n">NamespaceName</span><span class="o">:</span> <span class="o">&amp;</span><span class="n">namespace</span><span class="p">,</span>
+    <span class="n">BucketName</span><span class="o">:</span>    <span class="o">&amp;</span><span class="n">name</span><span class="p">,</span>
+  <span class="p">}</span>
+  <span class="c">// verify if bucket exists.</span>
+  <span class="n">response</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">client</span><span class="o">.</span><span class="n">GetBucket</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">req</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">RawResponse</span><span class="o">.</span><span class="n">StatusCode</span> <span class="o">==</span> <span class="m">404</span> <span class="p">{</span>
+      <span class="n">err</span> <span class="o">=</span> <span class="n">createBucket</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">compartmentOCID</span><span class="p">)</span>
+      <span class="k">return</span> <span class="n">err</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">err</span>
+  <span class="p">}</span>
+  <span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"bucket %s already exists"</span><span class="p">,</span> <span class="n">bucketName</span><span class="p">)</span>
+  <span class="k">return</span> <span class="no">nil</span>
+<span class="p">}</span>
+
+<span class="c">// bucketname needs to be unique within compartment. there is no concept of "child" buckets. using "/" separator characters in the name, the suggestion of nested bucket can be created</span>
+<span class="k">func</span> <span class="n">createBucket</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">client</span> <span class="n">objectstorage</span><span class="o">.</span><span class="n">ObjectStorageClient</span><span class="p">,</span> <span class="n">namespace</span> <span class="kt">string</span><span class="p">,</span> <span class="n">name</span> <span class="kt">string</span><span class="p">,</span> <span class="n">compartmentOCID</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+  <span class="n">request</span> <span class="o">:=</span> <span class="n">objectstorage</span><span class="o">.</span><span class="n">CreateBucketRequest</span><span class="p">{</span>
+    <span class="n">NamespaceName</span><span class="o">:</span> <span class="o">&amp;</span><span class="n">namespace</span><span class="p">,</span>
+  <span class="p">}</span>
+  <span class="n">request</span><span class="o">.</span><span class="n">CompartmentId</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">compartmentOCID</span>
+  <span class="n">request</span><span class="o">.</span><span class="n">Name</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">name</span>
+  <span class="n">request</span><span class="o">.</span><span class="n">Metadata</span> <span class="o">=</span> <span class="nb">make</span><span class="p">(</span><span class="k">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span><span class="p">)</span>
+  <span class="n">request</span><span class="o">.</span><span class="n">PublicAccessType</span> <span class="o">=</span> <span class="n">objectstorage</span><span class="o">.</span><span class="n">CreateBucketDetailsPublicAccessTypeNopublicaccess</span>
+  <span class="n">_</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">client</span><span class="o">.</span><span class="n">CreateBucket</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Errorf</span><span class="p">(</span><span class="s">"failed to create bucket on OCI : %w"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"created bucket : %s"</span><span class="p">,</span> <span class="n">bucketName</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="no">nil</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The second part of this application creates an object in the bucket and subsequently retrieves that object. When the application is done executing, it will have a persistent effect: the bucket has been created (if it did not already exist) and an object was created or updated (if the application has been run before). You can check in the details page for bucket <em>go-bucket</em> in the OCI console to see both the bucket and the object that was created.</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">..................</span>
+
+  <span class="n">contentToWrite</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">(</span><span class="s">"We would like to welcome you in our humble dwellings. /n We consider it a great honor. Bla, bla."</span><span class="p">)</span>
+  <span class="n">objectLength</span> <span class="o">:=</span> <span class="kt">int64</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">contentToWrite</span><span class="p">))</span>
+  <span class="n">err</span> <span class="o">=</span> <span class="n">putObject</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">objectStorageClient</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">bucketName</span><span class="p">,</span> <span class="n">objectName</span><span class="p">,</span> <span class="n">objectLength</span><span class="p">,</span> <span class="n">ioutil</span><span class="o">.</span><span class="n">NopCloser</span><span class="p">(</span><span class="n">bytes</span><span class="o">.</span><span class="n">NewReader</span><span class="p">(</span><span class="n">contentToWrite</span><span class="p">)))</span>
+  <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"failed to write object to OCI Object storage : %s"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="k">var</span> <span class="n">contentRead</span> <span class="p">[]</span><span class="kt">byte</span>
+  <span class="n">contentRead</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">getObject</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">objectStorageClient</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">bucketName</span><span class="p">,</span> <span class="n">objectName</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"failed to get object %s from OCI Object storage : %s"</span><span class="p">,</span> <span class="n">objectName</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"Object read from OCI Object Storage contains this content: %s"</span><span class="p">,</span> <span class="n">contentRead</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">putObject</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">client</span> <span class="n">objectstorage</span><span class="o">.</span><span class="n">ObjectStorageClient</span><span class="p">,</span> <span class="n">namespace</span> <span class="kt">string</span><span class="p">,</span> <span class="n">bucketName</span> <span class="kt">string</span><span class="p">,</span> <span class="n">objectname</span> <span class="kt">string</span><span class="p">,</span> <span class="n">contentLen</span> <span class="kt">int64</span><span class="p">,</span> <span class="n">content</span> <span class="n">io</span><span class="o">.</span><span class="n">ReadCloser</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+  <span class="n">request</span> <span class="o">:=</span> <span class="n">objectstorage</span><span class="o">.</span><span class="n">PutObjectRequest</span><span class="p">{</span>
+    <span class="n">NamespaceName</span><span class="o">:</span> <span class="o">&amp;</span><span class="n">namespace</span><span class="p">,</span>
+    <span class="n">BucketName</span><span class="o">:</span>    <span class="o">&amp;</span><span class="n">bucketName</span><span class="p">,</span>
+    <span class="n">ObjectName</span><span class="o">:</span>    <span class="o">&amp;</span><span class="n">objectname</span><span class="p">,</span>
+    <span class="n">ContentLength</span><span class="o">:</span> <span class="o">&amp;</span><span class="n">contentLen</span><span class="p">,</span>
+    <span class="n">PutObjectBody</span><span class="o">:</span> <span class="n">content</span><span class="p">,</span>
+  <span class="p">}</span>
+  <span class="n">_</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">client</span><span class="o">.</span><span class="n">PutObject</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+  <span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"Put object %s in bucket %s"</span><span class="p">,</span> <span class="n">objectname</span><span class="p">,</span> <span class="n">bucketName</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Errorf</span><span class="p">(</span><span class="s">"failed to put object on OCI : %w"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="no">nil</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">getObject</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">client</span> <span class="n">objectstorage</span><span class="o">.</span><span class="n">ObjectStorageClient</span><span class="p">,</span> <span class="n">namespace</span> <span class="kt">string</span><span class="p">,</span> <span class="n">bucketName</span> <span class="kt">string</span><span class="p">,</span> <span class="n">objectname</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="n">content</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="n">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">request</span> <span class="o">:=</span> <span class="n">objectstorage</span><span class="o">.</span><span class="n">GetObjectRequest</span><span class="p">{</span>
+    <span class="n">NamespaceName</span><span class="o">:</span> <span class="o">&amp;</span><span class="n">namespace</span><span class="p">,</span>
+    <span class="n">BucketName</span><span class="o">:</span>    <span class="o">&amp;</span><span class="n">bucketName</span><span class="p">,</span>
+    <span class="n">ObjectName</span><span class="o">:</span>    <span class="o">&amp;</span><span class="n">objectname</span><span class="p">,</span>
+  <span class="p">}</span>
+  <span class="n">response</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">client</span><span class="o">.</span><span class="n">GetObject</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="no">nil</span><span class="p">,</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Errorf</span><span class="p">(</span><span class="s">"failed to retrieve object : %w"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="n">buf</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="n">bytes</span><span class="o">.</span><span class="n">Buffer</span><span class="p">)</span>
+  <span class="n">_</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">buf</span><span class="o">.</span><span class="n">ReadFrom</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">Content</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="no">nil</span><span class="p">,</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Errorf</span><span class="p">(</span><span class="s">"failed to read content from object on OCI : %w"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="n">buf</span><span class="o">.</span><span class="n">Bytes</span><span class="p">(),</span> <span class="no">nil</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Running this application – <code class="language-plaintext highlighter-rouge">go run object-organizer.go</code> – results in this output:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Namespace : idtwlqf2hanz
+created bucket : go-bucket
+Put object welcome.txt in bucket go-bucket
+Object read from OCI Object Storage contains this content: We would like to welcome you in our humble dwellings. /n We consider it a great honor. Bla, bla.
+</code></pre></div></div>
+
+<h3 id="go-based-oci-functions-talking-to-oci-object-storage-service">Go based OCI Functions talking to OCI Object Storage Service</h3>
+
+<p>The previous section discussed any Go application interacting with OCI services through the SDK. So what more is there to say about OCI Functions in Go? Please read on, because it turns out we can make life simpler when the Go code you develop and from which you want to work with the Go SDK will be deployed as an OCI function or run on a compute instance in OCI. In these cases, we can leverage <em>Resource Principal Authentication</em> (for Functions) and <em>Instance Principal Authentication</em> (for code running on a Compute Instance), which means that we do not have to include the OCI Configuration file, and our code that talks to the SDK can be a bit simpler.</p>
+
+<p>Read more about Resource Principal Authentication in the <a href="https://docs.oracle.com/en-us/iaas/Content/Functions/Tasks/functionsaccessingociresources.htm">OCI Documentation on Resource Principal Authentication for Functions</a>.</p>
+
+<p>In this section, we discuss an OCI Function called <em>object-broker</em>. You will find the sources in the source repository for this article, in path <code class="language-plaintext highlighter-rouge">functions/object-broker</code>. As before, the function is defined using a <code class="language-plaintext highlighter-rouge">func.yaml</code> file with metadata, and a <code class="language-plaintext highlighter-rouge">func.go</code> file with the link between the function and the Fn framework. File <code class="language-plaintext highlighter-rouge">go.mod</code> defines the dependencies for the function. The logic for interacting with OCI Object Storage Service is in the file <code class="language-plaintext highlighter-rouge">object-organizer.go</code>. That defines a public func <code class="language-plaintext highlighter-rouge">CreateObject</code> that is called from <code class="language-plaintext highlighter-rouge">func.go</code>.</p>
+
+<p><code class="language-plaintext highlighter-rouge">CreateObject</code> creates an object with the specified name in the specified bucket. The first lines in the function <code class="language-plaintext highlighter-rouge">CreateObject</code> in <code class="language-plaintext highlighter-rouge">object-organizer.go</code> have undergone some modification in order to work with this <em>resource principal authentication</em>. The <code class="language-plaintext highlighter-rouge">auth.ResourcePrincipalConfigurationProvider()</code> used now does not require that an OCI configuration file and private key be included in the application. It assumes that the code runs inside OCI and more specifically inside a resource (which can be a Function or for example a DevOps Build Server) that is known as a resource principal because it is included in a dynamic group and inherits permissions from that group membership. Before too long, you will get to the instructions for taking the measures required for this.</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">CreateObject</span><span class="p">(</span><span class="n">objectName</span> <span class="kt">string</span><span class="p">,</span> <span class="n">bucketName</span> <span class="kt">string</span><span class="p">,</span> <span class="n">compartmentOCID</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="kt">string</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">configurationProvider</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">auth</span><span class="o">.</span><span class="n">ResourcePrincipalConfigurationProvider</span><span class="p">()</span>
+  <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"failed to get oci configurationprovider based on resource principal authentication : %s"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="n">objectStorageClient</span><span class="p">,</span> <span class="n">cerr</span> <span class="o">:=</span> <span class="n">objectstorage</span><span class="o">.</span><span class="n">NewObjectStorageClientWithConfigurationProvider</span><span class="p">(</span><span class="n">configurationProvider</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Let’s turn our attention next to <code class="language-plaintext highlighter-rouge">func.go</code>. Func(tion) <code class="language-plaintext highlighter-rouge">myHandler</code> handles the function trigger. It invokes <code class="language-plaintext highlighter-rouge">CreateObject</code>, but not before it has determined the name of the object the request should produce and the bucket name for the bucket that is to contain the object. These names have a default value, but the function tries to find HTTP request query parameter values that provide specific values. Note this only works for an HTTP trigger to the function, and not for a call made using <code class="language-plaintext highlighter-rouge">fn invoke</code>.</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">myHandler</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">in</span> <span class="n">io</span><span class="o">.</span><span class="n">Reader</span><span class="p">,</span> <span class="n">out</span> <span class="n">io</span><span class="o">.</span><span class="n">Writer</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">objectName</span> <span class="o">:=</span> <span class="s">"defaultObjectName.txt"</span>
+  <span class="n">bucketName</span> <span class="o">:=</span> <span class="s">"the-bucket"</span>
+  <span class="n">fnctx</span> <span class="o">:=</span> <span class="n">fdk</span><span class="o">.</span><span class="n">GetContext</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>             <span class="c">// fnctx contains relevant elements about the Function itself</span>
+  <span class="n">fnhttpctx</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">fnctx</span><span class="o">.</span><span class="p">(</span><span class="n">fdk</span><span class="o">.</span><span class="n">HTTPContext</span><span class="p">)</span> <span class="c">// fnhttpctx contains relevant elements about the HTTP Request that triggered it</span>
+  <span class="k">if</span> <span class="n">ok</span> <span class="p">{</span>                                  <span class="c">// an HTTPContent was found which means that this was an HTTP request (not an fn invoke) that triggered the function</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">url</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">fnhttpctx</span><span class="o">.</span><span class="n">RequestURL</span><span class="p">())</span>
+  <span class="o">......</span>
+</code></pre></div></div>
+
+<p>You may want to inspect details about the Fn Context in <a href="https://pkg.go.dev/github.com/fnproject/fdk-go">Documentation for Project Fn Go FDK</a>, specifically in the <code class="language-plaintext highlighter-rouge">example</code>.</p>
+
+<p>The function needs to know in which OCI compartment the bucket should reside. Such runtime settings are typically defined on either the function of the application through a <em>configuration</em>. The values of configurations can be read in the function from a map in the context, as is shown in this line:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="k">if</span> <span class="n">compartmentOCID</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">fnctx</span><span class="o">.</span><span class="n">Config</span><span class="p">()[</span><span class="s">"compartmentOCID"</span><span class="p">];</span> <span class="n">ok</span> <span class="p">{</span> 
+</code></pre></div></div>
+
+<h4 id="build-and-deploy-the-function-using-fn-cli">Build and Deploy the Function using Fn CLI</h4>
+
+<p>Assuming you are in a terminal in the local development environment where the Fn CLI is installed and the current directory is <code class="language-plaintext highlighter-rouge">functions/object-broker</code>, you can perform a local build of the function with verbose output:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn -v build
+</span></code></pre></div></div>
+
+<p>When the build looks good, the next step to take is deployment of the function. If the Fn context is set to use the <em>go-on-oci</em> context (check with <code class="language-plaintext highlighter-rouge">fn list contexts</code>) then this will deploy the function to the <code class="language-plaintext highlighter-rouge">go-on-oci-app</code> application on OCI:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn -v deploy --app go-on-oci-app
+</span></code></pre></div></div>
+
+<p>The function can only do a meaningful job if the configuration has been defined for the compartment OCID value. You can do this through the console or using this next statement with the Fn CLI:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">fn cf f go-on-oci-app object-broker compartmentOCID &lt;compartment-ocid&gt;</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Now the function is deployed and has its configuration. You may expect that a call to the function with this command will be successful:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn invoke go-on-oci-app object-broker
+</span></code></pre></div></div>
+
+<p>However, there is one final aspect to handle: the function uses OCI Object Storage Service APIs to manipulate buckets and objects, but it needs to have been explicitly granted permissions to do that! We use a dynamic group and two policies to achieve this.</p>
+
+<h4 id="permissions-for-functions-to-manipulate-objects-and-buckets">Permissions for Functions to manipulate Objects and Buckets</h4>
+
+<p>Just as we used dynamic groups to create a grantee representing the deployment pipelines and the build pipelines, we need to also create a dynamic group that contains the functions to which we want to grant permissions. To create the dynamic group, type <em>dyn</em> in the search bar. Click on the link <em>Dynamic Groups</em> in the search results pane.</p>
+
+<p>On the overview page for dynamic groups and click on <em>Create Dynamic Group</em>.</p>
+
+<p>Enter the name for the Dynamic Group for the Deployment Pipeline(s), e.g. <em>functions-in-go-on-oci</em>, and optionally type a description. Define the following rule that selects all functions that are part of the compartment:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>All {resource.type = 'fnfunc', resource.compartment.id = '&lt;compartment_id&gt;'}
+</code></pre></div></div>
+
+<p>Of course, replace <code class="language-plaintext highlighter-rouge">&lt;compartment_id&gt;</code> with the identifier of the compartment you are working in. Then press <em>Create</em>.</p>
+
+<p>To create a policy in the console: type <em>poli</em> in the search bar and click on <em>Policies &gt; Identity</em> in the <em>Services</em> area in the search results popup. This takes you to the <em>Policies</em> overview page for the current compartment.</p>
+
+<p>The first policy statement defines the permission for the function to manage objects in the compartment. The second statement adds the permission for managing buckets. Define a name, a description, and the following statements:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>allow dynamic-group functions-in-go-on-oci to manage objects in compartment go-on-oci
+allow dynamic-group functions-in-go-on-oci to manage buckets in compartment go-on-oci
+</code></pre></div></div>
+
+<p>The next figure depicts the permissions that now apply to the function when the policy containing these statements is saved:</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-iam-for-function-to-objects.jpg 1x" />
+                <img loading="lazy" src="assets/way-to-go-on-oci-article-3-iam-for-function-to-objects.jpg" data-original="assets/way-to-go-on-oci-article-3-iam-for-function-to-objects.jpg" alt="way-to-go-on-oci-article-3-iam-for-function-to-objects.jpg" title="way-to-go-on-oci-article-3-iam-for-function-to-objects.jpg" />
+            </picture>
+
+<p>Now the function can be invoked and should be able to do its thing using the default names for bucket and object.</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">fn invoke go-on-oci-app object-broker
+</span></code></pre></div></div>
+
+<p>Verify that the bucket is created and and contains the freshly created object using the console from the <a href="https://cloud.oracle.com/object-storage/buckets">OCI URL to the buckets page</a>.</p>
+
+<h4 id="add-route-in-api-gateway-to-trigger-function">Add Route in API Gateway to Trigger Function</h4>
+
+<p>To be able to invoke the <code class="language-plaintext highlighter-rouge">object-broker</code> function over HTTP from anywhere, we will again make use of the API Gateway. Type <em>gat</em> into the search bar in the console. Click on <em>Gateways &gt; API Management</em>. Click on the link for <em>the-api-gateway</em>. Click on <em>Deployments</em>. In the list with deployments – which contains a single deployment – click on the link <em>myserver-api</em>.</p>
+
+<p>Click on <em>Edit</em> to open the deployment specification. Click on the link for the second step: <em>Routes</em>. Scroll down and click on <em>+ Another Route</em>.</p>
+
+<p>Type <em>/object-broker</em> as the path for this new route. Select <em>GET</em> as the method and <em>Oracle Functions</em> as the Type (of backend). Select application <em>go-on-oci-app</em>, and then set <em>Function Name</em> to <em>object-broker</em>. Press <em>Next</em>, then press <em>Save Changes</em> to apply the changes and make the new route real.</p>
+
+<p>The end-to-end picture that is now configured from HTTP consumer through API Gateway to Function and finally bucket and object looks like this:</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-apigw-objectbroker-fun.jpg 1x" />
+                <img loading="lazy" width="1200" height="490" src="assets/way-to-go-on-oci-article-3-apigw-objectbroker-fun.jpg" data-original="assets/way-to-go-on-oci-article-3-apigw-objectbroker-fun.jpg" alt="way-to-go-on-oci-article-3-apigw-objectbroker-fun.jpg" title="way-to-go-on-oci-article-3-apigw-objectbroker-fun.jpg" />
+            </picture>
+
+<p>Invoke the function from the browser or using <code class="language-plaintext highlighter-rouge">curl</code> on the command line using:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">curl -X "GET" "http://&lt;API Gateway endpoint&gt;</span>/my-api/object-broker?objectName<span class="o">=</span>new-exciting-object.txt&amp;bucketName<span class="o">=</span>the-ultimate-collection<span class="s2">"
+</span></code></pre></div></div>
+
+<h4 id="automated-build-and-deployment">Automated Build and Deployment</h4>
+
+<p>This function <code class="language-plaintext highlighter-rouge">object-broker</code> was deployed manually on the command line using the Fn CLI. That worked fine of course. However, if you were now to start development on this function, going through multiple development cycles, you would probably want to introduce automation in the build-and-deploy process.</p>
+
+<p>Just as we have done before, you can easily set up the required elements in OCI DevOps to achieve automated pipelines for the deployment (of the function container image in the container image registry) and the build (starting from the code repository and resulting in a freshly-baked container image for the function). The main element that is specific to the function is the build specification file for the managed build stage in the build pipeline. This file is provided as <code class="language-plaintext highlighter-rouge">go-function-build-spec.yaml</code> in the same directory as <code class="language-plaintext highlighter-rouge">func.go</code> and <code class="language-plaintext highlighter-rouge">func.yaml</code>.</p>
+
+<p>After creating a DevOps artifact for the Function Container Image, an environment for the Function, and the two pipelines for build and deployment, the automated DevOps process set up would look like this:</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/way-to-go-on-oci-article-3-automated-build-and-deploy-of-object-broker.jpg 1x" />
+                <img loading="lazy" width="997" height="780" src="assets/way-to-go-on-oci-article-3-automated-build-and-deploy-of-object-broker.jpg" data-original="assets/way-to-go-on-oci-article-3-automated-build-and-deploy-of-object-broker.jpg" alt="way-to-go-on-oci-article-3-automated-build-and-deploy-of-object-broker.jpg" title="way-to-go-on-oci-article-3-automated-build-and-deploy-of-object-broker.jpg" />
+            </picture>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>One focus area in this article was serverless functions, written in Go and running on Oracle Cloud Infrastructure. The automated build and deployment of these functions was discussed, as was the use of API Gateway to provide access to the function to external HTTP consumers.</p>
+
+<p>The second main topic was the Go SDK for OCI for interacting with OCI services from Go applications. The article showed how to use Go code to access the Object Storage service to store and retrieve files.</p>
+
+<p>The two topics were combined in function <em>object-broker</em>. This OCI Function leverages <em>resource principal authentication</em> and permissions granted through a dynamic group. Through a runtime configuration, the function learns about current environment specific settings.</p>
+
+<p>In the next article, interacting with the Oracle Database will be the main topic. Creating a connection from a Go application to a local Oracle Database, as well as to an Autonomous Database running on OCI, and performing SQL operations with these databases from the comfort of your Go application. Further topics include working with an Oracle Wallet for proper management of database credentials, including the wallet in the deployment process, and combining interactions with the OCI Object Storage and the Autonomous Database services in a single application.</p>
+
+<h2 id="resources">Resources</h2>
+
+<p><a href="https://github.com/lucasjellema/go-on-oci-article-sources">Source code repository for the sources discussed in this article series</a></p>
+
+<p><a href="https://docs.oracle.com/en-us/iaas/Content/Functions/Concepts/functionsoverview.htm">OCI Documentation – Functions</a></p>
+
+<p><a href="https://fnproject.io/tutorials/Introduction/">Fn Project Tutorials – Introduction to Fn with Go</a></p>
+
+<p><a href="https://github.com/fnproject/tutorials/blob/master/install/README.md#configure-your-context">Fn Project Tutorials – Configure Context</a></p>
+
+<p><a href="https://github.com/fnproject/fdk-go">Go FDK Documentation</a></p>
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/open-source">open-source</a>
+            <a class="animated-link tag" href="/topics/devops">devops</a>
+            <a class="animated-link tag" href="/topics/get-started">get-started</a>
+            <a class="animated-link tag" href="/topics/automation">automation</a>
+            <a class="animated-link tag" href="/topics/serverless">serverless</a>
+            <a class="animated-link tag" href="/topics/docker">docker</a>
+            <a class="animated-link tag" href="/topics/back-end">back-end</a>
+            <a class="animated-link tag" href="/topics/go">go</a>
+            <a class="animated-link tag" href="/topics/iac">iac</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <a href="https:/technology.amis.nl"><h3 class="author__name" itemprop="name">Lucas Jellema</h3></a>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>developer, solution architect, blogger, Oracle Groundbreaker Ambassador, Oracle ACE Director</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">The Netherlands</span>
+        </li>
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="mailto:lucasjellema@gmail.com">
+            <meta itemprop="email" content="lucasjellema@gmail.com" />
+            <i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/lucasjellema" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/lucasjellema" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/lucasjellema" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-05-26T11:00:00+00:00">May 26, 2022</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

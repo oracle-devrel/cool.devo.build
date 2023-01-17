@@ -1,0 +1,651 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar has-slides" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Creating Resources with Terraform">
+    
+    <meta itemprop="datePublished" content="2021-09-30T17:50:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Creating Resources with Terraform
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+        <!-- <aside class="sidebar__right sticky">
+          <nav class="slides-nav"><ul><li class="active" data-target-slide="0"><a href="javascript:cool.slides.goToSlide(0)">Intro</a></li>
+<li data-target-slide="1"><a href="javascript:cool.slides.goToSlide(1)">Prerequisites</a></li>
+<li data-target-slide="2"><a href="javascript:cool.slides.goToSlide(2)">Terraform code</a></li>
+<li data-target-slide="3"><a href="javascript:cool.slides.goToSlide(3)">Start a new project</a></li>
+<li data-target-slide="4"><a href="javascript:cool.slides.goToSlide(4)">Setting up OCI Authentication</a></li>
+<li data-target-slide="5"><a href="javascript:cool.slides.goToSlide(5)">Initialize configuration</a></li>
+<li data-target-slide="6"><a href="javascript:cool.slides.goToSlide(6)">Format and validate the configuration</a></li>
+<li data-target-slide="7"><a href="javascript:cool.slides.goToSlide(7)">View Terraform plan</a></li>
+<li data-target-slide="8"><a href="javascript:cool.slides.goToSlide(8)">Create infrastructure</a></li>
+<li data-target-slide="9"><a href="javascript:cool.slides.goToSlide(9)">Troubleshooting</a></li>
+<li data-target-slide="10"><a href="javascript:cool.slides.goToSlide(10)">Next Steps</a></li></ul></nav>
+        </aside> -->
+      
+
+        <div class="slides" id="slideshow">
+
+  <div class="slide active" id="slide-0">
+
+    <h2 class="slide__title"><span class="slide__num">1</span> Introduction</h2>
+
+    <figure class="aligncenter">
+              <picture>
+                  <source srcset="assets/terraform-101.png 1x" />
+                  <img loading="lazy" width="400" height="400" src="assets/terraform-101.png" data-original="assets/terraform-101.png" title="Terraform 101" alt="Terraform 101 Tutorial Series" />
+              </picture>
+              <figcaption>Terraform 101</figcaption>
+            </figure>
+
+    <p>The next few lessons in this tutorial will guide you through an adventure where resources are created, modified, and then finally destroyed using Terraform. While you got a little taste for this in the <a href="2-experiencing-terraform.md">Experiencing Terraform lesson</a>, we’ll cover the topics in greater detail here, pointing out more details along the way.</p>
+
+    <p>Let’s start using Terraform on Oracle Cloud Infrastructure (OCI) by deploying a Virtual Cloud Network (VCN), a foundational OCI resource in which you can deploy other OCI resources to.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)" class="slides__btn--begin">Begin &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-1">
+
+    <h2 class="slide__title"><span class="slide__num">2</span> Prerequisites</h2>
+
+    <p>You should have an OCI account setup. <a href="">Click here</a> to create a new cloud account.</p>
+
+    <p>We’ll be using the <a href="https://docs.oracle.com/en-us/iaas/Content/API/Concepts/cloudshellintro.htm">OCI Cloud Shell</a> in this tutorial, as it provides a great platform for quickly working with Terraform (as well as many other OCI interfaces and tools), having many of these pre-installed and ready-to-go.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(0)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(2)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-2">
+
+    <h2 class="slide__title"><span class="slide__num">3</span> Terraform code</h2>
+
+    <p>Terraform describes the resources it manages via Terraform code (also sometimes called the Terraform configuration).  These are plain-text files with a <code class="language-plaintext highlighter-rouge">.tf</code> extension. All of the <code class="language-plaintext highlighter-rouge">.tf</code> files for a given project reside in a single directory. When Terraform is run, it’ll read the <code class="language-plaintext highlighter-rouge">.tf</code> files in the current directory. Each Terraform project should have its own directory.</p>
+
+    <p>This gives you a great deal of flexibility as to how you structure your Terraform code. You could place all of your code in a single file, or multiple files. When a single file is used, usually it’s called <code class="language-plaintext highlighter-rouge">main.tf</code>. This is fine for small projects, but can be a bit difficult and tedious to navigate in large environments with many resources.</p>
+
+    <p>When spreading the code across many different files, resources are usually grouped in a logical manner. This could be by an arbitrary category of resources, though one favorite technique is to use a file name that shares the resource name and place of all of the given type of resources in it. For example, all compartments could be defined in <code class="language-plaintext highlighter-rouge">compartments.tf</code>, all Security Lists be defined in <code class="language-plaintext highlighter-rouge">security_lists.tf</code>, etc. A key takeaway here is to think about your environment and try to identify a logical way to represent the code itself. It should be intuitive and fairly easy to navigate (find resources within the project).</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(3)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-3">
+
+    <h2 class="slide__title"><span class="slide__num">4</span> Start a new project</h2>
+
+    <p>Since this will be a new project, we’ll start by creating a new directory for this project:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">cd ~
+mkdir tf-101
+cd tf-101
+</span></code></pre></div>    </div>
+
+    <p>For simplicity, we’ll just use a single file called <code class="language-plaintext highlighter-rouge">main.tf</code>.  This isn’t recommended beyond a super simple environment, but that’s what we’ll be doing now, so this will work just fine.</p>
+
+    <p>While Terraform doesn’t require any specific filename to be used for its code (beyond having a <code class="language-plaintext highlighter-rouge">.tf</code> or <code class="language-plaintext highlighter-rouge">.tfvars</code> extension), it’s common to see <code class="language-plaintext highlighter-rouge">main.tf</code> used when there are only a few resources. For any non-trivial environment (often with many resources), different files will be used for different types or groups of resources, which makes it easier to navigate and manage the environment. We took the approach of separating resources into their own files in the <a href="2-experiencing-terraform.md">Experiencing Terraform tutorial</a>.</p>
+
+    <p>From within your Cloud Shell session, edit <code class="language-plaintext highlighter-rouge">main.tf</code> (which will also create it, as it doesn’t yet exist in this new directory):</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">nano main.tf
+</span></code></pre></div>    </div>
+
+    <blockquote>
+      <p><strong>NOTE:</strong> GNU nano is being used as the text editor in this tutorial as it’s a simple editor to use, but feel free to use vi, vim, or your favorite editor instead!</p>
+    </blockquote>
+
+    <p>Place the following code within <code class="language-plaintext highlighter-rouge">main.tf</code>:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">terraform</span> <span class="p">{</span>
+  <span class="nx">required_providers</span> <span class="p">{</span>
+    <span class="nx">oci</span> <span class="p">=</span> <span class="p">{</span>
+      <span class="nx">source</span>  <span class="p">=</span> <span class="s2">"hashicorp/oci"</span>
+      <span class="nx">version</span> <span class="p">=</span> <span class="s2">"&gt;= 4.0.0"</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">provider</span> <span class="s2">"oci"</span> <span class="p">{</span>
+<span class="nx">region</span>           <span class="p">=</span> <span class="s2">"us-phoenix-1"</span>
+<span class="p">}</span>
+
+<span class="k">resource</span> <span class="s2">"oci_core_vcn"</span> <span class="s2">"tf_101"</span> <span class="p">{</span>
+  <span class="nx">dns_label</span>             <span class="p">=</span> <span class="s2">"tf101"</span>
+  <span class="nx">cidr_block</span>            <span class="p">=</span> <span class="s2">"172.16.0.0/20"</span>
+  <span class="nx">compartment_id</span>        <span class="p">=</span> <span class="s2">"&lt;your_compartment_OCID_here&gt;"</span>
+  <span class="nx">display_name</span>          <span class="p">=</span> <span class="s2">"tf_101"</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>Make sure to update the <code class="language-plaintext highlighter-rouge">compartment_id</code> attributes to values you would like to use. For the most basic implementation, use your tenancy OCID (to find it, follow the directions found in the <a href="https://docs.oracle.com/en-us/iaas/Content/API/Concepts/apisigningkey.htm">OCI documentation</a>).</p>
+
+    <p>In the above sample, the provider region is configured to use <code class="language-plaintext highlighter-rouge">us-phoenix-1</code>.  Update this to the OCI region you want to deploy the VCN to. You can find a list of available OCI regions in the <a href="https://docs.oracle.com/en-us/iaas/Content/General/Concepts/regions.htm">OCI documentation</a>.</p>
+
+    <p>Let’s pick apart what we’ve just done.</p>
+
+    <h3 id="terraform-block">Terraform block</h3>
+
+    <p>Terraform is built to be extensible and modular, providing a single tool for managing many different platforms. Providers increase the flexibility and power of Terraform, allowing Terraform to adapt to many different platforms that might be managed by Terraform.</p>
+
+    <p>A provider defines a Terraform interface that is used to manage a given platform, eliminating the need for you to interact with the platform API directly. Providers translate between the Terraform interface and the underlying platform API.</p>
+
+    <p>The <code class="language-plaintext highlighter-rouge">terraform {}</code> block tells Terraform which provider(s) to download from the <a href="https://registry.terraform.io/">Terraform Registry</a>. In this case, Terraform is being instructed to download the OCI provider (<code class="language-plaintext highlighter-rouge">hashicorp/oci</code>, which is short for <code class="language-plaintext highlighter-rouge">registry.terraform.io/hashicorp/oci</code>). Terraform by default uses the <a href="https://registry.terraform.io/">public Terraform Registry</a>, while also supporting the use of local (private) registries (something we won’t be going into in this tutorial series).</p>
+
+    <p>The version is not required, but is a best practice to include, as functionality might differ from one provider version to another. See the <a href="https://www.terraform.io/docs/language/providers/requirements.html">Terraform provider documentation</a> for more information.</p>
+
+    <h3 id="provider">Provider</h3>
+
+    <p>Terraform uses this configuration to locate the OCI provider from the <a href="https://registry.terraform.io/providers/hashicorp/oci/latest">Terraform Registry</a>.The provider uses an API Key, the default method, to authenticate to OCI. Refer to the <a href="https://registry.terraform.io/providers/hashicorp/oci/latest/docs#authentication">OCI provider documentation</a> for additional authentication methods.</p>
+
+    <p>As mentioned previously, ensure that you specify the correct region you wish to deploy resources into. This example is using the <code class="language-plaintext highlighter-rouge">us-phoenix-1</code> region, however you might need to modify this for your needs. See the <a href="https://docs.oracle.com/en-us/iaas/Content/General/Concepts/regions.htm">OCI regions documentation</a> for more information.</p>
+
+    <h3 id="resource-definition">Resource definition</h3>
+
+    <p>A Virtual Cloud Network (VCN) is an OCI resource that is required by many other OCI services. It’s a core, foundational resource in many OCI cloud environments, providing a logical network definition. Because it’s needed before you can deploy subnets, compute instances, load balancers, etc., you’ll start with creating a VCN. As a bonus, VCNs don’t cost a penny in OCI, so this minimizes your chances of incurring charges as you experiment with Terraform on OCI.</p>
+
+    <p>To manage the VCN, the <a href="https://registry.terraform.io/providers/hashicorp/oci/latest/docs/resources/core_vcn">oci_core_vcn Terraform resource</a> is used. The example configuration creates a <code class="language-plaintext highlighter-rouge">oci_core_vcn</code> resource named <code class="language-plaintext highlighter-rouge">tf_101</code>, in the compartment you provide (you’ll need to make sure to use your compartment OCID), with a CIDR block of <code class="language-plaintext highlighter-rouge">172.16.0.0/20</code>, a DNS label of <code class="language-plaintext highlighter-rouge">tf101</code>, and a <code class="language-plaintext highlighter-rouge">display_name</code> of <code class="language-plaintext highlighter-rouge">tf_101</code>. Note that the Terraform resource name does not need to match the OCI display name, however it’s a good idea to keep them the same, so that no matter what interface (API, OCI Console, Terraform, etc.) you’re dealing with the same familiar name(s).</p>
+
+    <p>Make sure to set the the <code class="language-plaintext highlighter-rouge">compartment_id</code> value to the OCID of the compartment you wish to use!</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(2)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(4)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-4">
+
+    <h2 class="slide__title"><span class="slide__num">5</span> Setting up OCI Authentication</h2>
+
+    <p>If we were using Terraform outside of OCI Cloud Shell, we’d need to worry about how Terraform will authenticate with the OCI API. By running it inside of Cloud Shell, we don’t need to worry about these details – it’ll be authenticated automatically for us!</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(3)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(5)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-5">
+
+    <h2 class="slide__title"><span class="slide__num">6</span> Initialize configuration</h2>
+
+    <p>Terraform needs different files to be able to be able to properly function reliably. This is largely hidden out of view so that you don’t need to be mired down in the nitty-gritty details. It’s still a good idea to have a high-level idea of what’s going on, so let’s touch on a few things that Terraform needs.</p>
+
+    <p>Terraform doesn’t ship with any providers, so one of the first things that Terraform does is to examine any referenced providers and then download them as needed. In this case, we’ve told Terraform to use the OCI Terraform provider, but it doesn’t have this provider -— yet. This is taken care of during the Terraform initialization process.</p>
+
+    <p>Terraform uses a state file to cache the state of resources. It compares the state file against the Terraform code base (what you want implemented) and what’s actually configured in OCI.  Looking at the differences between the three sources, Terraform maps out a plan of attack around how to get the as-built (what exists in OCI) to what you want (what’s in your code). The Terraform initialization process checks for a state file. If it does not find one, it goes ahead and creates it.</p>
+
+    <p>Let’s go ahead and initialize Terraform now for this project:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>terraform init
+<span class="go">
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding latest version of hashicorp/oci...
+- Installing hashicorp/oci v4.45.0...
+- Installed hashicorp/oci v4.45.0 (unauthenticated)
+
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+</span><span class="gp">$</span><span class="w">
+</span></code></pre></div>    </div>
+
+    <p>Terraform downloaded the OCI provider and created a new state file for the environment.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(4)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(6)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-6">
+
+    <h2 class="slide__title"><span class="slide__num">7</span> Format and validate the configuration</h2>
+
+    <p>When you first created the <code class="language-plaintext highlighter-rouge">main.tf</code> Terraform file, it was just a plain-text file. Terraform code is just plain text!  It’s easy to create and manage Terraform code from virtually anywhere.</p>
+
+    <p>Most languages have text formatting requirements. Though Terraform is pretty lenient around many formatting preferences, it’s best to keep your code consistently formatted, particularly the line indentations. A good text editor can help minimize this burden, but it’s still something that can be a challenge to manage (especially when working with a team of developers).</p>
+
+    <p>Here’s what your provider section looks like:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">provider</span> <span class="s2">"oci"</span> <span class="p">{</span>
+<span class="nx">region</span>           <span class="p">=</span> <span class="s2">"us-phoenix-1"</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>Notice how the region attribute isn’t nicely indented? This could be modified by hand, but instead let’s use Terraform’s built-in formatting command to clean-up the code:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>terraform <span class="nb">fmt</span>
+<span class="go">main.tf
+</span></code></pre></div>    </div>
+
+    <p>Look at the <code class="language-plaintext highlighter-rouge">main.tf</code> file now.  See how it’s nicely indented now?</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span><span class="nb">cat </span>main.tf
+<span class="go">
+</span><span class="gp">#</span><span class="w"> </span>...
+<span class="go">
+provider "oci" {
+  region           = "us-phoenix-1"
+}
+
+</span><span class="gp">#</span><span class="w"> </span>...
+</code></pre></div>    </div>
+
+    <p>Although there are plenty of ways to programmatically generate Terraform code, Terraform code is often created and managed by people. People make mistakes, which can be disastrous. An easy way to look for egregious Terraform code syntax violations is to use the validation built into Terraform. To see this in action, run <code class="language-plaintext highlighter-rouge">terraform validate</code>.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>terraform validate
+<span class="go">Success! The configuration is valid.
+</span></code></pre></div>    </div>
+
+    <p>This will tell you about syntax errors in your Terraform code. Keep in mind if you do something silly like using the wrong CIDR, incorrect name, etc., this validation won’t help you. Terraform validation will have no idea that you’ve made a mistake like that, but it is a great way to lint the Terraform code, looking for bad syntax.  It’s certainly worth having in your release process (ideally using automated pipelines).</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(5)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(7)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-7">
+
+    <h2 class="slide__title"><span class="slide__num">8</span> View Terraform plan</h2>
+
+    <p>So far, Terraform has what it needs (OCI provider, state file, etc.), your code looks nicely formatted, and you have a high level of confidence that your code is “good.” There’s one more step you can take to safeguard your work. Ask Terraform what it thinks should be done to deploy the environment. This is accomplished by running <code class="language-plaintext highlighter-rouge">terraform plan</code>:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>terraform plan
+<span class="go">
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+</span><span class="gp">  #</span><span class="w"> </span>oci_core_vcn.example will be created
+<span class="go">  + resource "oci_core_vcn" "tf101" {
+      + cidr_block               = "172.16.0.0/20"
+      + cidr_blocks              = (known after apply)
+</span><span class="gp">      + compartment_id           = "ocid1.compartment.oc1..&lt;sanitized&gt;</span><span class="s2">"
+</span><span class="go">      + default_dhcp_options_id  = (known after apply)
+      + default_route_table_id   = (known after apply)
+      + default_security_list_id = (known after apply)
+      + defined_tags             = (known after apply)
+      + display_name             = "tf101"
+      + dns_label                = "tf101"
+      + freeform_tags            = (known after apply)
+      + id                       = (known after apply)
+      + ipv6cidr_block           = (known after apply)
+      + ipv6public_cidr_block    = (known after apply)
+      + is_ipv6enabled           = (known after apply)
+      + state                    = (known after apply)
+      + time_created             = (known after apply)
+      + vcn_domain_name          = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+------------------------------------------------------------------------
+
+Note: You didn't specify an "-out" parameter to save this plan, so Terraform
+can't guarantee that exactly these actions will be performed if
+"terraform apply" is subsequently run.
+
+</span><span class="gp">$</span><span class="w">
+</span></code></pre></div>    </div>
+
+    <p>Looking at the output, Terraform provides exactly what it proposes be done based on the current state of the OCI tenancy and the Terraform code you’ve provided.</p>
+
+    <p>The <code class="language-plaintext highlighter-rouge">+</code> means it’ll be adding a VCN resource, which is what we expect to see!  While it seems like a bit much for this simple example (creating one VCN), it’s a good habit to get into: checking what Terraform proposes be done <em>before</em> it makes any changes.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(6)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(8)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-8">
+
+    <h2 class="slide__title"><span class="slide__num">9</span> Create infrastructure</h2>
+
+    <p>Run <code class="language-plaintext highlighter-rouge">terraform apply</code> to create the VCN you defined in <code class="language-plaintext highlighter-rouge">main.tf</code>:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>terraform apply
+<span class="go">
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+</span><span class="gp">  #</span><span class="w"> </span>oci_core_vcn.example will be created
+<span class="go">  + resource "oci_core_vcn" "tf101" {
+      + cidr_block               = "172.16.0.0/20"
+      + cidr_blocks              = (known after apply)
+</span><span class="gp">      + compartment_id           = "ocid1.compartment.oc1..&lt;sanitized&gt;</span><span class="s2">"
+</span><span class="go">      + default_dhcp_options_id  = (known after apply)
+      + default_route_table_id   = (known after apply)
+      + default_security_list_id = (known after apply)
+      + defined_tags             = (known after apply)
+      + display_name             = "tf101"
+      + dns_label                = "tf101"
+      + freeform_tags            = (known after apply)
+      + id                       = (known after apply)
+      + ipv6cidr_block           = (known after apply)
+      + ipv6public_cidr_block    = (known after apply)
+      + is_ipv6enabled           = (known after apply)
+      + state                    = (known after apply)
+      + time_created             = (known after apply)
+      + vcn_domain_name          = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value:
+</span></code></pre></div>    </div>
+
+    <p>Terraform will prompt you before creating the infrastructure. Type <code class="language-plaintext highlighter-rouge">yes</code> to confirm.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>...
+<span class="go">
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+oci_core_vcn.example: Creating...
+</span><span class="gp">oci_core_vcn.example: Creation complete after 5s [id=ocid1.vcn.oc1.phx.&lt;sanitized&gt;</span><span class="o">]</span>
+<span class="go">
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+</span></code></pre></div>    </div>
+
+    <p>Terraform shows essentially what we just saw when running <code class="language-plaintext highlighter-rouge">terraform plan</code>. Plus, it prompts you as to whether you want to proceed or not (which can give you a chance to have a final review before making the changes).</p>
+
+    <p>Voila! That’s it. With no errors given, everything deployed successfully.</p>
+
+    <h3 id="looking-at-the-state">Looking at the State</h3>
+
+    <p>Terraform tracks the state of each resource in the state file, including attributes that weren’t defined in the Terraform configuration. Run <code class="language-plaintext highlighter-rouge">terraform show</code> to view your VCN’s state.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>terraform show
+<span class="gp">#</span><span class="w"> </span>oci_core_vcn.example:
+<span class="go">resource "oci_core_vcn" "tf101" {
+    cidr_block               = "172.16.0.0/20"
+    cidr_blocks              = [
+        "172.16.0.0/20",
+    ]
+</span><span class="gp">    compartment_id           = "ocid1.compartment.oc1..&lt;sanitized&gt;</span><span class="s2">"
+</span><span class="gp">    default_dhcp_options_id  = "ocid1.dhcpoptions.oc1.phx.&lt;sanitized&gt;</span><span class="s2">"</span>
+<span class="gp">    default_route_table_id   = "ocid1.routetable.oc1.phx.&lt;sanitized&gt;</span><span class="s2">"
+</span><span class="gp">    default_security_list_id = "ocid1.securitylist.oc1.phx.&lt;sanitized&gt;</span><span class="s2">"</span>
+<span class="go">    defined_tags             = {}
+    display_name             = "tf101"
+    dns_label                = "tf101"
+    freeform_tags            = {}
+</span><span class="gp">    id                       = "ocid1.vcn.oc1.phx.&lt;sanitized&gt;</span><span class="s2">"
+</span><span class="go">    state                    = "AVAILABLE"
+    time_created             = "2021-02-09 00:08:46.373 +0000 UTC"
+    vcn_domain_name          = "tf101.oraclevcn.com"
+}
+</span><span class="gp">$</span><span class="w">
+</span></code></pre></div>    </div>
+
+    <p>There’s more info shown here than we’d specified in the Terraform code. For example, OCI assigns an OCI Identifier (OCID) to a VCN when it’s created. The VCN OCID appears in your state file as the <code class="language-plaintext highlighter-rouge">id</code> attribute, even though you haven’t defined it in your configuration.</p>
+
+    <p>Terraform provides some mechanisms to add or remove elements in the state file, but it shouldn’t be modified directly.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(7)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(9)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-9">
+
+    <h2 class="slide__title"><span class="slide__num">10</span> Troubleshooting</h2>
+
+    <p>If <code class="language-plaintext highlighter-rouge">terraform validate</code> was successful and your apply still failed, you may be encountering a common error. Refer to the following troubleshooting steps to resolve your issue.</p>
+
+    <h3 id="invalid-region">Invalid Region</h3>
+
+    <p>If you see the following error when you run <code class="language-plaintext highlighter-rouge">terraform apply</code>, you may have used an invalid (non-existent) region name.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">oci_core_vcn.tf_101: Creating...
+Error: Post https://iaas.us-does-not-exist-1.oraclecloud.com/20160918/vcns: x509: certificate signed by unknown authority
+  on main.tf line 18, in resource "oci_core_vcn" "tf_101":
+  18: resource "oci_core_vcn" "tf_101" {
+</span></code></pre></div>    </div>
+
+    <p>Please verify you are using a valid region. You can find a list of available OCI regions in the <a href="https://docs.oracle.com/en-us/iaas/Content/General/Concepts/regions.htm">OCI documentation</a>.</p>
+
+    <h3 id="unsubscribed-region">Unsubscribed Region</h3>
+
+    <p>The following error might occur if you’re trying to use a valid region, but one that your tenancy is not subscribed to.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>terraform apply
+<span class="go">
+</span><span class="gp">#</span><span class="w"> </span>...
+<span class="go">
+oci_core_vcn.tf_101: Creating...
+
+</span><span class="gp">Error: Service error:NotAuthenticated. The required information to complete authentication was not provided or was incorrect.. http status code: 401. Opc request id: &lt;sanitized&gt;</span>, The service <span class="k">for </span>this resource encountered an error. Please contact support <span class="k">for </span><span class="nb">help </span>with that service
+<span class="go">
+  on main.tf line 18, in resource "oci_core_vcn" "tf_101":
+  18: resource "oci_core_vcn" "tf_101" {
+</span></code></pre></div>    </div>
+
+    <p>You aren’t told that it’s an invalid region. However, OCI is unable to authenticate you properly because you’re trying to talk to a region that you’re not subscribed to.</p>
+
+    <h3 id="bad-resource-attributes">Bad Resource Attribute(s)</h3>
+
+    <p>This scenario might occur when trying to set an attribute to an invalid value.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>terraform apply
+<span class="go">
+</span><span class="gp">#</span><span class="w"> </span>...
+<span class="go">
+oci_core_vcn.tf_101: Creating...
+
+</span><span class="gp">Error: Service error:InvalidParameter. The requested CIDR 172.16.300.0/20 is invalid: unable to parse.. http status code: 400. Opc request id: &lt;sanitized&gt;</span><span class="w">
+</span><span class="go">
+  on main.tf line 18, in resource "oci_core_vcn" "tf_101":
+  18: resource "oci_core_vcn" "tf_101" {
+</span></code></pre></div>    </div>
+
+    <p>It caught the problem and returned a meaningful message! Notice how the plan (the portion before saying yes) didn’t catch this? It’s possible to set an invalid attribute value, yet not have it caught until the attribute is applied (planning might not be of help here).</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(8)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(10)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-10">
+
+    <h2 class="slide__title"><span class="slide__num">11</span> Next Steps</h2>
+
+    <p>You’ve had a chance to look at how to create new OCI resources with Terraform. Next up, you’ll learn how to modify OCI infrastructure using Terraform.</p>
+
+    <h3 id="helpful-resources">Helpful Resources</h3>
+
+    <ul>
+      <li><a href="https://registry.terraform.io/providers/hashicorp/oci/latest/docs">Terraform OCI Provider Documentation</a></li>
+      <li><a href="https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/terraform.htm">Official OCI Terraform Documentation</a></li>
+      <li><a href="https://registry.terraform.io/browse/modules?provider=oci">Terraform Registry – OCI Modules</a></li>
+      <li><a href="https://github.com/oracle-quickstart/">Oracle (Terraform) Quick Start</a></li>
+      <li><a href="https://github.com/oracle-terraform-modules/">Oracle Terraform Modules (GitHub)</a></li>
+    </ul>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(9)">&laquo; Back</a></div>
+
+  </div>
+
+</div>
+
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/open-source">open-source</a>
+            <a class="animated-link tag" href="/topics/terraform">terraform</a>
+            <a class="animated-link tag" href="/topics/iac">iac</a>
+            <a class="animated-link tag" href="/topics/devops">devops</a>
+            <a class="animated-link tag" href="/topics/get-started">get-started</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Tim Clegg</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Code. Share. Secure. Innovate. Automate. Educate.</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/https://www.linkedin.com/in/timothy-clegg/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/timclegg" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+    
+
+<aside class="series-nav">
+  <h6>From this series:</h6>
+  <ul>
+    
+    <li><a href="/tutorials/tf-101/1-why-iac">Why Infrastructure as Code?</a></li>
+    
+    <li><a href="/tutorials/tf-101/5-creating">Creating Resources with Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/6-changing">Making changes using Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/2-experiencing-terraform">Experiencing Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/3-understanding-terraform-basics">Understanding The Basics Of Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/4-variables">Terraform Variables</a></li>
+    
+    <li><a href="/tutorials/tf-101/7-destroying">Destroying resources with Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/8-resources">More Terraform Resources</a></li>
+    
+  </ul>
+</aside>
+
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-09-30T17:50:00+00:00">September 30, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

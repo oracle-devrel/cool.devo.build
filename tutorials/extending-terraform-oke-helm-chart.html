@@ -1,0 +1,417 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar has-slides" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Extending Terraform OKE with a helm chart">
+    
+    <meta itemprop="datePublished" content="2021-10-28T12:00:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Extending Terraform OKE with a helm chart
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+        <!-- <aside class="sidebar__right sticky">
+          <nav class="slides-nav"><ul><li class="active" data-target-slide="0"><a href="javascript:cool.slides.goToSlide(0)">Intro</a></li>
+<li data-target-slide="1"><a href="javascript:cool.slides.goToSlide(1)">Prerequisites</a></li>
+<li data-target-slide="2"><a href="javascript:cool.slides.goToSlide(2)">Getting started</a></li>
+<li data-target-slide="3"><a href="javascript:cool.slides.goToSlide(3)">Adding the helm provider and repository</a></li>
+<li data-target-slide="4"><a href="javascript:cool.slides.goToSlide(4)">Adding Redis with a helm release</a></li>
+<li data-target-slide="5"><a href="javascript:cool.slides.goToSlide(5)">Interacting with the Redis Cluster</a></li>
+<li data-target-slide="6"><a href="javascript:cool.slides.goToSlide(6)">Inspecting your cluster</a></li>
+<li data-target-slide="7"><a href="javascript:cool.slides.goToSlide(7)">Updating your release</a></li>
+<li data-target-slide="8"><a href="javascript:cool.slides.goToSlide(8)">Next steps</a></li></ul></nav>
+        </aside> -->
+      
+
+        <div class="slides" id="slideshow">
+
+  <div class="slide active" id="slide-0">
+
+    <h2 class="slide__title"><span class="slide__num">1</span> Introduction</h2>
+
+    <p>When designing the <a href="https://github.com/oracle/sample-oke-for-terraform">Terraform OKE</a> provisioning scripts, one of the things we wanted to do was make it reusable. So, what does that translate to here? In this context, it means extending the base sample repo and adding in our own extensions.</p>
+
+    <p>In this tutorial, we’ll deploy a Redis Cluster to OKE using helm charts. Terraform conveniently provides a <a href="https://www.terraform.io/docs/providers/helm/index.html">helm provider</a>, so we’ll use that for our purposes.</p>
+
+    <p>Topics covered in this tutorial:</p>
+
+    <ul>
+      <li>Adding the helm provider and repository</li>
+      <li>Adding Redis with a helm release</li>
+      <li>Interacting with the Redis Cluster</li>
+      <li>Inspecting the new Redis Cluster</li>
+      <li>Updating your release after deployment</li>
+    </ul>
+
+    <p>For additional information, see:</p>
+
+    <ul>
+      <li><a href="https://docs.oracle.com/iaas/Content/GSG/Tasks/signingup.htm">Signing Up for Oracle Cloud Infrastructure</a></li>
+      <li><a href="https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/terraformgettingstarted.htm">Getting started with Terraform</a></li>
+      <li><a href="https://docs.oracle.com/en-us/iaas/Content/API/Concepts/cloudshellintro.htm">Getting started with OCI Cloud Shell</a></li>
+    </ul>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)" class="slides__btn--begin">Begin &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-1">
+
+    <h2 class="slide__title"><span class="slide__num">2</span> Prerequisites</h2>
+
+    <p>To successfully complete this tutorial, you’ll need the following:</p>
+
+    <ul>
+      <li>An Oracle Cloud Infrastructure Free Tier account. <a href="https://signup.cloud.oracle.com/?language=en&amp;sourceType=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted&amp;intcmp=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted">Start for Free</a>.</li>
+      <li>A MacOS, Linux, or Windows computer with <code class="language-plaintext highlighter-rouge">ssh</code> support installed.</li>
+      <li><a href="https://docs.oracle.com/en-us/iaas/Content/API/Concepts/cloudshellintro.htm">OCI Cloud Shell</a> - It provides a great platform for quickly working with Terraform as well as a host of other OCI interfaces and tools.</li>
+      <li>Access to Terraform.</li>
+    </ul>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(0)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(2)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-2">
+
+    <h2 class="slide__title"><span class="slide__num">3</span> Getting started</h2>
+
+    <p>First, clone the repo as we did before:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">git clone https://github.com/oracle/sample-oke-for-terraform.git tfoke
+</span></code></pre></div>    </div>
+
+    <p>Then, navigate into the <code class="language-plaintext highlighter-rouge">tfoke</code> directory:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">cd tfoke
+</span></code></pre></div>    </div>
+
+    <p>And finally, follow the <a href="https://github.com/oracle/sample-oke-for-terraform/blob/master/docs/instructions.md">instructions</a> to create your Terraform variable file.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(3)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-3">
+
+    <h2 class="slide__title"><span class="slide__num">4</span> Adding the helm provider and repository</h2>
+
+    <p>In the OKE module, create a <code class="language-plaintext highlighter-rouge">redis.tf</code> file. First, we need to configure the helm provider. Since we already have the <code class="language-plaintext highlighter-rouge">kubeconfig</code> file, we’ll use the <strong>File Config</strong> method:</p>
+
+    <ol>
+      <li>
+        <p>Add the following to <code class="language-plaintext highlighter-rouge">redis.tf</code>:</p>
+
+        <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   <span class="k">provider</span> <span class="s2">"helm"</span> <span class="p">{</span>  
+       <span class="nx">kubernetes</span> <span class="p">{</span>  
+           <span class="nx">config_path</span> <span class="p">=</span> <span class="s2">"</span><span class="k">${</span><span class="nx">path</span><span class="p">.</span><span class="nx">root</span><span class="k">}</span><span class="s2">/generated/kubeconfig"</span>  
+       <span class="p">}</span>  
+   <span class="p">}</span>
+</code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Add a helm repository:</p>
+
+        <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   <span class="k">data</span> <span class="s2">"helm_repository"</span> <span class="s2">"stable"</span> <span class="p">{</span>  
+       <span class="nx">name</span> <span class="p">=</span> <span class="s2">"stable"</span>  
+       <span class="nx">url</span> <span class="p">=</span> <span class="s2">"https://kubernetes-charts.storage.googleapis.com"</span>  
+   <span class="p">}</span>
+</code></pre></div>        </div>
+      </li>
+    </ol>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(2)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(4)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-4">
+
+    <h2 class="slide__title"><span class="slide__num">5</span> Adding Redis with a helm release</h2>
+
+    <p>In this section, we’ll use the <a href="https://github.com/helm/charts/tree/master/stable/redis">Redis helm chart</a> to create a helm release. However, we want helm to deploy only <em>after</em> the worker nodes become active, so we’ll have to make sure to check their status before proceeding.</p>
+
+    <p>Let’s get started setting up our release. In the <a href="https://github.com/oracle/sample-oke-for-terraform/blob/master/modules/oke/activeworker.tf">sample repo</a>, there’s a null_resource <code class="language-plaintext highlighter-rouge">is_worker_active</code> that you can use to set an explicit dependency.</p>
+
+    <p>To make use of this dependency, add the following to <code class="language-plaintext highlighter-rouge">redis.tf</code>:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   <span class="k">resource</span> <span class="s2">"helm_release"</span> <span class="s2">"redis"</span> <span class="p">{</span> <span class="nx">depends_on</span> <span class="p">=</span> <span class="p">[</span><span class="s2">"null_resource.is_worker_active"</span><span class="p">,</span> <span class="s2">"local_file.kube_config_file"</span><span class="p">]</span> <span class="k">provider</span> <span class="p">=</span> <span class="s2">"helm"</span>  
+       <span class="nx">name</span> <span class="p">=</span> <span class="s2">"oke-redis"</span>  
+       <span class="nx">repository</span> <span class="p">=</span> <span class="s2">"</span><span class="k">${data</span><span class="p">.</span><span class="nx">helm_repository</span><span class="p">.</span><span class="nx">stable</span><span class="p">.</span><span class="nx">metadata</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="nx">name</span><span class="k">}</span><span class="s2">"</span>  
+       <span class="nx">chart</span> <span class="p">=</span> <span class="s2">"redis"</span>  
+       <span class="nx">version</span> <span class="p">=</span> <span class="s2">"6.4.5"</span>    <span class="nx">set</span> <span class="p">{</span>  
+           <span class="nx">name</span>  <span class="p">=</span> <span class="s2">"cluster.enabled"</span>  
+           <span class="nx">value</span> <span class="p">=</span> <span class="s2">"true"</span>  
+       <span class="p">}</span>    <span class="nx">set</span> <span class="p">{</span>  
+           <span class="nx">name</span> <span class="p">=</span> <span class="s2">"cluster.slaveCount"</span>  
+           <span class="nx">value</span> <span class="p">=</span> <span class="s2">"3"</span>  
+       <span class="p">}</span>  
+        
+       <span class="nx">set</span> <span class="p">{</span>  
+           <span class="nx">name</span> <span class="p">=</span> <span class="s2">"master.persistence.size"</span>  
+           <span class="nx">value</span> <span class="p">=</span> <span class="s2">"50Gi"</span>  
+       <span class="p">}</span>  
+   <span class="p">}</span>
+</code></pre></div>    </div>
+
+    <h3 id="yaml-file">yaml file</h3>
+
+    <p>If you prefer to customize your helm release using a yaml file, we’ll quickly walk through setting that up here:</p>
+
+    <ol>
+      <li>Create a folder called <code class="language-plaintext highlighter-rouge">resources</code> under the oke module.</li>
+      <li>
+        <p>Copy the file, <code class="language-plaintext highlighter-rouge">values.yaml</code> from the <strong>redis chart repo</strong> to <code class="language-plaintext highlighter-rouge">redis_values.yaml</code>:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">   curl -o modules/oke/resources/redis_values.yaml https://raw.githubusercontent.com/helm/charts/master/stable/redis/values.yaml
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Remove the individual settings in the redis release from the terraform code and add the following instead:</p>
+
+        <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   <span class="nx">values</span> <span class="err">=</span> <span class="p">[</span>  
+      <span class="s2">"</span><span class="k">${</span><span class="nx">file</span><span class="p">(</span><span class="s2">"</span><span class="k">${</span><span class="nx">path</span><span class="p">.</span><span class="k">module}</span><span class="s2">/resources/redis_values.yaml"</span><span class="p">)</span><span class="k">}</span><span class="s2">"</span>  
+   <span class="p">]</span>
+</code></pre></div>        </div>
+
+        <p>Your release should then look like this:</p>
+
+        <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   <span class="k">resource</span> <span class="s2">"helm_release"</span> <span class="s2">"redis"</span> <span class="p">{</span>  <span class="nx">depends_on</span> <span class="p">=</span> <span class="p">[</span><span class="s2">"null_resource.is_worker_active"</span><span class="p">,</span>    <span class="s2">"local_file.kube_config_file"</span><span class="p">]</span>  <span class="k">provider</span> <span class="p">=</span> <span class="s2">"helm"</span>  
+       <span class="nx">name</span> <span class="p">=</span> <span class="s2">"my-redis-release"</span>  
+       <span class="nx">repository</span> <span class="p">=</span> <span class="s2">"</span><span class="k">${data</span><span class="p">.</span><span class="nx">helm_repository</span><span class="p">.</span><span class="nx">stable</span><span class="p">.</span><span class="nx">metadata</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="nx">name</span><span class="k">}</span><span class="s2">"</span>  
+       <span class="nx">chart</span> <span class="p">=</span> <span class="s2">"redis"</span>  
+       <span class="nx">version</span> <span class="p">=</span> <span class="s2">"6.4.5"</span>  <span class="nx">values</span> <span class="p">=</span> <span class="p">[</span>  
+       <span class="s2">"</span><span class="k">${</span><span class="nx">file</span><span class="p">(</span><span class="s2">"</span><span class="k">${</span><span class="nx">path</span><span class="p">.</span><span class="k">module}</span><span class="s2">/resources/redis_values.yaml"</span><span class="p">)</span><span class="k">}</span><span class="s2">"</span>  
+     <span class="p">]</span>  
+   <span class="p">}</span>
+</code></pre></div>        </div>
+      </li>
+    </ol>
+
+    <blockquote class="notice">
+      <p><strong>Note:</strong> You can also combine the two approaches above, but in general it’s not a bad idea to keep the configurations in a single location for easy updating.</p>
+
+      <p>Also, you can change the values in the yaml file if you want to. For example, a good working pair of settings might be:</p>
+
+      <ul>
+        <li>default <strong><code class="language-plaintext highlighter-rouge">cluster.slaveCount</code></strong> = 3</li>
+        <li><strong>persistence.size</strong> = 50Gi</li>
+      </ul>
+    </blockquote>
+
+    <h3 id="download-the-helm-provider-and-check-status">Download the helm provider and check status</h3>
+
+    <ol>
+      <li>
+        <p>Run <code class="language-plaintext highlighter-rouge">terraform init</code> to download the helm provider and then apply again:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">   terraform init  
+   terraform apply -auto-approve
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Log in to the bastion and do a helm list:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">   helm list
+   NAME          REVISION    UPDATED                     STATUS        CHART         APP VERSION   NAMESPACE                          
+   oke-redis     1           Wed Apr 24 12:05:40 2019    DEPLOYED      redis-6.4.5   4.0.14        default
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Get the notes provided by the redis chart:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">   helm status
+</span></code></pre></div>        </div>
+      </li>
+    </ol>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(3)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(5)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-5">
+
+    <h2 class="slide__title"><span class="slide__num">6</span> Interacting with the Redis Cluster</h2>
+
+    <p>After you’ve run <code class="language-plaintext highlighter-rouge">helm status</code> (see <a href="#download-the-helm-provider-and-check-status">previous section</a>), the following are available to you:</p>
+
+    <ol>
+      <li>
+        <p>Get the Redis password:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> export REDIS_PASSWORD=$</span><span class="o">(</span>kubectl get secret <span class="nt">--namespace</span> default oke-redis <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s2">"{.data.redis-password}"</span> | <span class="nb">base64</span> <span class="nt">--decode</span><span class="o">)</span>
+</code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Run a Redis pod:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> kubectl run --namespace default oke-redis-client --rm --tty -i --restart='Never' \                                                              
+</span><span class="gp">      --env REDIS_PASSWORD=$</span>REDIS_PASSWORD <span class="se">\ </span>                                                                                                        
+<span class="go">     --image docker.io/bitnami/redis:4.0.14 -- bash
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Connect using the Redis cli:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> redis-cli -h oke-redis-master -a $</span>REDIS_PASSWORD
+</code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Type a redis command:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> oke-redis-master:6379&gt;</span><span class="w"> </span>ping
+<span class="go"> PONG
+</span></code></pre></div>        </div>
+      </li>
+    </ol>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(4)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(6)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-6">
+
+    <h2 class="slide__title"><span class="slide__num">7</span> Inspecting your cluster</h2>
+
+    <p>Recall that in the yaml file, we set the number of <code class="language-plaintext highlighter-rouge">redis slaves</code> to 3. Let’s verify that this is still the case:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">kubectl get pods  
+</span></code></pre></div>    </div>
+
+    <p>Your output should look something like this:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">NAME                               READY   STATUS    RESTARTS   AGE                                                                                
+oke-redis-master-0                 1/1     Running   0          42m                                                                                
+oke-redis-slave-79c45c57d8-67bxj   1/1     Running   1          42m                                                                                
+oke-redis-slave-79c45c57d8-s6znq   1/1     Running   0          42m                                                                                
+oke-redis-slave-79c45c57d8-wnfrh   1/1     Running   0          42m
+</span></code></pre></div>    </div>
+
+    <p>From this, you can see that there are 3 pods running the redis slaves.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(5)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(7)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-7">
+
+    <h2 class="slide__title"><span class="slide__num">8</span> Updating your release</h2>
+
+    <p>Let’s consider a real-world example. Let’s say we want to update the helm release to change some settings. For example, we need to reduce the number of slaves from 3 to 2.  We actually have a couple of different ways we can do this.</p>
+
+    <ol>
+      <li>Change settings (2 methods)
+        <ul>
+          <li>
+            <p><strong>helm cli -</strong> Perform the setting change manually using the helm cli:</p>
+
+            <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">  helm upgrade oke-redis stable/redis --set cluster.slaveCount=2
+</span></code></pre></div>            </div>
+          </li>
+          <li>
+            <p><strong>yaml file -</strong> Or, change the settings in the <code class="language-plaintext highlighter-rouge">redis_values.yaml</code> and then run <code class="language-plaintext highlighter-rouge">terraform apply</code> again.<br />
+In the case where we reduced the number of slaves from 3 to 2 the output of the <code class="language-plaintext highlighter-rouge">terraform apply</code> command should be something like:</p>
+
+            <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">  ..  
+  ..  
+  ..  
+</span><span class="go">  module.oke.helm_release.redis: Still modifying… (ID: oke-redis, 10s elapsed)  
+  module.oke.helm_release.redis: Still modifying… (ID: oke-redis, 20s elapsed)  
+  module.oke.helm_release.redis: Still modifying… (ID: oke-redis, 30s elapsed)  
+  module.oke.helm_release.redis: Still modifying… (ID: oke-redis, 40s elapsed)  
+  module.oke.helm_release.redis: Still modifying… (ID: oke-redis, 50s elapsed)  
+  module.oke.helm_release.redis: Still modifying… (ID: oke-redis, 1m1s elapsed)  
+  module.oke.helm_release.redis: Modifications complete after 1m9s (ID: oke-redis)
+
+  Apply complete! Resources: 1 added, 1 changed, 1 destroyed.
+</span></code></pre></div>            </div>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <p>In the meantime, from another terminal, we can watch the number of pods being updated:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">   kubectl get pods -w
+</span></code></pre></div>        </div>
+
+        <p>Your output should be something like:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">   oke-redis-master-0                 0/1     Terminating   0          61s                                                                            
+   oke-redis-slave-6bd9dc8d89-jdrs2   0/1     Running       0          3s                                                                             
+   oke-redis-slave-6bd9dc8d89-kvc8r   0/1     Running       0          3s                                                                             
+   oke-redis-slave-6fdd8c4b56-44qpb   0/1     Terminating   0          63s
+</span></code></pre></div>        </div>
+      </li>
+    </ol>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(6)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(8)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-8">
+
+    <h2 class="slide__title"><span class="slide__num">9</span> Next steps</h2>
+
+    <p>In future articles, we’ll look at other ways to extend the terraform-oci-oke module to deploy software on OKE.</p>
+
+    <p>Check out these sites to explore more information about development with Oracle products:</p>
+
+    <ul>
+      <li><a href="https://developer.oracle.com/">Oracle Developers Portal</a></li>
+      <li><a href="https://www.oracle.com/cloud/">Oracle Cloud Infrastructure</a></li>
+    </ul>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(7)">&laquo; Back</a></div>
+
+  </div>
+
+</div>
+
+<!--- links -->
+
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/kubernetes">kubernetes</a>
+            <a class="animated-link tag" href="/topics/devops">devops</a>
+            <a class="animated-link tag" href="/topics/terraform">terraform</a>
+            </span>
+    </p> -->
+  
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-10-28T12:00:00+00:00">October 28, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

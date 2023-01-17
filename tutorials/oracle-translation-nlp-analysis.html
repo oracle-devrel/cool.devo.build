@@ -1,0 +1,360 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Using Oracle’s Machine Translation Services for NLP Analysis">
+    
+    <meta itemprop="datePublished" content="2021-12-10T13:04:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Using Oracle’s Machine Translation Services for NLP Analysis
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <h2 id="introduction">Introduction</h2>
+<p>Welcome! This article is an overview of Oracle’s Machine Translation Services (MTS) and how they complement the standard open-source NLP libraries out there today. Currently, this service is focused/created with the intention of helping Oracle internal teams translate texts in a secure way (see below), so this is not a readily available product. However, there are plans for the future to make it available for OCI users.</p>
+
+<p>Oracle Translate is an MTS made available by Oracle’s International Product Solutions. It’s beneficial to use Oracle’s service over others, especially for sensitive information, because other services, such as Google Translate, are known to harvest and collect requesting data which could infringe on company confidentiality and chain of custody of protected documents. Oracle’s service does not store this information, and all transactions happen in a secure Oracle network environment.</p>
+
+<p>Let’s explore some examples of how Oracle’s MT services are different from other translation services like Google’s.</p>
+
+<p>If you don’t yet have an OCI account, you can quickly sign up for one today by registering for an <a href="https://www.oracle.com/cloud/free/#always-free">Oracle Cloud Free Tier</a> account.</p>
+
+<p>Afterwards, check <a href="https://developer.oracle.com/python/">developer.oracle.com/linux</a> for even more Python content.</p>
+
+<h2 id="authentication">Authentication</h2>
+
+<p>Authentication is performed against Oracle Cloud resources and handled by Oracle’s Identity Cloud Service (IDCS), using Base64 encoding.</p>
+
+<p>The two main components of Oracle Translate are a client ID and a client secret. Using these components, we can perform authentication following this flow:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Defining variables
+</span><span class="n">IDCSSERVER</span> <span class="o">=</span> <span class="s">'&lt;url_provided_by_oracle_mts_team.com&gt;'</span>
+<span class="n">SCOPE</span> <span class="o">=</span> <span class="s">'urn:opc:idm:__myscopes__'</span>
+<span class="c1"># Production endpoint
+</span><span class="n">BASEURL</span> <span class="o">=</span> <span class="s">'&lt;url_provided_by_oracle_mts_team.com&gt;'</span>
+<span class="n">ENDPOINT</span> <span class="o">=</span> <span class="s">'{}/translation/api'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">BASEURL</span><span class="p">)</span>
+<span class="n">REALTIME_ENDPOINT</span> <span class="o">=</span> <span class="s">'&lt;url_provided_by_oracle_mts_team.com&gt;'</span>
+<span class="n">NLP_ENDPOINT</span> <span class="o">=</span> <span class="s">'&lt;url_provided_by_oracle_mts_team.com&gt;'</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_config_file</span><span class="p">()</span>
+<span class="n">basic_authorization</span> <span class="o">=</span> <span class="s">'{}:{}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span>
+<span class="n">data</span><span class="p">[</span><span class="s">'mt_translation'</span><span class="p">][</span><span class="s">'MT_CLIENT_ID'</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s">'mt_translation'</span><span class="p">][</span><span class="s">'MT_CLIENT_SECRET'</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">basic_authorization</span> <span class="o">=</span> <span class="n">base64</span><span class="p">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">basic_authorization</span><span class="p">.</span><span class="n">encode</span><span class="p">(</span><span class="s">'ascii'</span><span class="p">)).</span><span class="n">decode</span><span class="p">(</span><span class="s">'ascii'</span><span class="p">)</span>
+<span class="n">request_url</span> <span class="o">=</span> <span class="s">'{}/oauth2/v1/token/'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">IDCSSERVER</span><span class="p">)</span>
+<span class="n">request_headers</span> <span class="o">=</span> <span class="p">{</span>
+<span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Basic {}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">basic_authorization</span><span class="p">),</span>
+<span class="s">'content-type'</span><span class="p">:</span> <span class="s">'application/x-www-form-urlencoded;charset=UTF-8'</span><span class="p">,</span>
+<span class="s">'x-resource-identity-domain-name'</span><span class="p">:</span><span class="s">'idcs-oracle'</span>
+<span class="p">}</span>
+<span class="n">request_data</span> <span class="o">=</span> <span class="s">'grant_type=client_credentials&amp;scope={}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">SCOPE</span><span class="p">)</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="p">.</span><span class="n">post</span><span class="p">(</span><span class="n">request_url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">request_data</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">request_headers</span><span class="p">)</span>
+<span class="n">api_token</span> <span class="o">=</span> <span class="n">response</span><span class="p">.</span><span class="n">json</span><span class="p">().</span><span class="n">get</span><span class="p">(</span><span class="s">'access_token'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Our primary objective is to obtain the necessary API token to perform operations. Note that the config.yaml file mentioned to obtain the client ID and secret should follow this hierarchical structure:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">mt_translation</span><span class="pi">:</span>
+  <span class="na">MT_CLIENT_ID</span><span class="pi">:</span> <span class="s">XXXX</span>
+  <span class="na">MT_CLIENT_SECRET</span><span class="pi">:</span> <span class="s">XXXX</span>
+</code></pre></div></div>
+
+<p>Once we have the API token, we can perform authenticated requests against Oracle’s MT Translation service.</p>
+
+<h2 id="batch-translation">Batch Translation</h2>
+<p>In this case, we will translate a document in Markdown format <a href="http://jasperan.com/files/jasperan.md">this one as an example.</a></p>
+
+<p>The batch translation endpoint supports translating whole documents instead of making several requests. Also, requests can be submitted for multiple target languages at a time, making it possible that one request is translatable to every available language supported by the API with just one call.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">batch_translation</span><span class="p">(</span><span class="n">api_token</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">file_name</span><span class="p">):</span>
+	<span class="n">request_url</span> <span class="o">=</span> <span class="s">'{}/files?service={}&amp;sourceLang={}&amp;scope={}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">ENDPOINT</span><span class="p">,</span> <span class="s">'mt'</span><span class="p">,</span> <span class="n">args</span><span class="p">.</span><span class="n">source_language_code</span><span class="p">,</span> <span class="n">args</span><span class="p">.</span><span class="n">target_language_code</span><span class="p">)</span>
+	<span class="n">request_headers</span> <span class="o">=</span> <span class="p">{</span>
+		<span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Bearer {}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">api_token</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="c1">#print(request_url, request_headers)
+</span>	<span class="n">files</span> <span class="o">=</span> <span class="p">{</span>
+		<span class="s">'file'</span><span class="p">:</span> <span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s">'rb'</span><span class="p">))</span>
+	<span class="p">}</span>
+
+	<span class="k">print</span><span class="p">(</span><span class="s">'Request URL: {}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">request_url</span><span class="p">))</span>
+	<span class="k">print</span><span class="p">(</span><span class="s">'Request headers: {}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">request_headers</span><span class="p">))</span>
+	<span class="k">print</span><span class="p">(</span><span class="s">'Request file: {}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">file</span><span class="o">=</span><span class="n">files</span><span class="p">[</span><span class="s">'file'</span><span class="p">])))</span>
+
+	<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="p">.</span><span class="n">post</span><span class="p">(</span><span class="n">request_url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">request_headers</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">file</span><span class="o">=</span><span class="n">files</span><span class="p">[</span><span class="s">'file'</span><span class="p">]))</span>
+	<span class="n">response_json</span> <span class="o">=</span> <span class="n">response</span><span class="p">.</span><span class="n">json</span><span class="p">()</span>
+	<span class="k">print</span><span class="p">(</span><span class="n">response</span><span class="p">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">response</span><span class="p">.</span><span class="n">json</span><span class="p">())</span>
+
+	<span class="n">drop</span> <span class="o">=</span> <span class="bp">None</span>
+	<span class="k">while</span> <span class="n">drop</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+		<span class="k">print</span><span class="p">(</span><span class="s">'Waiting for translated file to be ready...'</span><span class="p">)</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">response_json</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">'pipeline'</span><span class="p">).</span><span class="n">get</span><span class="p">(</span><span class="s">'status'</span><span class="p">))</span>
+		<span class="k">except</span> <span class="nb">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+			<span class="k">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+	
+		<span class="k">try</span><span class="p">:</span>
+			<span class="k">print</span><span class="p">(</span><span class="n">response</span><span class="p">.</span><span class="n">json</span><span class="p">())</span>
+			<span class="n">drop</span> <span class="o">=</span> <span class="n">response</span><span class="p">.</span><span class="n">json</span><span class="p">().</span><span class="n">get</span><span class="p">(</span><span class="s">'map'</span><span class="p">).</span><span class="n">get</span><span class="p">(</span><span class="s">'en_drop'</span><span class="p">)</span> <span class="c1"># varies with language. I used 'en' as English in this example.
+</span>			<span class="k">if</span> <span class="n">drop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+				<span class="k">print</span><span class="p">(</span><span class="s">'File result in {}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">drop</span><span class="p">))</span>
+		<span class="k">except</span> <span class="nb">KeyError</span><span class="p">:</span>
+			<span class="k">print</span><span class="p">(</span><span class="s">'Could not find the drop.'</span><span class="p">)</span>
+		
+		<span class="n">time</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>After executing and periodically waiting for the resulting file to be ready, we get our processed data in about 40 seconds:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">Request URL: &lt;url_provided_by_oracle_mts_team.com&gt;</span><span class="w">
+</span><span class="gp">Request file: {'file': ('intro.md', &lt;_io.BufferedReader name='../data/intro.md'&gt;</span><span class="o">)}</span>
+<span class="gp">202 {'id': 115162, 'status': 'CREATED', 'service': 'mt', 'source': {'originalPath': 'intro.md', 'language': 'en'}, 'scope': ['fr'], 'otp_instance_id': 343337, '_links': {'self': '&lt;url_provided_by_oracle_mts_team.com&gt;</span><span class="s1">', '</span>otp_status<span class="s1">': '</span>&lt;url_provided_by_oracle_mts_team.com&gt;<span class="s1">', '</span>otp_wordcount<span class="s1">': '</span>&lt;url_provided_by_oracle_mts_team.com&gt;<span class="s1">'}, '</span>pipeline<span class="s1">': {'</span><span class="nb">id</span><span class="s1">': 343337, '</span>status<span class="s1">': '</span>&lt;url_provided_by_oracle_mts_team.com&gt;<span class="s1">', '</span>wordcount<span class="s1">': '</span>&lt;url_provided_by_oracle_mts_team.com&gt;<span class="s1">'}}
+</span><span class="go">Waiting for translated file to be ready...
+{'id': 343337, 'state': 'RUNNING', 'pipeline_id': 1, 'start': '2021-11-17T00:24:57Z', 'update_time': '2021-11-17T00:24:57Z', 'end': '', 'running_time_str': '1s', 'updated_ago_in_str': '1s', 'progress': {'preprocessing': 0, 'translation': 0, 'merge_and_delivery': 0}, 'map': {'translated_langs': [], 'deferred_langs': [], 'originalFileName': 'intro.md'}, 'messages': []}
+Waiting for translated file to be ready...
+{'id': 343337, 'state': 'RUNNING', 'pipeline_id': 1, 'start': '2021-11-17T00:24:57Z', 'update_time': '2021-11-17T00:24:57Z', 'end': '', 'running_time_str': '12s', 'updated_ago_in_str': '12s', 'progress': {'preprocessing': 0, 'translation': 0, 'merge_and_delivery': 0}, 'map': {'translated_langs': [], 'deferred_langs': [], 'originalFileName': 'intro.md'}, 'messages': []}
+Waiting for translated file to be ready...
+{'id': 343337, 'state': 'RUNNING', 'pipeline_id': 1, 'start': '2021-11-17T00:24:57Z', 'update_time': '2021-11-17T00:24:57Z', 'end': '', 'running_time_str': '23s', 'updated_ago_in_str': '23s', 'progress': {'preprocessing': 0, 'translation': 0, 'merge_and_delivery': 0}, 'map': {'translated_langs': [], 'deferred_langs': [], 'originalFileName': 'intro.md'}, 'messages': []}
+Waiting for translated file to be ready...
+</span><span class="gp">{'id': 343337, 'state': 'RUNNING', 'pipeline_id': 1, 'start': '2021-11-17T00:24:57Z', 'update_time': '2021-11-17T00:25:21Z', 'end': '', 'running_time_str': '34s', 'updated_ago_in_str': '10s', 'progress': {'preprocessing': 100, 'translation': 1, 'merge_and_delivery': 0}, 'map': {'languages': 1, 'translated_langs': [], 'deferred_langs': [], 'en_drop': '&lt;url_provided_by_oracle_mts_team.com&gt;</span>/s115162.zip<span class="s1">', '</span>originalFileName<span class="s1">': '</span>intro.md<span class="s1">'}, '</span>messages<span class="s1">': []}
+</span><span class="gp">File result in &lt;url_provided_by_oracle_mts_team.com&gt;</span><span class="s1">/s115162.zip
+</span></code></pre></div></div>
+
+<p>And with the final result we can download the .zip file with our translated file inside the folder.</p>
+
+<h2 id="real-time-translation">Real-Time Translation</h2>
+<p>In this case, we’re going to test with a few examples on the real-time translation endpoint. The list of available languages is defined as:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># CURRENTLY SUPPORTED LANGUAGE CODES
+</span><span class="n">LANGUAGES</span> <span class="o">=</span> <span class="p">[</span>
+	<span class="s">'en'</span><span class="p">,</span> <span class="s">'fr-CA'</span><span class="p">,</span> <span class="s">'pl'</span><span class="p">,</span> <span class="s">'sv'</span><span class="p">,</span> <span class="s">'ar'</span><span class="p">,</span> <span class="s">'de'</span><span class="p">,</span> <span class="s">'ro'</span><span class="p">,</span> <span class="s">'zh-TW'</span><span class="p">,</span> <span class="s">'pt-BR'</span><span class="p">,</span> <span class="s">'it'</span><span class="p">,</span> <span class="s">'ru'</span><span class="p">,</span> <span class="s">'nl'</span><span class="p">,</span> <span class="s">'ja'</span><span class="p">,</span> <span class="s">'zh-CN'</span><span class="p">,</span> <span class="s">'fr'</span><span class="p">,</span> <span class="s">'ko'</span><span class="p">,</span> <span class="s">'es-ww'</span>
+<span class="p">]</span>
+<span class="c1"># Coming in FY22Q3: Norwegian, Danish, Czech, Finish, Turkish &amp; in FY22Q4: Greek, Hebrew, Thai, Ukrainian, Croatian 
+</span></code></pre></div></div>
+
+<p>We predefine our languages in a list and only allow these language codes as input:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">argparse</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="p">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+<span class="n">parser</span><span class="p">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'-s'</span><span class="p">,</span> <span class="s">'--source-language-code'</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">LANGUAGES</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">parser</span><span class="p">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'-t'</span><span class="p">,</span> <span class="s">'--target-language-code'</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">LANGUAGES</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="p">.</span><span class="n">parse_args</span><span class="p">()</span> 
+</code></pre></div></div>
+
+<p>Let’s define our real-time endpoint as follows:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">real_time_translation</span><span class="p">(</span><span class="n">api_token</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+	<span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="nb">str</span><span class="p">())</span>
+	<span class="n">request_url</span> <span class="o">=</span> <span class="s">'{}/translate/{}/{}?s={}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">REALTIME_ENDPOINT</span><span class="p">,</span> <span class="n">args</span><span class="p">.</span><span class="n">source_language_code</span><span class="p">,</span> <span class="n">args</span><span class="p">.</span><span class="n">target_language_code</span><span class="p">,</span> <span class="n">urllib</span><span class="p">.</span><span class="n">parse</span><span class="p">.</span><span class="n">quote</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+	<span class="n">request_headers</span> <span class="o">=</span> <span class="p">{</span>
+		<span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Bearer {}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">api_token</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="k">print</span><span class="p">(</span><span class="n">request_url</span><span class="p">)</span>
+
+		
+	<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">request_url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">request_headers</span><span class="p">)</span>
+	<span class="k">print</span><span class="p">(</span><span class="n">response</span><span class="p">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">response</span><span class="p">.</span><span class="n">content</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Note that we quote our string to avoid inconsistencies with path parameters in the request URL. After executing this code in this fashion:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python mt_translation.py <span class="nt">--source-language-code</span> <span class="s2">"en"</span> <span class="nt">--target-language-code</span> <span class="s2">"fr"</span>
+</code></pre></div></div>
+
+<p>We see this result:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;url_provided_by_oracle_mts_team.com&gt;/translate/en/fr?s<span class="o">=</span>This%20is%20an%20example
+200 b<span class="s2">"C'est un exemple"</span>
+</code></pre></div></div>
+
+<p>We were able to translate a request in about 1.5 seconds. I created a benchmark function to measure the average request/response time:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">time</span>
+<span class="k">def</span> <span class="nf">benchmark</span><span class="p">():</span>
+	<span class="n">api_token</span> <span class="o">=</span> <span class="n">get_access_token</span>
+	<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
+		<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="p">.</span><span class="n">time</span><span class="p">()</span>
+		<span class="n">real_time_translation</span><span class="p">(</span><span class="n">api_token</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+		<span class="k">print</span><span class="p">(</span><span class="s">'[BENCHMARK] +{}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">time</span><span class="p">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t1</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>Which produced these results:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>BENCHMARK] +1.5139455795288086
+<span class="o">[</span>BENCHMARK] +1.480928897857666 
+<span class="o">[</span>BENCHMARK] +1.4764995574951172
+<span class="o">[</span>BENCHMARK] +1.5293617248535156
+...
+...
+<span class="o">[</span>BENCHMARK] +1.4901740550994873
+<span class="o">[</span>BENCHMARK] +1.5180373191833496
+<span class="o">[</span>BENCHMARK] +1.489206314086914 
+<span class="o">[</span>BENCHMARK] +1.4964230060577393
+</code></pre></div></div>
+
+<p>Each request takes about an average of 1.5 seconds to finish.</p>
+
+<h2 id="docker-setup">Docker setup</h2>
+
+<p>I’ve included a Docker file that only requires a config.yaml file to run. To download the Docker file, find it in <a href="https://github.com/oracle-devrel/nlp-oracle-translation/tree/main/oracle">this GitHub</a> directory.</p>
+
+<p>The contents of <code class="language-plaintext highlighter-rouge">config.yaml</code> should be like this:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">mt_translation</span><span class="pi">:</span>
+  <span class="na">MT_CLIENT_ID</span><span class="pi">:</span> <span class="s">XXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+  <span class="na">MT_CLIENT_SECRET</span><span class="pi">:</span> <span class="s">XXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+  <span class="na">MT_SERVICE</span><span class="pi">:</span> <span class="s">mt</span>
+</code></pre></div></div>
+
+<p>Build the image:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker build <span class="nt">--pull</span> <span class="nt">--rm</span> <span class="nt">-f</span> <span class="s2">"nlp-oracle-translation</span><span class="se">\o</span><span class="s2">racle</span><span class="se">\D</span><span class="s2">ockerfile"</span> <span class="nt">-t</span> oracle_translate <span class="s2">"nlp-oracle-translation</span><span class="se">\o</span><span class="s2">racle"</span>
+</code></pre></div></div>
+
+<p>And run it:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run <span class="nt">-it</span> <span class="nt">-p</span> 443:443 oracle_translate  <span class="nt">-s</span> en <span class="nt">-t</span> fr <span class="nt">-x</span> <span class="s2">"This is an example"</span>
+</code></pre></div></div>
+
+<p>Example run:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>λ docker run <span class="nt">-it</span> <span class="nt">-p</span> 443:443 oracle_translate  <span class="nt">-s</span> en <span class="nt">-t</span> fr <span class="nt">-x</span> <span class="s2">"I love you"</span>
+200 Je vous aime <span class="o">!</span>
+</code></pre></div></div>
+
+<h2 id="how-can-i-get-started-on-oci">How can I get started on OCI?</h2>
+
+<p>Remember that you can always sign up for free with OCI! Your Oracle Cloud account provides a number of Always Free services and a Free Trial with US$300 of free credit to use on all eligible OCI services for up to 30 days. These Always Free services are available for an <strong>unlimited</strong> period of time. The Free Trial services may be used until your US$300 of free credits are consumed or the 30 days has expired, whichever comes first. You can <a href="https://signup.cloud.oracle.com/">sign up here for free</a>.</p>
+
+<h2 id="license">License</h2>
+
+<p>Copyright (c) 2021 Oracle and/or its affiliates.</p>
+
+<p>Licensed under the Universal Permissive License (UPL), Version 1.0.</p>
+
+<p>See <a href="../LICENSE">LICENSE</a> for more details.</p>
+
+<p>Written by <a href="https://www.linkedin.com/in/ignacio-g-martinez/">Ignacio Guillermo Martínez</a> <a href="https://github.com/jasperan">@jasperan</a>, edited by <a href="https://github.com/GreatGhostsss">GreatGhostsss</a></p>
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/python">python</a>
+            <a class="animated-link tag" href="/topics/oci">oci</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Ignacio Martínez</h3>
+    
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/ignacio-g-martinez" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-12-10T13:04:00+00:00">December 10, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

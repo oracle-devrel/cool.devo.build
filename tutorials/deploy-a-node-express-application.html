@@ -1,0 +1,1542 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Kubernetes - Deploy a Node Express Application">
+    
+    <meta itemprop="datePublished" content="2021-09-30T01:00:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Kubernetes - Deploy a Node Express Application
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <p>In this tutorial, you’ll use an Oracle Cloud Infrastructure (OCI) account to set up a Kubernetes cluster. Then, you’ll deploy a Node Express application to your cluster.</p>
+
+<p>Key tasks include how to:</p>
+
+<ul>
+  <li>Set up a Kubernetes cluster on OCI.</li>
+  <li>Set up OCI CLI to access your cluster.</li>
+  <li>Build a Node Express application and Docker Image.</li>
+  <li>Push your image to the Oracle Cloud Infrastructure Registry (OCIR).</li>
+  <li>Deploy your Node.js Docker application to your cluster.</li>
+  <li>
+    <p>Connect to your application from the internet.</p>
+
+    <picture class="">
+              <source srcset="assets/deploy-a-node-express-application-Node-K8s-diagram.png 1x" />
+              <img loading="lazy" width="1254" height="517" src="assets/deploy-a-node-express-application-Node-K8s-diagram.png" data-original="assets/deploy-a-node-express-application-Node-K8s-diagram.png" alt="Deploy a node express application to the internet." title="Deploy a node express application to the internet." />
+          </picture>
+  </li>
+</ul>
+
+<p>For additional information, see:</p>
+
+<ul>
+  <li><a href="https://kubernetes.io/docs/home/">Kubernetes Documentation</a></li>
+  <li><a href="https://docs.oracle.com/iaas/Content/ContEng/Concepts/contengoverview.htm">OCI Container Engine for Kubernetes</a></li>
+  <li><a href="https://docs.oracle.com/iaas/Content/Registry/Concepts/registryoverview.htm">OCI Container Registry</a></li>
+  <li><a href="https://docs.oracle.com/en-us/iaas/Content/API/Concepts/cloudshellintro.htm">Getting started with OCI Cloud Shell</a></li>
+</ul>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<p>To successfully perform this tutorial, you’ll need to have the following:</p>
+
+<h3 id="for-container-registry-kubernetes-and-load-balancers">For Container Registry, Kubernetes, and Load Balancers</h3>
+
+<ul>
+  <li>A <strong>paid</strong> Oracle Cloud Infrastructure account.<br />
+See: <a href="https://docs.oracle.com/iaas/Content/GSG/Tasks/signingup.htm">Signing Up for Oracle Cloud Infrastructure</a></li>
+</ul>
+
+<h3 id="for-building-applications-and-docker-images">For building applications and Docker images</h3>
+
+<ul>
+  <li>One of the following local environments:
+    <ul>
+      <li>A MacOS or Linux machine.</li>
+      <li>
+        <p>A Windows machine with Linux support.</p>
+
+        <p>For example:</p>
+
+        <ul>
+          <li><a href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">Windows Subsystem for Linux</a></li>
+          <li><a href="https://www.virtualbox.org/">Oracle Virtual Box</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>You have access to root either directly or using sudo. By default in OCI, you are connected as an <code class="language-plaintext highlighter-rouge">opc</code> user with sudo privilege.</li>
+  <li>A MacOS, Linux, or Windows computer with <code class="language-plaintext highlighter-rouge">ssh</code> support installed.</li>
+  <li>The following applications on your local environment:
+    <ul>
+      <li>JDK 11 and set JAVA_HOME in .bashrc.</li>
+      <li>Python 3.6.8+ and pip installer for Python 3</li>
+      <li>Kubernetes Client 1.11.9+</li>
+      <li>Apache Maven 3.0+</li>
+      <li>Docker 19.0.3+</li>
+      <li>Git 1.8+</li>
+      <li>Node.js 10+</li>
+    </ul>
+  </li>
+</ul>
+
+<blockquote class="notice">
+  <p><strong>Note:</strong> If you don’t want to set up the required applications in your local environment, you can use OCI <strong>Cloud Shell</strong> instead. The advantage of using Cloud Shell is that all the required tools to manage your application are already installed and ready to use.<br />
+If you’d like to go this route, follow the steps in the <a href="https://docs.oracle.com/iaas/developer-tutorials/tutorials/spring-on-k8s-cs/01oci-spring-cs-k8s-summary.htm">Kubernetes Using Cloud Shell: Deploy a Spring Boot Application</a> guide.</p>
+
+</blockquote>
+
+<h3 id="get-the-applications-for-linux-on-oci-free-tier">Get the Applications for Linux on OCI Free Tier</h3>
+
+<p>If you prefer your deployment without commitments or are just seeing if OCI is right for you, we’ve got you covered! You can use an <em>OCI Free Tier Linux compute instance</em> to manage your deployment. The following sections will tell you how to install all of the software required for this tutorial.</p>
+
+<h4 id="install-a-linux-instance">Install a Linux Instance</h4>
+
+<p>We’ll start off by installing a Linux VM with an <strong>Always Free</strong> compute shape on Oracle Cloud Infrastructure. Below, we’ll outline the steps for both an Oracle Linux and an Ubuntu VM.</p>
+
+<blockquote class="notice">
+  <p><strong>Note:</strong> For this, you’ll need a machine with <code class="language-plaintext highlighter-rouge">ssh</code> support to connect to your Linux instance.</p>
+</blockquote>
+
+<ul>
+  <li>To <a href="https://docs.oracle.com/iaas/developer-tutorials/tutorials/apache-on-oracle-linux/01oci-ol-apache-summary.htm#create-oracle-linux-vm">install an Oracle Linux VM</a>
+    <ul>
+      <li>
+        <p>Follow sections 2 and 3.</p>
+
+        <ul>
+          <li>Section 2: if you have a paid account, choose your <strong>compute options</strong> based on your offerings.</li>
+          <li>Section 4: to connect to your instance, follow steps 1-5.</li>
+        </ul>
+
+        <p><strong>Skip the Apache instructions</strong>.</p>
+      </li>
+    </ul>
+  </li>
+  <li>To <a href="https://docs.oracle.com/iaas/developer-tutorials/tutorials/helidon-on-ubuntu/01oci-ubuntu-helidon-summary.htm#create-ubuntu-vm">install an Ubuntu VM</a>
+    <ul>
+      <li>Follow sections 2 and 3.</li>
+      <li>Section 2: if you have a paid account, choose <strong>compute options</strong> based on your offerings.</li>
+      <li>Section 4: to connect to your instance, follow steps 1-5.
+        <ul>
+          <li><strong>Skip the Apache instructions.</strong></li>
+          <li>To update the firewall settings, in section 4, perform step 8.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="install-nodejs-on-your-system">Install Node.js on your system</h2>
+
+<p>Let’s start digging into the heart of this tutorial and get Node.js installed in your environment.</p>
+
+<p>To install Node.js and Node Package Manager (NPM), run the following commands on the appropriate system:</p>
+
+<h3 id="oracle-linux">Oracle Linux</h3>
+
+<ol>
+  <li>
+    <p>Get and install any new versions of previously-installed packages:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> sudo yum update
+</span></code></pre></div>    </div>
+  </li>
+  <li>Set up the Yum repo for Node.js.</li>
+  <li>
+    <p>Install the <code class="language-plaintext highlighter-rouge">nodejs</code> package:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> sudo yum install -y oracle-nodejs-release-el7
+ sudo yum install -y nodejs
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<h3 id="ubuntu">Ubuntu</h3>
+
+<ol>
+  <li>
+    <p>Get and install any new versions of previously-installed packages:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> sudo apt update
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Install the <code class="language-plaintext highlighter-rouge">nodejs</code> and the <code class="language-plaintext highlighter-rouge">npm</code> packages:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> sudo apt install -y nodejs
+ sudo apt install -y npm
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Verify the installation:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> node -v
+ npm -v
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<h2 id="optional-setups">Optional setups</h2>
+
+<h3 id="configure-the-firewall">Configure the firewall</h3>
+
+<blockquote class="notice">
+  <p><strong>Note:</strong> If you want to perform browser-based testing of your Node application, make <strong>port 3000</strong> available on your Linux instance.</p>
+</blockquote>
+
+<h4 id="on-oracle-linux">On Oracle Linux</h4>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">sudo firewall-cmd --add-service=http --permanent
+sudo firewall-cmd --add-service=https --permanent
+sudo firewall-cmd --reload
+</span></code></pre></div></div>
+
+<h4 id="on-ubuntu-linux">On Ubuntu Linux</h4>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 3000 -j ACCEPT
+sudo netfilter-persistent save
+</span></code></pre></div></div>
+
+<h3 id="create-an-ingress-rule-for-your-vcn">Create an Ingress Rule for your VCN</h3>
+
+<p>Follow these steps to select your VCN’s public subnet and add the ingress rule:</p>
+
+<ol>
+  <li>Open the navigation menu and select <strong>Networking</strong>.</li>
+  <li>Select <strong>Virtual Cloud Networks</strong>.</li>
+  <li>Select the VCN you created with your compute instance.</li>
+  <li>
+    <p>With your new VCN displayed, select <strong><code class="language-plaintext highlighter-rouge">&lt;your-subnet-name&gt;</code></strong> subnet link.</p>
+
+    <p>You will see:</p>
+
+    <ul>
+      <li>The public subnet information displayed with the <strong>Security Lists</strong> at the bottom of the page.</li>
+      <li>A link to the <strong>Default Security List</strong> for your VCN.</li>
+    </ul>
+  </li>
+  <li>
+    <p>Select the <strong>Default Security List</strong> link.</p>
+
+    <p>The default <strong>Ingress Rules</strong> for your VCN are displayed.</p>
+  </li>
+  <li>
+    <p>Select <strong>Add Ingress Rules</strong>.</p>
+
+    <p>An <strong>Add Ingress Rules</strong> dialog is displayed.</p>
+  </li>
+  <li>
+    <p>Fill in the ingress rule with the following information:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> Stateless: Checked
+ Source Type: CIDR
+ Source CIDR: 0.0.0.0/0
+ IP Protocol: TCP
+ Source port range: (leave-blank)
+ Destination Port Range: 3000
+ Description: Allow HTTP connections
+</span></code></pre></div>    </div>
+  </li>
+  <li>Select <strong>Add Ingress Rule</strong>.</li>
+</ol>
+
+<p>At this point, HTTP connections are allowed and your VCN is configured for Node Express.</p>
+
+<p>Congratulations! You’ve successfully created an ingress rule that makes your instance available from the internet.</p>
+
+<h2 id="install-python-3-and-pip-3">Install Python 3 and Pip 3</h2>
+
+<ol>
+  <li>
+    <p>Verify your current installation:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> python3 --version
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>For Python 3, run the following commands:</p>
+
+    <ul>
+      <li>
+        <p>Oracle Linux:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">  sudo yum update
+
+  sudo yum install -y python3
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Ubuntu:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">  sudo apt update
+
+  sudo apt install -y python3
+</span></code></pre></div>        </div>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>Verify the pip installation for Python3:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> pip3 -V
+</span></code></pre></div>    </div>
+
+    <p>Sample output if pip for Python3 is installed:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> pip &lt;version&gt;</span><span class="w"> </span>from xxx/lib/python3.x/site-packages/pip   <span class="o">(</span>python 3.x<span class="o">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>To install Pip for Python 3, run the following commands:</p>
+
+    <ul>
+      <li>
+        <p>Oracle Linux:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">  sudo yum update
+
+  sudo yum install -y python3-pip
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Ubuntu:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">  sudo apt update
+
+  sudo apt install -y python3-pip
+</span></code></pre></div>        </div>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>Verify the pip for Python 3 installation:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> pip3 -V
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<h2 id="install-kubernetes-client">Install Kubernetes Client</h2>
+
+<ol>
+  <li>
+    <p>Verify your current installation:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> kubectl version --client
+</span></code></pre></div>    </div>
+
+    <p>If you have Kubernetes, then the version is <code class="language-plaintext highlighter-rouge">&lt;major-version&gt;.&lt;minor-version&gt;</code>.</p>
+
+    <p>For example, if you have Kubernetes version 1.20, you’ll get the following:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> version.Info{Major:"1", Minor:"20"...
+</span></code></pre></div>    </div>
+  </li>
+  <li>To install he <code class="language-plaintext highlighter-rouge">kubectl</code> client, refer to the following links:
+    <ul>
+      <li><a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux">Install Kubernetes client on Linux</a></li>
+      <li><a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/">Install Kubernetes client on MacOS</a></li>
+    </ul>
+  </li>
+  <li>
+    <p>Verify the installation:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> kubectl version --client
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<h2 id="install-docker">Install Docker</h2>
+
+<ol>
+  <li>
+    <p>Verify your current installation:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> docker -v
+</span></code></pre></div>    </div>
+
+    <ul>
+      <li>
+        <p>Oracle Linux</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">  sudo yum install docker-engine
+           
+  sudo systemctl start docker
+
+  sudo systemctl enable docker
+</span></code></pre></div>        </div>
+
+        <blockquote class="notice">
+          <p><strong>Note:</strong> The last command enables Docker to start on reboots.</p>
+        </blockquote>
+      </li>
+      <li>
+        <p>Ubuntu Linux</p>
+
+        <p>To install Docker on Ubuntu Linux, refer to the <a href="https://docs.docker.com/get-docker/">Get Docker</a> guide.</p>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>Verify the installation:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> docker -v
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<h2 id="prepare">Prepare</h2>
+
+<p>We’re finally here! It’s time to prepare your environment to create and deploy your application.</p>
+
+<h3 id="check-your-service-limits">Check your Service Limits</h3>
+
+<ol>
+  <li>Log in to the OCI <strong>Console</strong>.</li>
+  <li>Open the navigation menu and select <strong>Governance and Administration</strong>.</li>
+  <li>Under <strong>Governance</strong>, select <strong>Limits, Quotas and Usage</strong>.</li>
+  <li>
+    <p>Find your service limit for <strong>Regions</strong></p>
+
+    <ol>
+      <li>
+        <p><strong>Filter</strong> for the following options:</p>
+
+        <ul>
+          <li><strong>Service:</strong> Regions</li>
+          <li><strong>Scope:</strong> Tenancy</li>
+          <li><strong>Resource:</strong> Subscribed region count</li>
+          <li><strong>Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-name&gt;</code> (root)</li>
+        </ul>
+      </li>
+      <li>
+        <p>Find service limit:</p>
+
+        <ul>
+          <li><strong>Limit Name:</strong> <code class="language-plaintext highlighter-rouge">subscribed-region-count</code></li>
+          <li><strong>Service Limit:</strong> minimum 2</li>
+        </ul>
+      </li>
+    </ol>
+  </li>
+  <li>
+    <p>Find your available <strong>Compute</strong> <strong>core count</strong> for the <strong>VM.Standard.E3.Flex</strong> shape</p>
+
+    <ol>
+      <li>
+        <p><strong>Filter</strong> for the following options:</p>
+
+        <ul>
+          <li><strong>Service:</strong> Compute</li>
+          <li><strong>Scope:</strong> <code class="language-plaintext highlighter-rouge">&lt;first-availability-domain&gt;</code>. Example: <code class="language-plaintext highlighter-rouge">EMlr:US-ASHBURN-AD-1</code></li>
+          <li><strong>Resource:</strong> <strong>Cores</strong> for <strong>Standard.E3.Flex</strong> and BM.Standard.E3.128 Instances</li>
+          <li><strong>Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-name&gt;</code> (root)</li>
+        </ul>
+      </li>
+      <li>
+        <p>Find available core count:</p>
+
+        <ul>
+          <li><strong>Limit Name:</strong> <code class="language-plaintext highlighter-rouge">standard-e3-core-ad-count</code></li>
+          <li><strong>Available:</strong> minimum 1</li>
+        </ul>
+      </li>
+      <li>
+        <p>Repeat for <strong>Scope:</strong> <code class="language-plaintext highlighter-rouge">&lt;second-availability-domain&gt;</code> and <code class="language-plaintext highlighter-rouge">&lt;third-availability-domain&gt;</code>. Each region must have at least one core available for this shape.</p>
+
+        <blockquote class="notice">
+          <p><strong>Note:</strong> This tutorial creates three compute instances with a <strong>VM.Standard.E3.Flex</strong> shape for the cluster nodes. To use another shape, filter for its <strong>core count</strong>.<br />
+For example, for <strong>VM.Standard2.4</strong>, filter for <strong>Cores for Standard2 based VM and BM Instances</strong> and get the <strong>count</strong>.</p>
+        </blockquote>
+      </li>
+    </ol>
+  </li>
+  <li>
+    <p>Find out if you have <strong>50 GB</strong> of <strong>Block Volume</strong> available:</p>
+
+    <ol>
+      <li>
+        <p><strong>Filter</strong> for the following options:</p>
+
+        <ul>
+          <li><strong>Service:</strong> Block Volume</li>
+          <li><strong>Scope:</strong> <code class="language-plaintext highlighter-rouge">&lt;first-availability-domain&gt;</code>. Example: <code class="language-plaintext highlighter-rouge">EMlr:US-ASHBURN-AD-1</code></li>
+          <li><strong>Resource</strong> Volume Size (GB)</li>
+          <li><strong>Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-name&gt;</code> (root)</li>
+        </ul>
+      </li>
+      <li>
+        <p>Find available block volume storage:</p>
+
+        <ul>
+          <li><strong>Limit Name:</strong> <code class="language-plaintext highlighter-rouge">total-storage-gb</code></li>
+          <li><strong>Available:</strong> minimum 50</li>
+        </ul>
+      </li>
+      <li>
+        <p>Repeat for <strong>Scope:</strong> <code class="language-plaintext highlighter-rouge">&lt;second-availability-domain&gt;</code> and <code class="language-plaintext highlighter-rouge">&lt;third-availability-domain&gt;</code>. Each region must have at least 50 GB of block volume available.</p>
+      </li>
+    </ol>
+  </li>
+  <li>
+    <p>Find out how many <strong>Flexible Load Balancers</strong> you have available</p>
+
+    <p><strong>Filter</strong> for the following options:</p>
+
+    <ul>
+      <li><strong>Service:</strong> LBaaS</li>
+      <li><strong>Scope:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-region&gt;</code>. Example: <code class="language-plaintext highlighter-rouge">us-ashburn-1</code></li>
+      <li><strong>Resource:</strong> <code class="language-plaintext highlighter-rouge">&lt;blank&gt;</code></li>
+      <li><strong>Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-name&gt;</code> (root)</li>
+    </ul>
+
+    <p>Find the number of available flexible load balancers:</p>
+
+    <ul>
+      <li><strong>Limit Name:</strong> <code class="language-plaintext highlighter-rouge">lb-flexible-count</code></li>
+      <li><strong>Available:</strong> minimum 1</li>
+    </ul>
+
+    <blockquote class="notice">
+      <p><strong>Note:</strong> This tutorial creates a load balancer with a <strong>flexible</strong> shape. To use another bandwidth, filter for its <strong>count</strong>, for example <strong>100-Mbps bandwidth</strong> or <strong>400-Mbps bandwidth</strong>.</p>
+    </blockquote>
+  </li>
+</ol>
+
+<p><strong>Reference:</strong> For a list of all shapes, see <a href="https://docs.oracle.com/iaas/Content/Compute/References/computeshapes.htm#vmshapes__vm-standard">VM Standard Shapes</a></p>
+
+<h3 id="create-an-authorization-token">Create an Authorization Token</h3>
+
+<ol>
+  <li>In the Console’s top navigation bar, select the <strong>Profile</strong> menu (your avatar).</li>
+  <li>Select your <strong>username</strong>.</li>
+  <li>Select <strong>Auth Tokens</strong>.</li>
+  <li>Select <strong>Generate Token</strong>.</li>
+  <li>Give the token a description.</li>
+  <li>Select <strong>Generate Token</strong>.</li>
+  <li>Copy the token and <strong>save</strong> it.</li>
+  <li>Select <strong>Close</strong>.</li>
+</ol>
+
+<blockquote class="warn">
+  <p><strong>Note:</strong> It’s crucial that you’ve made sure to save your token right after you create it since you’ll have <em>no access to it later</em>.</p>
+</blockquote>
+
+<h3 id="gather-required-information">Gather Required Information</h3>
+
+<ol>
+  <li>Collect the following credential information from the OCI <strong>Console</strong>:
+    <ul>
+      <li><strong>Tenancy name:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-name&gt;</code>
+        <ul>
+          <li>Select your <strong>Profile</strong> menu (your avatar) and find your <strong>Tenancy:<code class="language-plaintext highlighter-rouge">&lt;tenancy-name&gt;</code></strong>.</li>
+        </ul>
+      </li>
+      <li><strong>Tenancy namespace:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-namespace&gt;</code>
+        <ul>
+          <li>Select your <strong>Profile</strong> menu (your avatar).</li>
+          <li>Select <strong>Tenancy:<code class="language-plaintext highlighter-rouge">&lt;tenancy-name&gt;</code></strong>.</li>
+          <li>Copy the value for <strong>Object Storage Namespace</strong>.</li>
+        </ul>
+
+        <blockquote class="notice">
+          <p><strong>Note:</strong> For some accounts, <strong><code class="language-plaintext highlighter-rouge">tenancy name</code></strong> and <strong><code class="language-plaintext highlighter-rouge">namespace</code></strong> differ. Ensure that you use <strong><code class="language-plaintext highlighter-rouge">namespace</code></strong> in this tutorial.</p>
+        </blockquote>
+      </li>
+      <li><strong>Tenancy OCID:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-ocid&gt;</code>
+        <ul>
+          <li>Select your <strong>Profile</strong> menu (your avatar), then select <strong>Tenancy:<code class="language-plaintext highlighter-rouge">&lt;tenancy-name&gt;</code></strong>, and copy <code class="language-plaintext highlighter-rouge">OCID</code>.</li>
+        </ul>
+      </li>
+      <li><strong>Username:</strong> <code class="language-plaintext highlighter-rouge">&lt;user-name&gt;</code>
+        <ul>
+          <li>Select your <strong>Profile</strong> menu (your avatar).</li>
+        </ul>
+      </li>
+      <li><strong>User OCID:</strong> <code class="language-plaintext highlighter-rouge">&lt;user-ocid&gt;</code>
+        <ul>
+          <li>Select your <strong>Profile</strong> menu (your avatar), then select <strong>User Settings</strong>, and copy <code class="language-plaintext highlighter-rouge">OCID</code>.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>Find your region information.</p>
+
+    <ul>
+      <li><strong>Region:</strong> <code class="language-plaintext highlighter-rouge">&lt;region-identifier&gt;</code>
+        <ul>
+          <li>In the Console’s top navigation bar, find your region.
+<strong>Example:</strong> <strong>US East (Ashburn)</strong>.</li>
+          <li>Find your <strong>Region Identifier</strong> from the table in <a href="https://docs.oracle.com/iaas/Content/General/Concepts/regions.htm">Regions and Availability Domains</a>.
+<strong>Example:</strong> <code class="language-plaintext highlighter-rouge">us-ashburn-1</code>.</li>
+        </ul>
+      </li>
+      <li><strong>Region Key:</strong> <code class="language-plaintext highlighter-rouge">&lt;region-key&gt;</code>
+        <ul>
+          <li>Find your <strong>Region Key</strong> from the table in <a href="https://docs.oracle.com/iaas/Content/General/Concepts/regions.htm">Regions and Availability Domains</a>.
+<strong>Example:</strong> <code class="language-plaintext highlighter-rouge">iad</code></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>Copy your authentication token from the <a href="#create-an-authorization-token">Create an Authentication Token</a> section.</p>
+
+    <p><strong>Auth Token:</strong> <code class="language-plaintext highlighter-rouge">&lt;auth-token&gt;</code></p>
+  </li>
+</ol>
+
+<h2 id="set-up-oci-command-line-interface">Set up OCI Command Line Interface</h2>
+
+<h3 id="install-a-python-virtual-environment-and-wrapper">Install a Python Virtual Environment and Wrapper</h3>
+
+<p>The Python <code class="language-plaintext highlighter-rouge">virtualenv</code> creates a folder that contains all the executables and libraries for your project.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">virtualenvwrapper</code> is an extension of <code class="language-plaintext highlighter-rouge">virtualenv</code>. It provides a set of commands which makes working with virtual environments much  easier. Not only that, it also conveniently places all of your virtual environments in one place. One particularly useful (and sanity-saving) feature is that <code class="language-plaintext highlighter-rouge">virtualenvwrapper</code> provides <em>tab-completion of environment names</em>.</p>
+
+<ol>
+  <li>
+    <p>Install <code class="language-plaintext highlighter-rouge">virtualenv</code>:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> pip3 install --user virtualenv
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Install <code class="language-plaintext highlighter-rouge">virtualenvwrapper</code>:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> pip3 install --user virtualenvwrapper
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Find the location of the <code class="language-plaintext highlighter-rouge">virtualenvwrapper.sh</code> script:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> grep -R virtualenvwrapper.sh
+</span></code></pre></div>    </div>
+
+    <p><strong>Example paths:</strong></p>
+
+    <ul>
+      <li>Linux example:<br />
+<code class="language-plaintext highlighter-rouge">/home/ubuntu/.local/bin/virtualenvwrapper.sh</code></li>
+      <li>MacOS example:<br />
+<code class="language-plaintext highlighter-rouge">/usr/local/bin/virtualenvwrapper.sh</code></li>
+    </ul>
+  </li>
+  <li>
+    <p>Configure the virtual environment wrapper in <code class="language-plaintext highlighter-rouge">.bashrc</code>:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> sudo vi .bashrc
+</span></code></pre></div>    </div>
+
+    <ol>
+      <li>
+        <p>Amend the following text with the updated information noted below:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> #</span><span class="w"> </span><span class="nb">set </span>up Python <span class="nb">env</span>
+<span class="go"> export WORKON_HOME=~/envs
+ export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
+ export VIRTUALENVWRAPPER_VIRTUALENV_ARGS=' -p /usr/bin/python3 '
+</span><span class="gp"> source &lt;path-to-virtualenvwrapper.sh&gt;</span><span class="w">
+</span></code></pre></div>        </div>
+
+        <p>Updated information:</p>
+
+        <ul>
+          <li>Replace <code class="language-plaintext highlighter-rouge">&lt;path-to-virtualenvwrapper.sh&gt;</code> with its appropriate value.</li>
+          <li>Based on the location of Python3 binaries in your environment, update <code class="language-plaintext highlighter-rouge">/usr/bin/python3</code> to its correct location.</li>
+        </ul>
+      </li>
+      <li>
+        <p>Save the file.</p>
+      </li>
+    </ol>
+  </li>
+  <li>
+    <p>Activate the commands in the current window:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> source ~/.bashrc
+</span></code></pre></div>    </div>
+
+    <p><strong>Example output:</strong></p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> virtualenvwrapper.user_scripts creating /home/ubuntu/envs/premkproject
+ virtualenvwrapper.user_scripts creating /home/ubuntu/envs/postmkproject
+ virtualenvwrapper.user_scripts creating /home/ubuntu/envs/initialize
+ virtualenvwrapper.user_scripts creating /home/ubuntu/envs/premkvirtualenv
+ virtualenvwrapper.user_scripts creating /home/ubuntu/envs/postmkvirtualenv
+ virtualenvwrapper.user_scripts creating /home/ubuntu/envs/prermvirtualenv
+ virtualenvwrapper.user_scripts creating /home/ubuntu/envs/postrmvirtualenv
+ virtualenvwrapper.user_scripts creating /home/ubuntu/envs/predeactivate
+ virtualenvwrapper.user_scripts creating /home/ubuntu/envs/postdeactivate
+ virtualenvwrapper.user_scripts creating /home/ubuntu/envs/preactivate
+ virtualenvwrapper.user_scripts creating /home/ubuntu/envs/postactivate
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<h3 id="install-oci-cli">Install OCI CLI</h3>
+
+<ol>
+  <li>
+    <p>Start a virtual environment:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> workon cli-app
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Confirm the name of your virtual environment.</p>
+
+    <p>If you are, <code class="language-plaintext highlighter-rouge">cli-app</code> will appear immediately the left of your command prompt.</p>
+
+    <p><strong>Example:</strong> <code class="language-plaintext highlighter-rouge">(cli-app) ubuntu@&lt;ubuntu-instance-name&gt;:~$</code></p>
+  </li>
+  <li>
+    <p>Install OCI CLI:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> pip3 install oci-cli
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Test the installation:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> oci --version
+</span></code></pre></div>    </div>
+
+    <p>If everything is set up correctly, the fllowing command will return the correct version:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> oci --help
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<h4 id="configure-the-oci-cli">Configure the OCI CLI</h4>
+
+<ol>
+  <li>
+    <p>Enter the following command in your <strong>virtual environment</strong>:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> oci setup config
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Enter your answers from the <a href="#gather-required-information">Gather Required Information</a> section:</p>
+
+    <ul>
+      <li><strong>Location for your config [<code class="language-plaintext highlighter-rouge">$HOME/.oci/config</code>]:</strong> <code class="language-plaintext highlighter-rouge">&lt;take-default&gt;</code></li>
+      <li><strong>User OCID:</strong> <code class="language-plaintext highlighter-rouge">&lt;user-ocid&gt;</code></li>
+      <li><strong>Tenancy OCID:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-ocid&gt;</code></li>
+      <li><strong>Region (e.g., <em>us-ashburn-1</em>):</strong> <code class="language-plaintext highlighter-rouge">&lt;region-identifier&gt;</code></li>
+    </ul>
+  </li>
+  <li>
+    <p><strong>OpenSSL API encryption keys -</strong> Enter the following information to set up your keys:</p>
+
+    <ul>
+      <li><strong>Generate a new API Signing RSA key pair? [Y/n]:</strong> Y</li>
+      <li><strong>Directory for your keys [$HOME/.oci]:</strong> <code class="language-plaintext highlighter-rouge">&lt;take-default&gt;</code></li>
+      <li><strong>Name for your key [oci_api_key]</strong> <code class="language-plaintext highlighter-rouge">&lt;take-default&gt;</code></li>
+    </ul>
+
+    <blockquote class="notice">
+      <p><strong>Note:</strong><br />
+Your private key is: <code class="language-plaintext highlighter-rouge">oci_api_key.pem</code>
+Your public key is: <code class="language-plaintext highlighter-rouge">oci_api_key_public.pem</code>.</p>
+    </blockquote>
+  </li>
+  <li>
+    <p>Deactivate the virtual environment:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> deactivate
+</span></code></pre></div>    </div>
+
+    <p>After you deactivate the virtual environment, you should notice that the <code class="language-plaintext highlighter-rouge">(cli-app)</code> prefix in your environment is no longer displayed.</p>
+  </li>
+</ol>
+
+<h3 id="add-the-public-key-to-your-user-account">Add the Public Key to your User Account</h3>
+
+<ol>
+  <li>
+    <p>Activate the <code class="language-plaintext highlighter-rouge">cli-app</code> environment:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> workon cli-app
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Display the public key:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> cat $</span>HOME/.oci/oci_api_key_public.pem
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Copy the public key.</p>
+  </li>
+  <li>
+    <p>Add the public key to your user account:</p>
+
+    <ul>
+      <li>Go to the Console.</li>
+      <li>Select your <strong>Profile</strong> menu (your avatar), and then select <strong>User Settings</strong>.</li>
+      <li>Select <strong>API Keys</strong>.</li>
+      <li>Select <strong>Add API Key</strong>.</li>
+      <li>Select <strong>Paste Public Key</strong>.</li>
+      <li>Paste value from previous step, including the lines with <code class="language-plaintext highlighter-rouge">BEGIN PUBLIC KEY</code> and <code class="language-plaintext highlighter-rouge">END PUBLIC KEY</code>.</li>
+      <li>Select <strong>Add</strong>.</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="some-useful-tips">Some useful tips</h3>
+
+<ul class="notice">
+  <li><strong>Quickly activate the OCI CLI -</strong> Whenever you want to use the OCI CLI, all you have to do is run: <code class="language-plaintext highlighter-rouge">workon cli-app</code></li>
+  <li><strong>Quickly deactivate your current working environment -</strong> Whenever you change project names, <code class="language-plaintext highlighter-rouge">workon</code> deactivates your current working environment. This way, you can quickly switch between environments.</li>
+</ul>
+
+<h2 id="set-up-a-cluster">Set Up a Cluster</h2>
+
+<p>In this section, we’ll install and configure management options for your Kubernetes cluster. Later, we’ll deploy your application to this cluster.</p>
+
+<h3 id="add-compartment-policy">Add Compartment Policy</h3>
+
+<blockquote class="notice">
+  <p><strong>Note:</strong> If your username is in the <strong>Administrators</strong> group, you can skip this section.</p>
+</blockquote>
+
+<p>If your username is not in the <strong>Administrator</strong> group, you’ll need to have your administrator add the following policy to your tenancy:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">allow group &lt;the-group-your-username-belongs&gt;</span><span class="w"> </span>to manage compartments <span class="k">in </span>tenancy
+</code></pre></div></div>
+
+<p>Why this added step? With this additional privilege, you’ll be able to create a compartment for all the resources in your tutorial.</p>
+
+<h3 id="steps-to-add-the-compartment-policy">Steps to add the Compartment Policy</h3>
+
+<ol>
+  <li>In the top navigation bar, open the <strong>Profile</strong> menu.</li>
+  <li>Select your <em>username</em>.</li>
+  <li>In the left pane, select <strong>Groups</strong>.</li>
+  <li>In a notepad, copy the <strong>Group Name</strong> to which your <em>username</em> belongs.</li>
+  <li>Open the navigation menu and slect <strong>Identity &amp; Security</strong>.<br />
+Under <strong>Identity</strong>, select <strong>Policies</strong>.</li>
+  <li>Select your compartment from the <strong>Compartment</strong> drop-down.</li>
+  <li>Select <strong>Create Policy</strong>.</li>
+  <li>Fill in the following information:
+    <ul>
+      <li><strong>Name:</strong> <code class="language-plaintext highlighter-rouge">manage-compartments</code></li>
+      <li><strong>Description:</strong> “Allow the group <code class="language-plaintext highlighter-rouge">&lt;the-group-your-username-belongs&gt;</code> to list, create, update, delete and recover compartments in the tenancy.”</li>
+      <li><strong>Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-tenancy&gt;(root)</code></li>
+    </ul>
+  </li>
+  <li>For <strong>Policy Builder</strong>, select <strong>Customize (Advanced)</strong>.</li>
+  <li>Paste in the following policy: allow group <code class="language-plaintext highlighter-rouge">&lt;the-group-your-username-belongs&gt;</code> to manage compartments in tenancy</li>
+  <li>Select <strong>Create</strong>.</li>
+</ol>
+
+<p><strong>Reference:</strong> The <code class="language-plaintext highlighter-rouge">compartments</code> resource-type can be found in the <a href="https://docs.oracle.com/iaas/Content/Identity/Reference/iampolicyreference.htm#Identity">Verbs + Resource-Type Combinations for IAM</a> guide.</p>
+
+<h2 id="create-a-compartment">Create a Compartment</h2>
+
+<p>Here, you’ll use your tenancy privileges to create a compartment for the resources that you create in this tutorial:</p>
+
+<ol>
+  <li>Log in to the OCI <strong>Console</strong>.</li>
+  <li>Open the navigation menu and select <strong>Identity &amp; Security</strong>.<br />
+Under <strong>Identity</strong>, select <strong>Compartments</strong>.</li>
+  <li>Select <strong>Create Compartment</strong>.</li>
+  <li>
+    <p>Fill in the following information:</p>
+
+    <ul>
+      <li><strong>Name:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-compartment-name&gt;</code></li>
+      <li><strong>Description:</strong> <code class="language-plaintext highlighter-rouge">Compartment for &lt;your-description&gt;.</code></li>
+      <li><strong>Parent Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-tenancy&gt;(root)</code></li>
+    </ul>
+  </li>
+  <li>Select <strong>Create Compartment</strong>.</li>
+</ol>
+
+<p><strong>Reference:</strong> <a href="https://docs.oracle.com/iaas/Content/Identity/Tasks/managingcompartments.htm#To">Create a compartment</a></p>
+
+<h2 id="add-resource-policy">Add Resource Policy</h2>
+
+<p>If your username is in the <strong>Administrators</strong> group, you can skip this section. Otherwise, have your administrator add the following policy to your tenancy:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">allow group &lt;the-group-your-username-belongs&gt;</span><span class="w"> </span>to manage all-resources <span class="k">in </span>compartment &lt;your-compartment-name&gt;
+</code></pre></div></div>
+
+<p>With this privilege, you can <strong>manage all resources</strong> in your <strong>compartment</strong>, essentially giving you administrative rights in that compartment.</p>
+
+<h3 id="steps-to-add-the-resource-policy">Steps to add the Resource Policy</h3>
+
+<ol>
+  <li>Open the navigation menu and select <strong>Identity &amp; Security</strong>.<br />
+Under <strong>Identity</strong>, select <strong>Policies</strong>.</li>
+  <li>Select your compartment from the <strong>Compartment</strong> drop-down.</li>
+  <li>Select <strong>Create Policy</strong>.</li>
+  <li>Fill in the following information:
+    <ul>
+      <li><strong>Name:</strong> <code class="language-plaintext highlighter-rouge">manage-&lt;your-compartment-name&gt;-resources</code></li>
+      <li><strong>Description:</strong> <code class="language-plaintext highlighter-rouge">Allow users to list, create, update, and delete resources in &lt;your-compartment-name&gt;.</code></li>
+      <li><strong>Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-tenancy&gt;(root)</code></li>
+    </ul>
+  </li>
+  <li>For <strong>Policy Builder</strong>, select the following choices:
+    <ul>
+      <li><strong>Policy use cases:</strong> <code class="language-plaintext highlighter-rouge">Compartment Management</code></li>
+      <li><strong>Common policy templates:</strong> <code class="language-plaintext highlighter-rouge">Let compartment admins manage the compartment</code></li>
+      <li><strong>Groups:</strong> <code class="language-plaintext highlighter-rouge">&lt;the-group-your-username-belongs&gt;</code></li>
+      <li><strong>Location:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-tenancy&gt;(root)</code></li>
+    </ul>
+  </li>
+  <li>Select <strong>Create</strong>.</li>
+</ol>
+
+<p><strong>Reference:</strong> <a href="https://docs.oracle.com/iaas/Content/Identity/Concepts/commonpolicies.htm">Common Policies</a></p>
+
+<h3 id="create-a-cluster-with-quick-create">Create a Cluster with ‘Quick Create’</h3>
+
+<p>Next, we’ll create a cluster with default settings and a new set of network resources through the <strong>Quick Create</strong> workflow.</p>
+
+<ol>
+  <li>Sign in to the OCI <strong>Console</strong>.</li>
+  <li>Open the navigation menu and select <strong>Developer Services</strong>.<br />
+Under <strong>Containers &amp; Artifacts</strong>, select <strong>Kubernetes Clusters (OKE)</strong>.</li>
+  <li>Select <strong>Create Cluster</strong>.</li>
+  <li>Select <strong>Quick Create</strong>.</li>
+  <li>Select <strong>Launch Workflow</strong>.
+The <strong>Create Cluster</strong> dialog is displayed.</li>
+  <li>Fill in the following information:
+    <ul>
+      <li><strong>Name:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-cluster-name&gt;</code></li>
+      <li><strong>Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-compartment-name&gt;</code></li>
+      <li><strong>Kubernetes Version:</strong> <code class="language-plaintext highlighter-rouge">&lt;take-default&gt;</code></li>
+      <li><strong>Kubernetes API Endpoint:</strong> Public Endpoint
+With this selected, the Kubernetes cluster will be hosted in a public subnet with an auto-assigned public IP address.</li>
+      <li><strong>Kubernetes Worker Nodes:</strong> Private Workers
+With this selected, the Kubernetes worker nodes are hosted in a private subnet.</li>
+      <li><strong>Shape:</strong> <code class="language-plaintext highlighter-rouge">VM.Standard.E3.Flex</code></li>
+      <li><strong>Number of Nodes:</strong> 3</li>
+      <li><strong>Specify a custom boot volume size:</strong> <em>Clear the check box.</em></li>
+    </ul>
+  </li>
+  <li>Select <strong>Next</strong>.
+Once you do, all your choices are displayed. Take a moment to review them to ensure that everything is configured correctly.</li>
+  <li>Select <strong>Create Cluster</strong>.
+The services setup for your cluster is displayed.</li>
+  <li>Select <strong>Close</strong>.</li>
+  <li>And… get yourself a cup of coffee! Creating the cluster will definitely take a few minutes.</li>
+</ol>
+
+<p>When this process completes, you’ll have successfully created a Kubernetes cluster!</p>
+
+<h2 id="set-up-local-access-to-your-cluster">Set Up Local Access to Your Cluster</h2>
+
+<p>After you create a Kubernetes cluster, you’ll need to be able to reach it. In this section, we’ll set up your local system to access the cluster.</p>
+
+<ol>
+  <li>Sign in to the OCI <strong>Console</strong>.</li>
+  <li>Open the navigation menu and select <strong>Developer Services</strong>.<br />
+Under <strong>Containers &amp; Artifacts</strong>, select <strong>Kubernetes Clusters (OKE)</strong>.</li>
+  <li>Select the link to <code class="language-plaintext highlighter-rouge">&lt;your-cluster&gt;</code>.<br />
+The information about your cluster is displayed.</li>
+  <li>Select <strong>Access Cluster</strong>.</li>
+  <li>Select <strong>Local Access</strong>.</li>
+  <li>
+    <p>Follow the steps provided in the dialog.</p>
+
+    <p>We’ve included a copy of the steps here for your reference:</p>
+
+    <blockquote class="notice">
+      <p><strong>Note:</strong> If you are not in your virtual environment, enter: <code class="language-plaintext highlighter-rouge">workon cli-app</code> <strong>before</strong> you run <code class="language-plaintext highlighter-rouge">kubectl</code> commands.</p>
+    </blockquote>
+
+    <ol>
+      <li>
+        <p>Check your <code class="language-plaintext highlighter-rouge">oci</code> CLI version:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> oci -v
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Make a <code class="language-plaintext highlighter-rouge">.kube</code> directory if it doesn’t already exist:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> mkdir -p $</span>HOME/.kube
+</code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Create a <code class="language-plaintext highlighter-rouge">kubeconfig</code> file for your setup.</p>
+
+        <p>Use the information from <strong>Access Your Cluster</strong> dialog.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> oci ce cluster create-kubeconfig &lt;use data from dialog&gt;</span><span class="w">
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Export the <code class="language-plaintext highlighter-rouge">KUBECONFIG</code> environment variable:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">  export KUBECONFIG=$</span>HOME/.kube/config
+</code></pre></div>        </div>
+
+        <blockquote class="notice">
+          <p><strong>Note:</strong> If you want to have the environment variable start in a new shell, then add <code class="language-plaintext highlighter-rouge">export KUBECONFIG=$HOME/.kube/config</code> to your <code class="language-plaintext highlighter-rouge">~/.bashrc</code> file.</p>
+        </blockquote>
+      </li>
+    </ol>
+  </li>
+  <li>
+    <p>Test your cluster configuration with the following commands:</p>
+
+    <ul>
+      <li>
+        <p>List clusters:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">  kubectl get service
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Get deployment details:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">   kubectl describe deployment
+</span></code></pre></div>        </div>
+
+        <p>Output: “No resources found in default namespace.”<br />
+   This is expected since no application is deployed.</p>
+      </li>
+      <li>
+        <p>Get pods:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">   kubectl get pods
+</span></code></pre></div>        </div>
+
+        <p>Output: “No resources found in default namespace.”<br />
+   This is expected since no application is deployed.</p>
+
+        <blockquote class="notice">
+          <p><strong>Note:</strong> To look at a different cluster, specify a different config file on the command line. Example:</p>
+
+          <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">kubectl --kubeconfig=&lt;/path/to/config/file&gt;</span><span class="w">
+</span></code></pre></div>          </div>
+
+        </blockquote>
+      </li>
+    </ul>
+  </li>
+</ol>
+
+<p>With your cluster access set up, you’re finally ready to prepare your application for deployment.</p>
+
+<h2 id="build-a-local-application">Build a Local Application</h2>
+
+<p>Before we deploy your application, we’ll need to set up a few things. First, we’ll build a local application and then create a Docker image for the application.</p>
+
+<h3 id="create-a-local-application">Create a Local Application</h3>
+
+<p>Create your Node.js application.</p>
+
+<ol>
+  <li>Start an OCI CLI session.</li>
+  <li>
+    <p>Create a directory for your application.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> mkdir node-hello-app
+ cd node-hello-app
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Create a <code class="language-plaintext highlighter-rouge">package.json</code> file:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> vi package.json
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>In the <code class="language-plaintext highlighter-rouge">package.json</code> file, input the following text, updating the <code class="language-plaintext highlighter-rouge">author</code> and <code class="language-plaintext highlighter-rouge">repository</code> fields:</p>
+
+    <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="w"> </span><span class="p">{</span><span class="w">
+     </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node-hello-app"</span><span class="p">,</span><span class="w">
+     </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.0.0"</span><span class="p">,</span><span class="w">
+     </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Node Express Hello application"</span><span class="p">,</span><span class="w">
+     </span><span class="nl">"author"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Example User &lt;username@example.com&gt;"</span><span class="p">,</span><span class="w">
+     </span><span class="nl">"main"</span><span class="p">:</span><span class="w"> </span><span class="s2">"app.js"</span><span class="p">,</span><span class="w">
+     </span><span class="nl">"scripts"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+         </span><span class="nl">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node app.js"</span><span class="w">
+     </span><span class="p">},</span><span class="w">
+     </span><span class="nl">"repository"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+         </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"git"</span><span class="p">,</span><span class="w">
+         </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"git://github.com/username/repository.git"</span><span class="w">
+     </span><span class="p">},</span><span class="w">
+     </span><span class="nl">"dependencies"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+         </span><span class="nl">"express"</span><span class="p">:</span><span class="w"> </span><span class="s2">"^4.0.0"</span><span class="w">
+     </span><span class="p">},</span><span class="w">
+     </span><span class="nl">"license"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UPL-1.0"</span><span class="w">
+ </span><span class="p">}</span><span class="w">          
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Save the file.</p>
+  </li>
+  <li>
+    <p>Install the NPM packages:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> npm install
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Create a “Hello, World!” application.</p>
+
+    <ol>
+      <li>
+        <p>Create the file:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> vi app.js
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>In the file, input the following text:</p>
+
+        <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="kd">const</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">express</span><span class="dl">'</span><span class="p">)</span>
+  <span class="kd">const</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">()</span>
+  <span class="nx">port</span> <span class="o">=</span> <span class="mi">3000</span>
+
+  <span class="nx">app</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="dl">'</span><span class="s1">&lt;h1&gt;Hello World from Node.js!&lt;/h1&gt;</span><span class="dl">'</span><span class="p">)</span>
+  <span class="p">})</span>
+
+  <span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">port</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">Hello World app listening on port </span><span class="dl">'</span> <span class="o">+</span> <span class="nx">port</span><span class="p">);</span>
+  <span class="p">})</span>
+</code></pre></div>        </div>
+      </li>
+    </ol>
+  </li>
+</ol>
+
+<p>You have successfully set up your Node.js app!</p>
+
+<h2 id="run-the-local-application">Run the local application</h2>
+
+<p>Let’s make sure that your application is working properly.</p>
+
+<ol>
+  <li>
+    <p>Run your Node.js application:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> node app.js
+</span></code></pre></div>    </div>
+
+    <p>The Node Express server starts and displays:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> Hello World app listening on port 3000
+</span></code></pre></div>    </div>
+  </li>
+  <li>Test the application:
+    <ul>
+      <li>
+        <p>To test with <code class="language-plaintext highlighter-rouge">curl</code>, run:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">  curl -X GET http://localhost:3000
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>To test with your browser, connect a browser window to: <code class="language-plaintext highlighter-rouge">http://&lt;your-ip-address&gt;:3000</code>:</p>
+
+        <p>The page should display:</p>
+
+        <div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="nt">&lt;h1&gt;</span>Hello World from Node.js!<span class="nt">&lt;/h1&gt;</span>
+</code></pre></div>        </div>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>Stop the running application.</p>
+
+    <p>Press <strong>Ctrl+C</strong> to stop your application in the terminal window you started with.</p>
+  </li>
+</ol>
+
+<p>That’s it! You’ve successfully created a Hello World application using Node.js and Express.</p>
+
+<p><strong>Reference:</strong> For detailed information on this example, see <a href="https://expressjs.com/en/starter/hello-world.html">Getting Started with Express</a>.</p>
+
+<h2 id="build-a-docker-image">Build a Docker Image</h2>
+
+<p>Next, create a Docker image for your Node.js Express application.</p>
+
+<ol>
+  <li>
+    <p>Ensure that you’re in the <code class="language-plaintext highlighter-rouge">node-hello-app</code> directory.</p>
+  </li>
+  <li>
+    <p>Build a Docker image:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> docker build -t node-hello-app .
+</span></code></pre></div>    </div>
+
+    <p>You should see the following message:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> [INFO] BUILD SUCCESS
+ Successfully tagged node-hello-app:latest
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Run the Docker image:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> docker run --rm -p 3000:3000 node-hello-app:latest
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Test the application.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> curl -X GET http://localhost:3000
+</span></code></pre></div>    </div>
+
+    <p>The app should return:</p>
+
+    <div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nt">&lt;h1&gt;</span>Hello World from Node.js!<span class="nt">&lt;/h1&gt;</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Stop the running application.</p>
+  </li>
+</ol>
+
+<p>Congratulations! You’ve successfully created a Node.js Express image.</p>
+
+<h2 id="deploy-your-docker-image">Deploy Your Docker Image</h2>
+
+<p>In this section, we’ll push your Node.js Express image to OCI Container Registry and then use the image to deploy your application.</p>
+
+<blockquote class="warn">
+  <p><strong>Note:</strong> Before you can push a Docker image into a registry repository, <strong>the repository must exist in your compartment</strong>. If the repository does not exist, the Docker push command will not work correctly.</p>
+</blockquote>
+
+<h3 id="create-a-docker-repository">Create a Docker Repository</h3>
+
+<ol>
+  <li>Open the navigation menu and select <strong>Developer Services</strong>.<br />
+Under <strong>Containers &amp; Artifacts</strong>, select <strong>Container Registry</strong>.</li>
+  <li>In the left navigation, select <code class="language-plaintext highlighter-rouge">&lt;your-compartment-name&gt;</code>.</li>
+  <li>Select <strong>Create Repository</strong>.</li>
+  <li>
+    <p>Create a <strong>private repository</strong> with your choice of repo name:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> &lt;repo-name&gt;</span><span class="w"> </span><span class="o">=</span> &lt;image-path-name&gt;/&lt;image-name&gt;
+</code></pre></div>    </div>
+
+    <p><strong>Example:</strong> <code class="language-plaintext highlighter-rouge">node-apps/node-hello-app</code></p>
+
+    <blockquote class="notice">
+      <p>Note: The slash in a repository name <strong>does not represent a hierarchical directory structure</strong>. The optional <code class="language-plaintext highlighter-rouge">&lt;image-path-name&gt;</code> helps to organize your repositories.</p>
+    </blockquote>
+  </li>
+</ol>
+
+<p>You are now ready to push your local image to Container Registry.</p>
+
+<h2 id="push-your-local-image">Push Your Local Image</h2>
+
+<p>With your local Docker image created, push the image to the Container Registry.</p>
+
+<p>Follow these steps:</p>
+
+<ol>
+  <li>Open your OCI CLI session.</li>
+  <li>
+    <p>Log in to OCI Container Registry:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> docker login &lt;region-key&gt;</span>.ocir.io
+</code></pre></div>    </div>
+
+    <p>You are prompted for your login name and password:</p>
+
+    <ul>
+      <li><strong>Username:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-namespace&gt;/&lt;user-name&gt;</code></li>
+      <li><strong>Password:</strong> <code class="language-plaintext highlighter-rouge">&lt;auth-token&gt;</code></li>
+    </ul>
+  </li>
+  <li>
+    <p>List your local Docker images:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> docker images
+</span></code></pre></div>    </div>
+
+    <p>The Docker images on your system are displayed. Identify the image you created in the <a href="#build-a-docker-image">last section</a>: <code class="language-plaintext highlighter-rouge">node-hello-app</code></p>
+  </li>
+  <li>
+    <p><strong>Tag</strong> your local image with the <strong>URL for the registry</strong> plus the <strong>repo name</strong>, so you can push it to that repo:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> docker tag &lt;your-local-image&gt;</span><span class="w"> </span>&lt;repo-url&gt;/&lt;repo-name&gt;
+</code></pre></div>    </div>
+
+    <ul>
+      <li>
+        <p>Replace <strong><code class="language-plaintext highlighter-rouge">&lt;repo-url&gt;</code></strong> with <code class="language-plaintext highlighter-rouge">&lt;region-key&gt;.ocir.io/&lt;tenancy-namespace&gt;/</code></p>
+      </li>
+      <li>
+        <p>Replace <strong><code class="language-plaintext highlighter-rouge">&lt;repo-name&gt;</code></strong> with <code class="language-plaintext highlighter-rouge">&lt;image-folder-name&gt;/&lt;image-name&gt;</code> from the <strong>Create a Docker Repository</strong> section.</p>
+      </li>
+    </ul>
+
+    <p>Here is an example after combining both:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> docker tag node-hello-app iad.ocir.io/my-namespace/node-apps/node-hello-app
+</span></code></pre></div>    </div>
+
+    <p>In this example, the components are:</p>
+
+    <ul>
+      <li><strong>Repo URL:</strong> <code class="language-plaintext highlighter-rouge">iad.ocir.io/my-namespace/</code></li>
+      <li><strong>Repo name:</strong> <code class="language-plaintext highlighter-rouge">node-apps/node-hello-app</code></li>
+    </ul>
+
+    <blockquote class="notice">
+      <p><strong>Note:</strong> OCI Container Registry now supports creating a registry repo in <em>any</em> compartment rather than only in the root compartment (tenancy). To push the image to the repo you created, combine the registry URL with the exact repo name. OCI Container Registry matches based on the unique repo name and pushes your image.</p>
+    </blockquote>
+  </li>
+  <li>
+    <p>Check your Docker images to see if the image is <strong>copied</strong>:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> docker images
+</span></code></pre></div>    </div>
+
+    <ul>
+      <li>The tagged image has <strong>the same image ID</strong> as your local image.</li>
+      <li>The tagged image name is: <code class="language-plaintext highlighter-rouge">&lt;region-key&gt;.ocir.io/&lt;tenancy-namespace&gt;/&lt;image-path-name&gt;/&lt;image-name&gt;</code></li>
+    </ul>
+  </li>
+  <li>
+    <p>Push the image to Container Registry:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> docker push &lt;copied-image-name&gt;</span>:latest
+</code></pre></div>    </div>
+
+    <p><strong>Example:</strong></p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> docker push iad.ocir.io/my-namespace/node-apps/node-hello-app:latest
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Open the navigation menu and select <strong>Developer Services</strong>.<br />
+Under <strong>Containers &amp; Artifacts</strong>, select <strong>Container Registry</strong>.</p>
+  </li>
+  <li>Find your image in the <strong>Container Registry</strong> after the push command is complete.</li>
+</ol>
+
+<h2 id="deploy-the-image">Deploy the Image</h2>
+
+<p>We’re finally here! The moment of truth. With your image in Container Registry, you can now deploy your image and app:</p>
+
+<ol>
+  <li>
+    <p><strong>Create a registry secret for your application -</strong> This secret authenticates your image when you deploy it to your cluster.</p>
+
+    <p>To create your secret, fill in the information in this template:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> kubectl create secret docker-registry ocirsecret --docker-server=&lt;region-key&gt;</span>.ocir.io  <span class="nt">--docker-username</span><span class="o">=</span><span class="s1">'&lt;tenancy-namespace&gt;/&lt;user-name&gt;'</span> <span class="nt">--docker-password</span><span class="o">=</span><span class="s1">'&lt;auth-token&gt;'</span>  <span class="nt">--docker-email</span><span class="o">=</span><span class="s1">'&lt;email-address&gt;'</span>
+</code></pre></div>    </div>
+
+    <p>After the command runs, you get a message similar to: <code class="language-plaintext highlighter-rouge">secret/ocirsecret created</code>.</p>
+  </li>
+  <li>
+    <p><strong>Verify that the secret is created -</strong> Issue the following command:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> kubectl get secret ocirsecret --output=yaml
+</span></code></pre></div>    </div>
+
+    <p>The output includes information about your secret in yaml format.</p>
+  </li>
+  <li>
+    <p><strong>Host URL -</strong> Determine the host URL to your registry image using the following template:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> &lt;region-code&gt;</span>.ocir.io/&lt;tenancy-namespace&gt;/&lt;repo-name&gt;/&lt;image-name&gt;:&lt;tag&gt;
+</code></pre></div>    </div>
+
+    <p><strong>Example:</strong></p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> iad.ocir.io/my-namespace/node-apps/node-hello-app:latest
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>On your system, create a file called <code class="language-plaintext highlighter-rouge">node-app.yaml</code>.</p>
+
+    <p>Include the text below and replace the following placeholders:</p>
+
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">&lt;your-image-url&gt;</code></li>
+      <li><code class="language-plaintext highlighter-rouge">&lt;your-secret-name&gt;</code></li>
+    </ul>
+
+    <div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+  <span class="s">kind</span><span class="err">:</span> <span class="s">Deployment</span>
+  <span class="s">metadata</span><span class="err">:</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">node-app</span>
+  <span class="na">spec</span><span class="pi">:</span>
+    <span class="na">selector</span><span class="pi">:</span>
+      <span class="na">matchLabels</span><span class="pi">:</span>
+        <span class="na">app</span><span class="pi">:</span> <span class="s">app</span>
+    <span class="na">replicas</span><span class="pi">:</span> <span class="m">3</span>
+    <span class="na">template</span><span class="pi">:</span>
+      <span class="na">metadata</span><span class="pi">:</span>
+        <span class="na">labels</span><span class="pi">:</span>
+          <span class="na">app</span><span class="pi">:</span> <span class="s">app</span>
+      <span class="na">spec</span><span class="pi">:</span>
+        <span class="na">containers</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">app</span>
+          <span class="na">image</span><span class="pi">:</span> <span class="s">&lt;your-image-url&gt;</span>
+          <span class="na">imagePullPolicy</span><span class="pi">:</span> <span class="s">Always</span>
+          <span class="na">ports</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">app</span>
+            <span class="na">containerPort</span><span class="pi">:</span> <span class="m">3000</span>
+            <span class="na">protocol</span><span class="pi">:</span> <span class="s">TCP</span>
+        <span class="na">imagePullSecrets</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">&lt;your-secret-name&gt;</span>
+  <span class="s">---</span>
+  <span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+  <span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
+  <span class="na">metadata</span><span class="pi">:</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">node-app-lb</span>
+    <span class="na">labels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">app</span>
+    <span class="na">annotations</span><span class="pi">:</span>
+      <span class="na">service.beta.kubernetes.io/oci-load-balancer-shape</span><span class="pi">:</span> <span class="s2">"</span><span class="s">flexible"</span>
+      <span class="na">service.beta.kubernetes.io/oci-load-balancer-shape-flex-min</span><span class="pi">:</span> <span class="s2">"</span><span class="s">10"</span>
+      <span class="na">service.beta.kubernetes.io/oci-load-balancer-shape-flex-max</span><span class="pi">:</span> <span class="s2">"</span><span class="s">100"</span>
+  <span class="na">spec</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">LoadBalancer</span>
+    <span class="na">ports</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">port</span><span class="pi">:</span> <span class="m">3000</span>
+    <span class="na">selector</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">app</span>
+</code></pre></div>    </div>
+
+    <blockquote class="notice">
+      <p>Note: In the <code class="language-plaintext highlighter-rouge">node-app.yaml</code> file, the code after the dashes adds a flexible load balancer.</p>
+    </blockquote>
+  </li>
+  <li>
+    <p>Deploy your application with the following command:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> kubectl create -f node-app.yaml
+</span></code></pre></div>    </div>
+
+    <p><strong>Sample output:</strong></p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> deployment.apps/node-app created
+ service/node-app-lb created
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<h2 id="test-your-app">Test Your App</h2>
+
+<p>After you deploy your app, it might take the load balancer a few seconds to load.</p>
+
+<ol>
+  <li>
+    <p>Check if the load balancer is live:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> kubectl get service
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Repeat the command until load balancer is assigned an IP address.</p>
+
+    <blockquote class="notice">
+      <p><strong>Note:</strong> While waiting for the load balancer to deploy, you can check the status of your cluster with these commands:</p>
+
+      <ul>
+        <li>Get each pods status: <code class="language-plaintext highlighter-rouge">kubectl get pods</code></li>
+        <li>Get app status: <code class="language-plaintext highlighter-rouge">kubectl get deployment</code></li>
+      </ul>
+    </blockquote>
+  </li>
+  <li>
+    <p>Use the load balancer IP address to connect to your app in a browser:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> http://&lt;load-balancer-IP-address&gt;</span>:3000
+</code></pre></div>    </div>
+
+    <p>The browser should display <code class="language-plaintext highlighter-rouge">&lt;h1&gt;Hello World from Node.js!&lt;/h1&gt;</code></p>
+  </li>
+  <li>
+    <p><strong>[OPTIONAL]</strong> Undeploy your application from the cluster<br />
+To remove your application, run this command:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> kubectl delete -f node-app.yaml
+</span></code></pre></div>    </div>
+
+    <p><strong>Sample output:</strong></p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> deployment.apps/node-app deleted
+ service "node-app-lb" deleted
+</span></code></pre></div>    </div>
+
+    <p>Your application is now removed from your cluster.</p>
+  </li>
+</ol>
+
+<h2 id="whats-next">What’s Next</h2>
+
+<p>We’ve accomplish a lot in this tutorial! You’ve successfully created a Hello World application, deployed it to a Kubernetes cluster, and made it accessible on the internet using the Node Express framework.</p>
+
+<p>Check out these sites to explore more information about development with Oracle products:</p>
+
+<p><a href="https://www.oracle.com/cloud/">Oracle Developers Portal</a></p>
+
+<!--- links -->
+
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/oci">OCI</a>
+            <a class="animated-link tag" href="/topics/open-source">open-source</a>
+            <a class="animated-link tag" href="/topics/nodejs">nodejs</a>
+            <a class="animated-link tag" href="/topics/front-end">front-end</a>
+            <a class="animated-link tag" href="/topics/kubernetes">kubernetes</a>
+            </span>
+    </p> -->
+  
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-09-30T01:00:00+00:00">September 30, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

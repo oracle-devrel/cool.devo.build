@@ -1,0 +1,213 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Get Started with your own LAMP stack application on Oracle Cloud">
+    
+    <meta itemprop="datePublished" content="2021-10-01T09:18:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Get Started with your own LAMP stack application on Oracle Cloud
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <p>I’ve written <a href="https://lefred.be/deploy-to-oci/">several articles</a> about how to deploy popular Open Source applications on Oracle Cloud Infrastructure and MySQL Database Service.</p>
+
+<p>Now we will see how you can deploy your own LAMP stack application using the same technique where <strong>L</strong> will stand for a compute instance (and why not the <a href="https://lefred.be/content/deploy-on-oci-using-ampere-compute-instances/">Ampere always free trier</a>?), <strong>A</strong> stays Apache and will run in that compute instance. <strong>M</strong> stands for MySQL Database Service and <strong>P</strong> is for PHP.</p>
+
+<p>As usual we start by deploying a Stack by just clicking on the deploy button <a href="assets/get-started-with-lamp-on-oci-Screenshot-from-2021-05-28-13-11-43.png">from GitHub</a></p>
+
+<p>Then we are redirected to OCI’s dashboard and we need to accept the Terms of Use:</p>
+
+<p><img src="assets/get-started-with-lamp-on-oci-Screenshot-from-2021-05-28-13-11-56.png" alt="" /></p>
+
+<p>As soon as we accept the Terms of Use, we see the information being updated, and we can directly click on Next:</p>
+
+<p><img src="assets/get-started-with-lamp-on-oci-Screenshot-from-2021-05-28-13-12-04.png" alt="" /></p>
+
+<p>On the next screen, we can set all the variables. Some are mandatory and the others are already pre-filled:</p>
+
+<p><img src="assets/get-started-with-lamp-on-oci-Screenshot-from-2021-05-28-13-12-19.png" alt="" /></p>
+
+<p>This is also where you can choose which version of PHP you want to use:</p>
+
+<p><img src="assets/get-started-with-lamp-on-oci-Selection_048.png" alt="" /></p>
+
+<p>You validate everything, and then Create the stack and deploy the architecture on OCI:</p>
+
+<p><img src="assets/get-started-with-lamp-on-oci-Screenshot-from-2021-05-28-13-13-12.png" alt="" /> <img src="assets/get-started-with-lamp-on-oci-Screenshot-from-2021-05-28-13-28-39.png" alt="" /></p>
+
+<p>As you can see, we have all the generated and required information in the <strong>Outputs</strong> section.</p>
+
+<p>We can already use the public IP in a browser and we should see the following page:</p>
+
+<p><img src="assets/get-started-with-lamp-on-oci-Selection_049.png" alt="" /></p>
+
+<p>Now the Web server is ready to get our code. From the stack’s outputs, we already know the IP, the username, and password to use to connect to MySQL Database Service.</p>
+
+<p>We also need the ssh key that we can copy locally to ssh to the Web Server to deploy our code, or we can use the Cloud Shell from OCI’s dashboard. Let’s use it:</p>
+
+<p><img src="assets/get-started-with-lamp-on-oci-Screenshot-from-2021-05-28-13-31-30.png" alt="" /></p>
+
+<p>We create a file for the ssh key (<code class="language-plaintext highlighter-rouge">php.key</code>) and we paste its content in it:</p>
+
+<p><img src="assets/get-started-with-lamp-on-oci-Screenshot-from-2021-05-28-13-28-39-1.png" alt="" /> <img src="assets/get-started-with-lamp-on-oci-Screenshot-from-2021-05-28-13-31-38.png" alt="" /></p>
+
+<p>We change the permission of the key’s file and we use it to connect to our web server using its public IP:</p>
+
+<p><img src="assets/get-started-with-lamp-on-oci-Screenshot-from-2021-05-28-13-32-03.png" alt="" /></p>
+
+<p>As an application, we will use <a href="https://gist.github.com/lefred/b97fe90f31115607e0d28ddc8a72ca16">this gist file which is a PHP script</a> that connects to MDS and we will place it in <code class="language-plaintext highlighter-rouge">**/var/www/html**</code>:</p>
+
+<p><img src="assets/get-started-with-lamp-on-oci-Screenshot-from-2021-05-28-13-32-58.png" alt="" /></p>
+
+<p>We edit it, and there are 3 variables to modify using the values from the Stack’s outputs:</p>
+
+<p><img src="assets/get-started-with-lamp-on-oci-Screenshot-from-2021-05-28-13-41-03.png" alt="" /></p>
+
+<p>When done, we can refresh the page on the browser and we will see our code being processed:</p>
+
+<p><img src="assets/get-started-with-lamp-on-oci-Screenshot-from-2021-05-28-13-54-44.png" alt="" /></p>
+
+<p>The Web server box already contains <code class="language-plaintext highlighter-rouge">git</code> and <code class="language-plaintext highlighter-rouge">certbot</code>.</p>
+
+<p>Now you are able to deploy your own LAMP stack easily to OCI, enjoy!</p>
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/data-management">data-management</a>
+            <a class="animated-link tag" href="/topics/front-end">front-end</a>
+            <a class="animated-link tag" href="/topics/mysql">mysql</a>
+            <a class="animated-link tag" href="/topics/oci">oci</a>
+            <a class="animated-link tag" href="/topics/orm">orm</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <a href="https:/lefred.be/"><h3 class="author__name" itemprop="name">lefred</h3></a>
+    
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/lefred" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/freddescamps" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/lefred" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-10-01T09:18:00+00:00">October 1, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

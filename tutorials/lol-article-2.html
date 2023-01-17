@@ -1,0 +1,425 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="League of Legends Optimizer using Oracle Cloud Infrastructure—Data Extraction and Processing">
+    
+    <meta itemprop="datePublished" content="2022-01-07T06:00:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">League of Legends Optimizer using Oracle Cloud Infrastructure—Data Extraction and Processing
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <h2 id="recap-and-introduction">Recap and Introduction</h2>
+<p>Welcome to the second article on the League of Legends Optimizer series! In this article, we’ll continue where we left off in <a href="https://cool.devo.build/tutorials/lol-optimizer-using-oci-extraction-processing">the first article</a>. As a reminder, let’s review what we covered last time last time:</p>
+
+<ul>
+  <li>We defined and modelled our problem, understanding the different steps in the drafting phase of the game</li>
+  <li>We explored the various endpoints offered by Riot Games in their official API</li>
+  <li>We periodically extracted as many games as possible for each player, storing the Match ID’s in a specific collection in our database for further processing.</li>
+  <li>We pulled data from the most skilled players around the world and built a data set of these players, which left us with a structure like this in our non-relational autonomous database:</li>
+</ul>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"tier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CHALLENGER"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"veteran"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"wins"</span><span class="p">:</span><span class="w"> </span><span class="mi">229</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"request_region"</span><span class="p">:</span><span class="w"> </span><span class="s2">"br1"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"rank"</span><span class="p">:</span><span class="w"> </span><span class="s2">"I"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"inactive"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"summonerId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dKMYAJhqPpBuI9hSfIon_a4zSbtCwTFep-DA6Lq9YwqlIQ"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"hotStreak"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"queue"</span><span class="p">:</span><span class="w"> </span><span class="s2">"RANKED_SOLO_5x5"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"losses"</span><span class="p">:</span><span class="w"> </span><span class="mi">198</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"freshBlood"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"puuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"aRjqIYDtBMBU2j-8EfHY6dJ0RZ9TqXgWLeNvpcjRWlCBaP8HGBAWFRAiehRM4Jo-lgJXXrjTCOcIKg"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"summonerName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Qats"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"leaguePoints"</span><span class="p">:</span><span class="w"> </span><span class="mi">922</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="code-optimization">Code Optimization</h2>
+
+<p>Before building a dataset with match information, there are some things to consider:</p>
+
+<ol>
+  <li>The player and match datasets are ever-growing and will continue to expand in size and complexity if we keep executing our code</li>
+  <li>The functions <code class="language-plaintext highlighter-rouge">get_top_player()</code> and <code class="language-plaintext highlighter-rouge">get_puuid()</code> can be more thoroughly optimized</li>
+</ol>
+
+<p>For this second point, I propose a code revamp and bugfix before resuming the ML pipeline work.</p>
+
+<p>It’s important to keep optimizing code even when we think it won’t matter, because in the end we might need to do it anyway. It’s much better to have the ideas fresh rather than waiting for the right moment to do these optimizations and forgetting how to optimize the code at all.</p>
+
+<h3 id="optimizing-api-call-efficiency">Optimizing API call efficiency</h3>
+<p>Our constantly-growing dataset made me realize there must be a way to retrieve skilled players without constantly requesting their PUUIDs. In fact, we should only retrieve the PUUID for a player if this player isn’t already present in the database. By definition, the PUUID will never change even when summoners change their display/in-game names. The first order of optimization is to check whether players are already in our DB collection before requesting their PUUID. This will save us precious API calls which will allow our program to focus on processing, and less on API restrictions and rate limits.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Insert the users.
+</span>	<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">total_users_to_insert</span><span class="p">:</span>
+		<span class="n">x</span><span class="p">[</span><span class="s">'request_region'</span><span class="p">]</span> <span class="o">=</span> <span class="n">region</span>
+		<span class="n">x</span><span class="p">[</span><span class="s">'queue'</span><span class="p">]</span> <span class="o">=</span> <span class="n">queue</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">qbe</span> <span class="o">=</span> <span class="p">{</span><span class="s">'summonerId'</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="s">'summonerId'</span><span class="p">]}</span>
+			<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">collection_summoner</span><span class="p">.</span><span class="n">find</span><span class="p">().</span><span class="nb">filter</span><span class="p">(</span><span class="n">qbe</span><span class="p">).</span><span class="n">getDocuments</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+				<span class="c1"># In case they don't exist in the DB, we get their PUUIDs, in case they change their name.
+</span>				<span class="n">overall_region</span><span class="p">,</span> <span class="n">tagline</span> <span class="o">=</span> <span class="n">determine_overall_region</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
+				<span class="n">x</span><span class="p">[</span><span class="s">'puuid'</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_puuid</span><span class="p">(</span><span class="n">overall_region</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="s">'summonerName'</span><span class="p">],</span> <span class="n">tagline</span><span class="p">,</span> <span class="n">connection</span><span class="p">)</span>
+				<span class="n">collection_summoner</span><span class="p">.</span><span class="n">insertOne</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+				<span class="k">print</span><span class="p">(</span><span class="s">'Inserted new summoner: {} in region {}, queue {}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s">'summonerName'</span><span class="p">],</span> <span class="n">region</span><span class="p">,</span> <span class="n">queue</span><span class="p">))</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="k">print</span><span class="p">(</span><span class="s">'Summoner {} already inserted'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s">'summonerName'</span><span class="p">]))</span>
+				<span class="k">continue</span>
+		<span class="k">except</span> <span class="n">cx_Oracle</span><span class="p">.</span><span class="n">IntegrityError</span><span class="p">:</span>
+			<span class="k">print</span><span class="p">(</span><span class="s">'Summoner {} already inserted'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s">'summonerName'</span><span class="p">]))</span>
+			<span class="k">continue</span>
+</code></pre></div></div>
+
+<p>As shown, we’ll check for new players in our collection before inserting them. In case they aren’t present, we’ll request their PUUIDs and their respective information, and proceed to insert them.</p>
+
+<p>Additionally, I also implemented a SODA database method that will remove faulty summoners (see <code class="language-plaintext highlighter-rouge">delete_json_db()</code>). In case a summoner can’t be found given their specific username for a region, we’ll remove it from our DB since all subsequent requests (asking the Riot Games API for their games) will always result in errors:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Remove a document from a collection based on the key and value pairs provided.
+</span><span class="k">def</span> <span class="nf">delete_json_db</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">collection_name</span><span class="p">,</span> <span class="n">on_column</span><span class="p">,</span> <span class="n">on_value</span><span class="p">):</span>
+	<span class="n">soda</span> <span class="o">=</span> <span class="n">connection</span><span class="p">.</span><span class="n">getSodaDatabase</span><span class="p">()</span>
+	<span class="n">x_collection</span> <span class="o">=</span> <span class="n">soda</span><span class="p">.</span><span class="n">createCollection</span><span class="p">(</span><span class="n">collection_name</span><span class="p">)</span>
+
+	<span class="n">qbe</span> <span class="o">=</span> <span class="p">{</span><span class="n">on_column</span><span class="p">:</span> <span class="n">on_value</span><span class="p">}</span>
+	<span class="n">x_collection</span><span class="p">.</span><span class="n">find</span><span class="p">().</span><span class="nb">filter</span><span class="p">(</span><span class="n">qbe</span><span class="p">).</span><span class="n">remove</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>When calling <code class="language-plaintext highlighter-rouge">get_puuid()</code>, we’ll check for the HTTPs response status code before doing anything:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Inside get_puuid()
+</span><span class="k">if</span> <span class="n">response</span><span class="p">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+		<span class="c1">#print('Printing response for user {} - region {}: -----\n{}'.format(summoner_name, region, response.json()))
+</span>		<span class="k">pass</span>
+	<span class="k">elif</span> <span class="n">response</span><span class="p">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
+		<span class="k">print</span><span class="p">(</span><span class="s">'PUUID not found for summoner {}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">summoner_name</span><span class="p">))</span>
+		<span class="n">delete_json_db</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="s">'summoner'</span><span class="p">,</span> <span class="s">'summonerName'</span><span class="p">,</span> <span class="n">summoner_name</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="k">print</span><span class="p">(</span><span class="s">'Request error (@get_puuid). HTTP code {}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">response</span><span class="p">.</span><span class="n">status_code</span><span class="p">))</span>
+		<span class="k">return</span>
+</code></pre></div></div>
+
+<p>These two modifications may seem insignificant, but they improved code efficiency by up to 80%, depending on the number of already-existing players in the <code class="language-plaintext highlighter-rouge">summoner</code> collection. Querying the API for new summoners was much faster, since duplicate values would be automatically ignored, and I’d only have to wait for the new ones’ PUUIDs.</p>
+
+<h3 id="reducing-redundant-processing">Reducing Redundant Processing</h3>
+
+<p>Finally, as our last optimization, we’ll add new keys in our document, called <code class="language-plaintext highlighter-rouge">processed_1v1</code> and <code class="language-plaintext highlighter-rouge">processed_5v5</code>, which will indicate whether a match has already been processed for the 1v1 and 5v5 models or not (more on this in the next sections).</p>
+
+<p>In case this match has been processed, we’ll keep it in our dataset, but won’t extract the contents of the match from now on. This will reduce overloading the CPU and processing times of our Python code, since this data mining process has been programmed to take into consideration all values present in the database (as any data mining process should).</p>
+
+<p>Considering this previous collection structure:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"match_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"BR1_2133968346"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>We’ll expand this into (example with a non-processed match):</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"match_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"BR1_2133968346"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"processed_1v1"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"processed_5v5"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Subsequently, in our <code class="language-plaintext highlighter-rouge">data_mine()</code> function, we’ll only process those matches which haven’t been processed. After processing, we’ll change their processed bit in order not to make redundant processing and API calls:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">all_match_ids</span> <span class="o">=</span> <span class="n">collection_match</span><span class="p">.</span><span class="n">find</span><span class="p">().</span><span class="nb">filter</span><span class="p">({</span><span class="s">'processed_1v1'</span><span class="p">:</span> <span class="p">{</span><span class="s">"$ne"</span><span class="p">:</span><span class="mi">1</span><span class="p">}}).</span><span class="n">getDocuments</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>After processing our 1v1 models, in the upcoming articles we’ll filter the same way for the other processed bit:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">all_match_ids</span> <span class="o">=</span> <span class="n">collection_match</span><span class="p">.</span><span class="n">find</span><span class="p">().</span><span class="nb">filter</span><span class="p">({</span><span class="s">'processed_5v5'</span><span class="p">:</span> <span class="p">{</span><span class="s">"$ne"</span><span class="p">:</span><span class="mi">1</span><span class="p">}}).</span><span class="n">getDocuments</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h2 id="extracting-game-data">Extracting Game Data</h2>
+
+<p>Since we have a great collection of games, and our code has already survived a code optimization iteration, we’ll get straight into the data provided by Riot’s API about matches.</p>
+
+<p>The preliminary structure of data that we can process is too large to paste here, but there’s more than enough information. The following JSON structure outlines the most important variables that we might need.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"dataVersion"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"matchId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"BR1_2133968346"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"participants"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="s2">"MAwy3tdjisAuet11VKKSM-WhzljY1onACC9rLpriEoWoAKGB8rNampDsoUy-1KBfYDCEAJcMqO33MQ"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"zs2vbZ7MtlgtuSY1HaLPytK5mr07nGUXkXXQhPxIJ2uff07VNaRKJk_f-uxkDEIJGRf9Weg9y4bm3w"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"GI68lPlGrXbLIZ_o536EFmf1FyWY9mjqEmeEeg6NHiKcUboLZpsKaXL5TvCa1aBBWQgE4c6Y2EzMbQ"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"RznuEthBrn_aO6q4RWYwX-bp96BBcVVSccBsMUxRGMJsSrSiVR5cwpgqqpAE0krz5MzqGFbNVdtxXA"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"x73jcQmLJozEJETZWF17Xz-8tqS7zUyT4vY2ctcYkz9vGmbM5sgNkPJmJE8U9W-9DSRce43cUn1yvg"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"KbDKfIXKhdXrzDKyFdmSpLFfIHIiOYHIVqr0TFpHY4xIaoUUIH8nd0IgZV5C1E28c2vRLYLdU6uwRQ"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"bEXzoqxnVFYL2-NwyHvv-u3x_ojRc_P-cf0INO8J_l_MVljXW-dA5xcXgBWnWmpFvG1YIMAFKDJcXg"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"iV-M2lcWZ7cqLKKC4rrDy6TLx_W2QUIGRuqSyYzjW0zj8Ku6pwncIZctSqjFlUdpUErT7dB3muiuxQ"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"PpcjIHRykKFBBiCVsx0f1YMnbQAL6It8TtBkORMFBuScePoB3s8pYX-kPZpgkmD0HVW65lFm7N3kGg"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"p7GibwRhHT1jmmw7vXSVVSck2FDjBnxm_MyVlSL8Tko58qPHH9gy6wEwthuPbf98Zrn1J9qDhX4nPw"</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"info"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"gameDuration"</span><span class="p">:</span><span class="w"> </span><span class="mi">1739425</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"gameId"</span><span class="p">:</span><span class="w"> </span><span class="mi">2133968346</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"gameVersion"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10.25.348.1797"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"participants"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"a lot of information on individual scores, summoners, etc. From here we will just extract the championName for each player"</span><span class="p">],</span><span class="w">
+        </span><span class="nl">"platformId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"BR1"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"teams"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"bans"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                    </span><span class="p">{</span><span class="w">
+                        </span><span class="nl">"championId"</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span><span class="w">
+                        </span><span class="nl">"pickTurn"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">
+                    </span><span class="p">},</span><span class="w">
+                    </span><span class="p">{</span><span class="w">
+                        </span><span class="nl">"championId"</span><span class="p">:</span><span class="w"> </span><span class="mi">121</span><span class="p">,</span><span class="w">
+                        </span><span class="nl">"pickTurn"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w">
+                    </span><span class="p">},</span><span class="w">
+                    </span><span class="p">{</span><span class="w">
+                    	</span><span class="nl">"this goes on for all pick turns"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">
+                    </span><span class="p">}</span><span class="w">
+                </span><span class="p">],</span><span class="w">
+                </span><span class="nl">"objectives"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="nl">"baron"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                        </span><span class="nl">"first"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+                        </span><span class="nl">"kills"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">
+                    </span><span class="p">},</span><span class="w">
+                    </span><span class="nl">"champion"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                        </span><span class="nl">"first"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+                        </span><span class="nl">"kills"</span><span class="p">:</span><span class="w"> </span><span class="mi">31</span><span class="w">
+                    </span><span class="p">},</span><span class="w">
+                    </span><span class="nl">"dragon"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                        </span><span class="nl">"first"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+                        </span><span class="nl">"kills"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+                    </span><span class="p">},</span><span class="w">
+                    </span><span class="nl">"inhibitor"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                        </span><span class="nl">"first"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+                        </span><span class="nl">"kills"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+                    </span><span class="p">},</span><span class="w">
+                    </span><span class="nl">"riftHerald"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                        </span><span class="nl">"first"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+                        </span><span class="nl">"kills"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">
+                    </span><span class="p">},</span><span class="w">
+                    </span><span class="nl">"tower"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                        </span><span class="nl">"first"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+                        </span><span class="nl">"kills"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w">
+                    </span><span class="p">}</span><span class="w">
+                </span><span class="p">},</span><span class="w">
+                </span><span class="nl">"teamId"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"win"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="p">{</span><span class="nl">"the same for the other team"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Note that the <code class="language-plaintext highlighter-rouge">championId</code> variable is represented by a number. In case you want to make some additional processing and extract this information, <a href="../src/aux_files/process_data_dragon.py">I have developed a Python script</a> which uses the official Riot Games’ Data Dragon, which allows us to determine which champion ID corresponds to which champion name.</p>
+
+<p>From this amount of data, which is a lot, and according to the problem statement we discussed in <a href="https://github.com/oracle-devrel/leagueoflegends-optimizer/blob/main/articles/article1.md">Article One</a>, we need at least the following information:</p>
+
+<ul>
+  <li>Patch number, since team compositions, and some aspects of the game change every patch due to changes in champions’ stats</li>
+  <li>Team 1 composition</li>
+  <li>Team 2 composition</li>
+  <li>Win Team 1 / Win Team 2 binary variable</li>
+  <li>Whether each team did First Blood, First Dragon, Baron, Tower, Herald and Inhibitor. These are variables we would like to consider for more complex models, and we might do that.</li>
+</ul>
+
+<h2 id="modelling-the-matchup-predictor">Modelling the Matchup Predictor</h2>
+
+<p>To create our first predictor and to test out the different possibilities of our models, we’ll build a structure that allows us to predict <em>individual</em> lane matchup results. Considering the JSON structure present in last section, we’ll now create one of its many derivatives, with the following structure:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"p_match_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"BR1_2133967391_jungle"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"goldEarned"</span><span class="p">:</span><span class="w"> </span><span class="mi">9414</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"totalMinionsKilled"</span><span class="p">:</span><span class="w"> </span><span class="mi">62</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"win"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"kills"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"assists"</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"deaths"</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"champion"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Graves"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"visionScore"</span><span class="p">:</span><span class="w"> </span><span class="mi">13</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"puuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"hRMN6-jyVZAm7nhzYioSiQxy4WfWqhaV7ozDjQZ9OMoE6HSv870_UAtVv6ybRilZGpIdzrz9VmqN-g"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"totalDamageDealtToChampions"</span><span class="p">:</span><span class="w"> </span><span class="mi">12217</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"summonerName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"divespeiro"</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"goldEarned"</span><span class="p">:</span><span class="w"> </span><span class="mi">10119</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"totalMinionsKilled"</span><span class="p">:</span><span class="w"> </span><span class="mi">31</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"win"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"kills"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"assists"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"deaths"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"champion"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Diana"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"visionScore"</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"puuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UdbGG79WCOn0DkjLv1-dpBZaVxIf3Nt-p9_IdEz5RwCwmj-wOHXSPeserm4uJz5v-RUZnzgleUqgQg"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"totalDamageDealtToChampions"</span><span class="p">:</span><span class="w"> </span><span class="mi">9178</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"summonerName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"soza"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"gameVersion"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10.25.348.1797"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>We’ll store this information inside a new collection called <em>matchups</em>. It will only include two players (one from each enemy team) and the API allows us to check in which lane these players played in. For each game (excluding games with AFKs - Away From Keyboard, meaning players that never connected into the game) we’ll have five different matchups (toplane, midlane, jungle lane, physical damage lane, and support lane). If we create this kind of structure, we’ll be able to check the best competitors for any lane and champion, which will help us make individual predictions and increase the chances of victory in the end.</p>
+
+<p>Note that the data available for one specific match will only be able to accurately predict results for a specific patch, since a champion may be optimal for patch 10.25 but really bad on the next one. That’s why we also store the matchup game version in our collection structure.</p>
+
+<h2 id="statistics">Statistics</h2>
+
+<p>Using an auxiliary file called <a href="https://github.com/oracle-devrel/leagueoflegends-optimizer/blob/main/src/find_counts.py">find_counts.py</a>, we can find the number of elements we have in each one of our collections. In my case, having executed the data extraction code for several iterations, and processing matchups, I find myself with the following data:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Collection match has 1193746 documents
+Collection matchups has 1084470 documents
+Collection summoner has 31072 documents
+Collection match has 1013284 documents left to process
+</code></pre></div></div>
+
+<p>From 31000 players, we have extracted about 1.2 million matches, and from these matches, we have processed only about 200.000 of them (since the matchups collection has an average of five documents per match). It looks like we won’t need to download any more new games before processing the remaining matches. We’ll keep executing the code to increase the dataset for creating the model in the next article.</p>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<p>After creating this data structure, we prepare for the next article where we’ll do a deep dive into the training of the model for 1v1 matchups. We’ll use TensorFlow as the main framework for ML operations and explore PyTorch, making an introduction to two of the most notable ML libraries available for Python.</p>
+
+<p>Hoping to see you in the next article where we’ll start training our 1v1 prediction model.</p>
+
+<h2 id="how-can-i-get-started-on-oci">How can I get started on OCI?</h2>
+
+<p>Remember that you can always sign up for free with OCI! Your Oracle Cloud account provides a number of Always Free services and a Free Trial with US$300 of free credit to use on all eligible OCI services for up to 30 days. These Always Free services are available for an <strong>unlimited</strong> period of time. The Free Trial services may be used until your US$300 of free credits are consumed or the 30 days has expired, whichever comes first. You can <a href="https://signup.cloud.oracle.com/">sign up here for free</a>.</p>
+
+<h2 id="license">License</h2>
+<p>Copyright (c) 2021 Oracle and/or its affiliates.</p>
+
+<p>Licensed under the Universal Permissive License (UPL), Version 1.0.</p>
+
+<p>See <a href="../LICENSE">LICENSE</a> for more details.</p>
+
+<p>Written by <a href="https://github.com/jasperan">jasperan</a>, edited by Victor Agreda Jr.</p>
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/analytics">analytics</a>
+            <a class="animated-link tag" href="/topics/gaming">gaming</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Ignacio Martínez</h3>
+    
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/ignacio-g-martinez" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-01-07T06:00:00+00:00">January 7, 2022</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

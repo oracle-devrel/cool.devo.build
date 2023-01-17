@@ -1,0 +1,268 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Using the AWS Migration Service with HeatWave on AWS with WordPress as an Example">
+    
+    <meta itemprop="datePublished" content="2022-06-16T17:00:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Using the AWS Migration Service with HeatWave on AWS with WordPress as an Example
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <p>Now let’s try something really fun. Let’s say you’ve already got a database using Aurora or RDS, in our case we’ll use a WordPress database, and you want to migrate it to MySQL HeatWave on AWS.</p>
+
+<p>First, we’ll need to have a MySQL DB System on HeatWave already, and a critical step is opening port 3306, shown below.</p>
+
+<picture class="">
+                <source srcset="assets/create-mysqldbsys-devrel0622.png 1x" />
+                <img loading="lazy" src="assets/create-mysqldbsys-devrel0622.png" data-original="assets/create-mysqldbsys-devrel0622.png" />
+            </picture>
+
+<p>Great! Now let’s head over to AWS.</p>
+
+<ol>
+  <li>
+    <p>Log in to your AWS console, and use search for “DMS” — Database Migration Service, it’ll be the top result.</p>
+
+    <picture class="">
+             <source srcset="assets/awsdbs-migrationservice-search-devrel0622.png 1x" />
+             <img loading="lazy" src="assets/awsdbs-migrationservice-search-devrel0622.png" data-original="assets/awsdbs-migrationservice-search-devrel0622.png" />
+         </picture>
+  </li>
+  <li>
+    <p>Click Create replication instance.</p>
+
+    <picture class="">
+             <source srcset="assets/step2-create-replication-awshw-devrel0622.png 1x" />
+             <img loading="lazy" src="assets/step2-create-replication-awshw-devrel0622.png" data-original="assets/step2-create-replication-awshw-devrel0622.png" />
+         </picture>
+  </li>
+  <li>
+    <p>Fill out a Name, Amazon Resource Name (ARN), description. You may use whichever shape you like, but keep in mind performance:cost here. Engine version should be fine, as well as storage (unless you have a truly massive database, in which case adjust accordingly).</p>
+
+    <picture class="">
+             <source srcset="assets/arn-form-repinstance-awshw-devrel0622.png 1x" />
+             <img loading="lazy" src="assets/arn-form-repinstance-awshw-devrel0622.png" data-original="assets/arn-form-repinstance-awshw-devrel0622.png" />
+         </picture>
+  </li>
+  <li>
+    <p>For VPC, choose one you have previously set up with the appropriate access controls for development work. And make sure it is publicly accessible. For Multi AZ, we’ll use a single availability zone, dev or test workload.</p>
+
+    <picture class="">
+             <source srcset="assets/step4-vpcsetup-awshw-devrel0622.png 1x" />
+             <img loading="lazy" src="assets/step4-vpcsetup-awshw-devrel0622.png" data-original="assets/step4-vpcsetup-awshw-devrel0622.png" />
+         </picture>
+  </li>
+  <li>
+    <p>Click to open the Advanced security and network configurations. The subnet group will follow the VPC you chose above, and the availability zone should be US-East. The security groups should be populated with any you created earlier, ensuring ports are available (LINK TK to DOCS on this).</p>
+
+    <picture class="">
+             <source srcset="assets/step5-advanc-netsec-awshw-devrel0622.png 1x" />
+             <img loading="lazy" src="assets/step5-advanc-netsec-awshw-devrel0622.png" data-original="assets/step5-advanc-netsec-awshw-devrel0622.png" />
+         </picture>
+  </li>
+  <li>
+    <p>It will take a few minutes for the replication instance to spin up. Coffee time!</p>
+
+    <picture class="">
+             <source srcset="assets/step6-creating-instance-awshw-wpex-devrel0622.png 1x" />
+             <img loading="lazy" src="assets/step6-creating-instance-awshw-wpex-devrel0622.png" data-original="assets/step6-creating-instance-awshw-wpex-devrel0622.png" />
+         </picture>
+  </li>
+  <li>
+    <p>Once it’s ready, we’ll need to get the Public IP address for our endpoint. Go to the Endpoints section. On the right you’ll see a Create Endpoint button, click it.</p>
+
+    <picture class="">
+             <source srcset="assets/step7a-awsdms-endpoints-awshw-wpex-devrel0622.png 1x" />
+             <img loading="lazy" src="assets/step7a-awsdms-endpoints-awshw-wpex-devrel0622.png" data-original="assets/step7a-awsdms-endpoints-awshw-wpex-devrel0622.png" />
+         </picture>
+    <picture class="">
+             <source srcset="assets/step7b-create-endpoint-button-awshw-wpex-devrel0622.png 1x" />
+             <img loading="lazy" src="assets/step7b-create-endpoint-button-awshw-wpex-devrel0622.png" data-original="assets/step7b-create-endpoint-button-awshw-wpex-devrel0622.png" />
+         </picture>
+  </li>
+  <li>
+    <p>Select Source endpoint, and check Select RDS DB Instance. You should see the RDS Instance field populate with what’s available to you.</p>
+
+    <picture class="">
+             <source srcset="assets/step8-create-endpoint-awshw-wpex-devrel0622.png 1x" />
+             <img loading="lazy" src="assets/step8-create-endpoint-awshw-wpex-devrel0622.png" data-original="assets/step8-create-endpoint-awshw-wpex-devrel0622.png" />
+         </picture>
+  </li>
+  <li>
+    <p>For Endpoint configuration, you’ll have the identifier, ARN, and source engine pre-filled, but we want to provide the access to endpoint database information manually, so click that radio button. Then, enter the appropriate database information for the db you’re moving over.</p>
+
+    <picture class="">
+             <source srcset="assets/step9-endpoint-config-awshw-devrel0622.png 1x" />
+             <img loading="lazy" src="assets/step9-endpoint-config-awshw-devrel0622.png" data-original="assets/step9-endpoint-config-awshw-devrel0622.png" />
+         </picture>
+  </li>
+  <li>
+    <p>Then, you should be able to test the endpoint connection below.</p>
+
+    <picture class="">
+            <source srcset="assets/step10-testendpoint-awshw-wpex-devrel0622.png 1x" />
+            <img loading="lazy" src="assets/step10-testendpoint-awshw-wpex-devrel0622.png" data-original="assets/step10-testendpoint-awshw-wpex-devrel0622.png" />
+        </picture>
+  </li>
+  <li>
+    <p>Now, we’ll create a second endpoint as our destination.
+To do this, we return to the MySQL HeatWave on AWS Console, and click MySQL DB Systems.</p>
+
+    <picture class="">
+            <source srcset="assets/step11-mysql-dbsystems-onaws-awshw-wpex-devrel0622.png 1x" />
+            <img loading="lazy" src="assets/step11-mysql-dbsystems-onaws-awshw-wpex-devrel0622.png" data-original="assets/step11-mysql-dbsystems-onaws-awshw-wpex-devrel0622.png" />
+        </picture>
+
+    <p>Then, click on the DB System you wish to use, and in Summary you will find the Host Name. Copy the string.</p>
+  </li>
+  <li>
+    <p>Go back to AWS console, and click to create another endpoint. Except this time we’ll create a Target endpoint! Naturally.</p>
+
+    <picture class="">
+            <source srcset="assets/step12-create-endpoint-aws-awshw-wpex-devrel0622.png 1x" />
+            <img loading="lazy" src="assets/step12-create-endpoint-aws-awshw-wpex-devrel0622.png" data-original="assets/step12-create-endpoint-aws-awshw-wpex-devrel0622.png" />
+        </picture>
+  </li>
+  <li>
+    <p>In Endpoint configuration, give it a name (identifier), choose MySQL under Target Engine. ARN is optional.</p>
+
+    <picture class="">
+            <source srcset="assets/step13-target-engin-awshw-wpex-devrel0622.png 1x" />
+            <img loading="lazy" src="assets/step13-target-engin-awshw-wpex-devrel0622.png" data-original="assets/step13-target-engin-awshw-wpex-devrel0622.png" />
+        </picture>
+  </li>
+  <li>
+    <p>Once again, we’ll provide access information manually. The server name is the host name you previously copied. Port is 3306. The username/password will match the one you created for the target database.</p>
+  </li>
+  <li>
+    <p>Now you have your endpoint, username/password, and can use this when creating a HeatWave on AWS cluster to connect a DB System and run queries. Refer to the HeatWave on AWS documentation for more.</p>
+  </li>
+</ol>
+
+<blockquote class="notice">
+  <p><strong>Note:</strong> MySQL Shell is the recommended utility for exporting data from a source MySQL Server and importing it into a DB System on the MySQL HeatWave on AWS. MySQL Shell dump and load utilities are purpose- built for use with MySQL DB Systems. For more on running queries with HeatWave, please refer to the <a href="https://dev.mysql.com/doc/heatwave/en/heatwave-running-queries.html">MySQL documentation</a>.</p>
+</blockquote>
+
+<p>Want to know more? Join the discussion in our <a href="https://bit.ly/devrel_slack">public Slack channel</a>!</p>
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/mysql">mysql</a>
+            <a class="animated-link tag" href="/topics/database">database</a>
+            <a class="animated-link tag" href="/topics/heatwave">heatwave</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name"></h3>
+    
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-06-16T17:00:00+00:00">June 16, 2022</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

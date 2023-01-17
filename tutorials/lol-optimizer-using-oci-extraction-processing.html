@@ -1,0 +1,393 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="League of Legends Optimizer—Data Extraction and Processing">
+    
+    <meta itemprop="datePublished" content="2021-10-26T12:56:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">League of Legends Optimizer—Data Extraction and Processing
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <h2 id="introduction">Introduction</h2>
+<p>Welcome to the League of Legends Optimizer article series!</p>
+
+<p>In this series, we’ll create usable, real-world tools to showcase the power of artificial intelligence (AI) applied to videogames. There are a lot of developers out there who are gamers, so what better way to use AI than to create a machine learning (ML) model for one of the most popular videogames out there? We’ll use this opportunity to showcase the capabilities that Oracle products can give us in relation to the entire data science process (extracting, processing, storing and using this data seamlessly).</p>
+
+<p>In this first article, we’ll dive deep into the Data Extraction step using the official Riot Games API.</p>
+
+<p>The purpose of these series is to explain how I was able to construct an ML model predicting the outcome of a game based on historical data, and how this data has been useful for coaches in the banning and drafting phase of League of Legends (LoL).</p>
+
+<p>For those of you who don’t know LoL deeply, it’s a popular multiplayer competitive game. In a LoL game, two teams of five players compete against each other to destroy the other team’s nexus.</p>
+
+<h2 id="first-steps">First Steps</h2>
+
+<p>Using <a href="https://developer.riotgames.com">Riot Games’ Developer Portal</a>, I signed up for a personal application. I explored the API and found that there are many endpoints to extract data, not only for LoL, but also from Riot Games’ other games (Teamfight Tactics and Valorant). We  dive together into these other games in the future.</p>
+
+<p>In LoL, 5 players choose among a wide variety of champions, which have their own synergies between each other. Champion powers are either <em>buffed</em> (improved) or <em>nerfed</em> (reduced) if their statistics are too overpowered or imbalanced compared to other champions in what League calls patches.</p>
+
+<p>Team composition is a very important feature of the game, since exploiting compositions where champions have synergies gives teams a greater chance of winning. Since champion’s statistics are changed in patches, these team compositions change constantly, and pro teams spend a lot of time devising strategies on how to create powerful team compositions that  lead them to victory.</p>
+
+<p>Note that in LoL, players are rewarded gold when killing enemies, minions or jungle monsters, and with these items players may buy upgrades such as weapons that deal more damage. The intricacies of the videogame are very complex and it takes years to reach the highest level of play. Therefore, if you are not familiar with some of the concepts that I  talk about in this series, I  make sure to explain these advanced concepts in more detail when they come up. I am not a professional player, but I have been playing LoL since Season 1 at high Diamond level, which gives me more than enough knowledge to start fidgeting with some AI code related to League.</p>
+
+<p>Firstly, we should talk about the architecture for this project:</p>
+
+<ul>
+  <li>Oracle Cloud Infrastructure, the official cloud provider for this project</li>
+  <li>a non-relational JSON database to store my data while I make my processing</li>
+  <li><a href="https://github.com/oracle-devrel/leagueoflegends-optimizer">GitHub</a> for version control and storing the code; it’s available in case you want to take a closer look at all code components</li>
+</ul>
+
+<h2 id="understanding-the-problem">Understanding the problem</h2>
+
+<p>To understand the problem, we must remember the concept of a <em>team composition</em>. If five players are extremely good at a champion, or a champion is severely overpowered in a specific patch, then there is a way to prevent these players from picking them. In the draft phase of a game, players can ban a specific champion if they anticipate that champion would be a major threat. Banning the champion prevents the enemy team from playing it.</p>
+
+<p>Here’s a detailed explanation of how this process (usually) works:</p>
+
+<ol>
+  <li><strong>Pick Intent (15s)</strong>: Players select their intended picks to show their team.</li>
+  <li><strong>Banning Phase (27s)</strong>: All players simultaneously ban a champion from selection, opponents’ bans are not revealed.</li>
+  <li><strong>Ban Reveal (5s)</strong>: Bans are revealed to all teams. It is possible for both teams to ban the same champion.</li>
+  <li><strong>Champion Selection (27s in 6 turns)</strong>: One team is allowed to make the first pick, then teams alternate and pick two at a time until each player has selected. No champion can be selected more than once in a game.</li>
+  <li><strong>Finalization (30s)</strong>: There is an opportunity to trade champions between teammates, both members must own both champions involved. One player can initiate the trade, and the other accepts to trade.</li>
+</ol>
+
+<p>Let’s start with the assumption that each team gets 5 bans each. So 10 bans total.</p>
+
+<p>We  create an ML model to predict the best team compositions based on inputs. Therefore, if a player picks (for example) Lee Sin, our model  be able to respond to this input and suggest counter-picks (meaning, champions whose win percentage / win rate is very high against LeeSin), also considering possible synergies with teammates.</p>
+
+<p>How about our training data? For this set, we wouldn’t want to include decisions made by less-skilled players, so we would want to only include data from professional players in our initial dataset.</p>
+
+<p>To do this, let’s only consider players in the Challenger, Grand Master, and Master leagues for regions all over the world. Ideally, this would be a collection of players above Master’s ELO and use their matches as reference.
+So, with this idea in mind, let’s explore the API and see if it can help us in this.</p>
+
+<h2 id="exploring-the-api--extracting-data">Exploring the API / Extracting Data</h2>
+
+<p>The standard development API key from Riot Games allows us to explore all 57 endpoints available. In this set of endpoints, I found an endpoint that can fetch Challenger players in a region, as well as Grandmaster and Master players, so I used this endpoint.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">get_top_players</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span> <span class="n">connection</span><span class="p">):</span>
+	<span class="k">assert</span> <span class="n">region</span> <span class="ow">in</span> <span class="n">request_regions</span>
+	<span class="k">assert</span> <span class="n">queue</span> <span class="ow">in</span> <span class="p">[</span><span class="s">'RANKED_SOLO_5x5'</span><span class="p">,</span> <span class="s">'RANKED_FLEX_SR'</span><span class="p">,</span> <span class="s">'RANKED_FLEX_TT'</span><span class="p">]</span>
+
+	<span class="n">total_users_to_insert</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="c1"># master, grandmaster and challenger endpoints
+</span>	<span class="n">request_urls</span> <span class="o">=</span> <span class="p">[</span>
+		<span class="s">'https://{}.api.riotgames.com/lol/league/v4/challengerleagues/by-queue/{}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span>
+			<span class="n">region</span><span class="p">,</span>
+			<span class="n">queue</span>
+		<span class="p">),</span>
+		<span class="s">'https://{}.api.riotgames.com/lol/league/v4/grandmasterleagues/by-queue/{}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span>
+			<span class="n">region</span><span class="p">,</span>
+			<span class="n">queue</span>
+		<span class="p">),</span>
+		<span class="s">'https://{}.api.riotgames.com/lol/league/v4/masterleagues/by-queue/{}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span>
+			<span class="n">region</span><span class="p">,</span>
+			<span class="n">queue</span>
+		<span class="p">)</span>
+	<span class="p">]</span>
+	
+	<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+		<span class="s">"User-Agent"</span><span class="p">:</span> <span class="s">"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0"</span><span class="p">,</span>
+		<span class="s">"Accept-Language"</span><span class="p">:</span> <span class="s">"en-US,en;q=0.5"</span><span class="p">,</span>
+		<span class="s">"Accept-Charset"</span><span class="p">:</span> <span class="s">"application/x-www-form-urlencoded; charset=UTF-8"</span><span class="p">,</span>
+		<span class="s">"Origin"</span><span class="p">:</span> <span class="s">"https://developer.riotgames.com"</span><span class="p">,</span>
+		<span class="s">"X-Riot-Token"</span><span class="p">:</span> <span class="n">api_key</span>
+	<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>In this screenshot, I create a set of request URLs to get challenger, grandmaster, and master players. I want to get all players in all available servers, as well as all queue types. So I  focus on getting data from Solo Queue (where a player can only play together or with a duo partner, and the remainder of the team is composed of random teammates) and Flex Queue (where teams of up to 5 people can be built).</p>
+
+<p>In order to expand my initial dataset I firstly considered getting all players above Master’s ELO, but as my dataset grew, I had enough active players, so after a while I decided to only consider new challenger players as an addition to my player collection.</p>
+
+<p>Note that if you want to reproduce this code, you  need your own API key and insert it as a header parameter.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">request_urls</span><span class="p">:</span>
+	<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">response</span><span class="p">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="k">print</span><span class="p">(</span><span class="s">'Region: {} | Tier: {} | Queue: {} | Total Players: {}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">response</span><span class="p">.</span><span class="n">json</span><span class="p">()[</span><span class="s">'tier'</span><span class="p">],</span>
+				<span class="n">response</span><span class="p">.</span><span class="n">json</span><span class="p">()[</span><span class="s">'queue'</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="p">.</span><span class="n">json</span><span class="p">()[</span><span class="s">'entries'</span><span class="p">])))</span>
+		<span class="k">except</span> <span class="nb">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+			<span class="k">pass</span>
+		<span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">response</span><span class="p">.</span><span class="n">json</span><span class="p">()[</span><span class="s">'entries'</span><span class="p">]:</span>
+			<span class="k">try</span><span class="p">:</span>
+				<span class="n">y</span><span class="p">[</span><span class="s">'tier'</span><span class="p">]</span> <span class="o">=</span> <span class="n">response</span><span class="p">.</span><span class="n">json</span><span class="p">()[</span><span class="s">'tier'</span><span class="p">]</span>
+				<span class="n">y</span><span class="p">[</span><span class="s">'request_region'</span><span class="p">]</span> <span class="o">=</span> <span class="n">region</span>
+				<span class="n">y</span><span class="p">[</span><span class="s">'queue'</span><span class="p">]</span> <span class="o">=</span> <span class="n">queue</span>
+				<span class="n">y</span><span class="p">[</span><span class="s">'puuid'</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_summoner_information</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="s">'summonerName'</span><span class="p">],</span> <span class="n">region</span><span class="p">)</span> <span class="c1"># insert their puuid as well.
+</span>				<span class="n">total_users_to_insert</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+			<span class="k">except</span> <span class="nb">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+				<span class="k">pass</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="k">print</span><span class="p">(</span><span class="s">'Request error (@get_top_players). HTTP code {}: {}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">response</span><span class="p">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">response</span><span class="p">.</span><span class="n">json</span><span class="p">()))</span>
+		<span class="k">continue</span>
+
+	<span class="k">print</span><span class="p">(</span><span class="s">'Total users obtained in region {} and queue {}: {}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">total_users_to_insert</span><span class="p">)))</span>
+
+</code></pre></div></div>
+
+<p>In this code, I make the requests using the requests Python library, and process the outputs by parsing the response into JSON and traversing through the JSON object.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Insert into the database.
+</span><span class="n">soda</span> <span class="o">=</span> <span class="n">connection</span><span class="p">.</span><span class="n">getSodaDatabase</span><span class="p">()</span>
+
+<span class="c1"># this  open an existing collection, if the name is already in use
+</span><span class="n">collection_summoner</span> <span class="o">=</span> <span class="n">soda</span><span class="p">.</span><span class="n">createCollection</span><span class="p">(</span><span class="s">'summoner'</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<p>Finally, the last step is to insert this information in the database. I used an Autonomous JSON Database for this, since I didn’t want to bother with processing JSON objects too much. If you have experience with both relational and non-relational databases, you probably know it’s very complex to work with JSON objects and store them in a relational database schema. It’s much better to use a non-relational approach for this. I also didn’t want to bother with database performance, so that’s why I chose Oracle’s Autonomous JSON DB. (It’s very convenient in this case because it was really easy to setup and you can configure some visualizations in the future for your data which are publicly available through a URL. I definitely recommend checking out the advantages of the Autonomous JSON Database in more detail <a href="https://blogs.oracle.com/jsondb/autonomous-json-database">here</a>.</p>
+
+<p>In order to use Oracle’s Autonomous JSON DB, we use the SODA protocol (Simple Oracle Document Access). To find out more and to read about the library I used for this step above, visit <a href="https://cx-oracle.readthedocs.io/en/latest/user_guide/soda.html">this user guide</a>.</p>
+
+<p>The connection parameters for the database have been established in a config.yaml file with the following structure:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="na">riot_api_key</span><span class="pi">:</span> <span class="s">apikey_123123123</span>
+ <span class="na">db</span><span class="pi">:</span>
+<span class="err"> 	</span><span class="na">username</span><span class="pi">:</span> <span class="s">myuser</span>
+ <span class="err">	</span><span class="s">password</span><span class="err">:</span> <span class="s">mypw</span>
+
+</code></pre></div></div>
+
+<p>In order to use this database’s username and password in the code, information for the Data Source Name needs to be passed. Connecting to the Autonomous JSON database requires three things: the username, password, and DSN, which contains the URL and port of the database to connect to. To find out more about how to get your Python code to run and be able to connect into your own Autonomous JSON database, please refer to the <a href="https://cx-oracle.readthedocs.io/en/latest/user_guide/connection_handling.html">official documentation for the cx_Oracle library</a>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Insert the users.
+</span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">total_users_to_insert</span><span class="p">:</span>
+	<span class="n">qbe</span> <span class="o">=</span> <span class="p">{</span><span class="s">'summonerId'</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="s">'summonerId'</span><span class="p">]}</span>
+	<span class="n">x</span><span class="p">[</span><span class="s">'request_region'</span><span class="p">]</span> <span class="o">=</span> <span class="n">region</span>
+	<span class="n">x</span><span class="p">[</span><span class="s">'queue'</span><span class="p">]</span> <span class="o">=</span> <span class="n">queue</span>
+	<span class="c1"># We get the PUUID for the user in case they change their name.
+</span>	<span class="n">overall_region</span><span class="p">,</span> <span class="n">tagline</span> <span class="o">=</span> <span class="n">determine_overall_region</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
+	<span class="n">x</span><span class="p">[</span><span class="s">'puuid'</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_puuid</span><span class="p">(</span><span class="n">overall_region</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="s">'summonerName'</span><span class="p">],</span> <span class="n">tagline</span><span class="p">)</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="n">collection_summoner</span><span class="p">.</span><span class="n">insertOneAndGet</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+		<span class="n">time</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># rate limiting purposes
+</span>	<span class="k">except</span> <span class="n">cx_Oracle</span><span class="p">.</span><span class="n">IntegrityError</span><span class="p">:</span>
+		<span class="k">print</span><span class="p">(</span><span class="s">'Summoner {} already inserted'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s">'summonerName'</span><span class="p">]))</span>
+		<span class="k">continue</span>
+	<span class="k">print</span><span class="p">(</span><span class="s">'Inserted new summoner: {} in region {}, queue {}'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s">'summonerName'</span><span class="p">],</span> <span class="n">region</span><span class="p">,</span> <span class="n">queue</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>Here I inserted the player’s data into a collection called summoner.</p>
+
+<p>This collection  store all the players’ identifying information. Note that in order to unequivocally identify a player or <em>summoner</em> as we  call them from now on, a summoner name is not enough. Why? Because players can change their summoner name in the Riot Games store, so storing their username would not guarantee the access to their data permanently. Therefore, to identify users, we make an additional API call to get the PUUID (Personal UUID) for all players so that in case these users change username, we  still be able to use their PUUIDs to get additional information about them.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"tier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CHALLENGER"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"veteran"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"wins"</span><span class="p">:</span><span class="w"> </span><span class="mi">229</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"request_region"</span><span class="p">:</span><span class="w"> </span><span class="s2">"br1"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"rank"</span><span class="p">:</span><span class="w"> </span><span class="s2">"I"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"inactive"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"summonerId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dKMYAJhqPpBuI9hSfIon_a4zSbtCwTFep-DA6Lq9YwqlIQ"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"hotStreak"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"queue"</span><span class="p">:</span><span class="w"> </span><span class="s2">"RANKED_SOLO_5x5"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"losses"</span><span class="p">:</span><span class="w"> </span><span class="mi">198</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"freshBlood"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"puuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"aRjqIYDtBMBU2j-8EfHY6dJ0RZ9TqXgWLeNvpcjRWlCBaP8HGBAWFRAiehRM4Jo-lgJXXrjTCOcIKg"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"summonerName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Qats"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"leaguePoints"</span><span class="p">:</span><span class="w"> </span><span class="mi">922</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span></code></pre></div></div>
+
+<p>This is an example of data obtained for a European challenger player and their associated data. We can store this information efficiently in the <em>summoner</em> collection with a schema like this:</p>
+
+<p><img src="assets/summoner_schema.png" alt="Summoner Schema" /></p>
+
+<p>We  primarily care about the summoner’s PUUID and their request region in order to know the geographical location of the player and make requests to the Riot Games API accordingly.</p>
+
+<p>And, what is the kind of information that we want from our extracted players? Well, in reality we wouldn’t want to get summoners’ information above a Masters’ ELO if we wouldn’t use this data somewhere else, or to produce something useful for our model. So, if we want to predict optimal team compositions, we need some League games to analyze.</p>
+
+<p>After looking into the API a bit more, I found an endpoint which extracts the latest number of matches played by any summoner at any time (the limit for every request is 100, but we can use pagination to chain several requests and retrieve many more games). We  store these match IDs into an auxiliary collection in order to further process them. We could do this in only one step, but since this is a data mining process designed to run for long periods of time (even 24 hours a day), I decided that it would be best to simplify and use highly decoupled functions, each separate from the other.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"match_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"BR1_2133968346"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span></code></pre></div></div>
+
+<p>So, we insert only these match IDs for further processing into an auxiliary collection called <em>match</em>.</p>
+
+<h2 id="where-is-this-going">Where is this going?</h2>
+<p>Now that we have our match IDs downloaded into our match collection, we need to analyze what information to extract from a match. Looking at the API endpoint, I found that  there are huge amounts of information for every match. Ideally, we would like to have, at least, the following information from every match:</p>
+
+<ul>
+  <li>A match identifier, so that we don’t insert the same match twice into our dataset</li>
+  <li>Each team’s compositions</li>
+  <li>Each team’s bans</li>
+  <li>The outcome of the game (win or loss)</li>
+  <li>
+    <p>Additionally, we can also calculate the outcome of each one of the matchups.</p>
+
+    <p>For example, calculate whether the player in middle lane lost their own matchup against the enemy middle laner, and so on. This can also be useful to create another ML model, which  consider individual matchups and make predictions to help out in the individual component of a match.</p>
+  </li>
+</ul>
+
+<p>In the end, we would like to feed a player’s champion into the model, and the model  give us the best possible choices (either for the ally or enemy team). So, we would tell the model something like: “I want to know the best synergy to pick together with X champion and I also want to know their worst matchups.”</p>
+
+<p>We  start exploring this in the third article in this series, where we  dive deep into AI code on how to create these models, train them and improve them.</p>
+
+<p>I hope to see you in the next article of this series, where together we :</p>
+
+<ul>
+  <li>Establish a stable architecture for our code</li>
+  <li>Optimize our code, which is good, but once the dataset grows, the code starts being inefficient</li>
+  <li>Process our data further and get it ready for our ML pipeline</li>
+</ul>
+
+<h2 id="datasets">DataSets</h2>
+
+<p>I have published my datasets into Kaggle for everyone to use, in case you don’t have as much as time to complement them and process them. The process of data collection is arduous and took me a very long time since the beginning of this project. I’ll keep updating the datasets with the progress I make in the following articles. You can find them in here:</p>
+
+<ul>
+  <li><a href="https://www.kaggle.com/jasperan/league-of-legends-1000000-master-matches">Master+ Matches Collection (1.000.000+)</a></li>
+  <li><a href="https://www.kaggle.com/jasperan/league-of-legends-master-players">Master+ Players Collection (30.000+)</a></li>
+  <li><a href="https://www.kaggle.com/jasperan/league-of-legends-1v1-matchups-results">Master+ Matchups Collection (1.000.000+)</a> (a dataset that we’ll use in the forthcoming articles).</li>
+</ul>
+
+<p>Stay tuned for the next articles!</p>
+
+<h2 id="how-can-i-get-started-on-oci">How can I get started on OCI?</h2>
+
+<p>Remember that you can always sign up for free with OCI! Your Oracle Cloud account provides a number of Always Free services and a Free Trial with US$300 of free credit to use on all eligible OCI services for up to 30 days. These Always Free services are available for an <strong>unlimited</strong> period of time. The Free Trial services may be used until your US$300 of free credits are consumed or the 30 days has expired, whichever comes first. You can <a href="https://signup.cloud.oracle.com/">sign up here for free</a>.</p>
+
+<h2 id="license">License</h2>
+
+<p>Copyright (c) 2021 Oracle and/or its affiliates.</p>
+
+<p>Licensed under the Universal Permissive License (UPL), Version 1.0.</p>
+
+<p>See <a href="../LICENSE">LICENSE</a> for more details.</p>
+
+<p>Written by <a href="https://github.com/jasperan">jasperan</a>, edited by <a href="https://github.com/GreatGhostsss">GreatGhostsss</a></p>
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/api">api</a>
+            <a class="animated-link tag" href="/topics/gaming">gaming</a>
+            <a class="animated-link tag" href="/topics/oci">oci</a>
+            <a class="animated-link tag" href="/topics/always-free">always-free</a>
+            <a class="animated-link tag" href="/topics/python">python</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Ignacio Martínez</h3>
+    
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/ignacio-g-martinez" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-10-26T12:56:00+00:00">October 26, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

@@ -1,0 +1,391 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Introduction to Steampipe on Oracle Cloud Infrastructure">
+    
+    <meta itemprop="datePublished" content="2021-11-24T10:56:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Introduction to Steampipe on Oracle Cloud Infrastructure
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        
+<picture class="alignright">
+                <source srcset="assets/pexels-gabriela-palai-507410.jpg 1x" />
+                <img loading="lazy" width="800" height="534" src="assets/pexels-gabriela-palai-507410.jpg" data-original="assets/pexels-gabriela-palai-507410.jpg" alt="Steam train on bridge" title="Steam train on bridge" />
+            </picture>
+
+<p><em>Photo credit: Photo by <a href="https://www.pexels.com/@gabriela-palai-129458?utm_content=attributionCopyText&amp;utm_medium=referral&amp;utm_source=pexels">Gabriela Palai</a> from <a href="https://www.pexels.com/photo/train-with-smoke-507410/?utm_content=attributionCopyText&amp;utm_medium=referral&amp;utm_source=pexels">Pexels</a></em></p>
+
+<blockquote class="notice">
+  <p><strong>Note:</strong> This post is the author’s “notes from the field,” a personal exploration of the topic, filled with all of the journey’s pitfalls and little “Aha!” moments. It’s not meant to be a tutorial in the strictest sense, but to illustrate the patterns and troubleshooting mindset it sometimes takes to successfully run a thing. Follow along and enjoy.</p>
+</blockquote>
+
+<h2 id="so-what-is-steampipe">So, what is Steampipe?</h2>
+
+<p><a href="https://steampipe.io/">Steampipe</a> is an open source project from <a href="https://turbot.com/">Turbot</a> that was introduced in the early days of 2021. It was instantly notable for it’s intuitive interface and versatile toolset for running SQL queries against cloud resources.</p>
+
+<p>It supports multiple cloud providers (plugins), a Postgres-like SQL query language, and provides an interactive CLI to navigate through resources.</p>
+
+<p>I had the opportunity to perform an evaluation of Steampipe, and  wanted to share some of my experiences working with it and the Oracle Cloud Infrastructure (<abbr title="Oracle Cloud Infrastructure">OCI</abbr>) plugin. The tool seems to be growing quickly, so I’ll try to link to their excellent documentation whenever I have a chance.</p>
+
+<p><strong>Reference:</strong> See the <a href="https://steampipe.io/blog/introducing-steampipe">official Steampipe introduction</a> for more background.</p>
+
+<h2 id="getting-started">Getting started</h2>
+
+<p>Installation instructions for Windows, Mac, and Linux are provided on the <a href="https://steampipe.io/downloads">Steampipe webpage</a>. The instructions walk you through using Homebrew if you’re on a Mac, an installer script for Linux, and Windows Subsystem for Linux with Ubuntu on Windows systems.</p>
+
+<h2 id="the-oci-plugin">The <abbr title="Oracle Cloud Infrastructure">OCI</abbr> plugin</h2>
+
+<p>Steampipe has a plugin which <a href="https://hub.steampipe.io/plugins/turbot/oci">adds support for Oracle Cloud Infrastructure</a> (<abbr title="Oracle Cloud Infrastructure">OCI</abbr>).</p>
+
+<p>You can install the plugin using:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">steampipe plugin install oci
+</span></code></pre></div></div>
+
+<p>Once you have the plugin installed, you’re ready to run queries.</p>
+
+<p><strong>References:</strong></p>
+
+<ul>
+  <li><strong><abbr title="Oracle Cloud Infrastructure">OCI</abbr> plungin -</strong> To learn more about the <abbr title="Oracle Cloud Infrastructure">OCI</abbr> plugin, see the <a href="https://hub.steampipe.io/plugins/turbot/oci/tables">documentation and examples at the table level</a>.</li>
+  <li><strong>tables -</strong> You can also learn more about the tables available via the plugin using the <code class="language-plaintext highlighter-rouge">.tables</code> and <code class="language-plaintext highlighter-rouge">.inspect</code> commands in the interactive shell.</li>
+</ul>
+
+<h2 id="basic-functionality">Basic functionality</h2>
+
+<p>The Steampipe <a href="https://steampipe.io/docs">documentation</a> is a thorough reference to the commands and query syntax. I’m no SQL expert, and so I’ll just touch on a few highlights to help you get started.</p>
+
+<h3 id="select-content-from-a-table">Select content from a table</h3>
+
+<p>The query syntax can start as simple as a “select thing from table” and extend far beyond that. For example:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">select display_name from oci_kms_vault
+</span></code></pre></div></div>
+
+<p>Your output should look something like:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">+-----------------------+
+| display_name          |
++-----------------------+
+| oci-vault1       |
+| oci-vault2       |
+| oci-myvault      |
+</span></code></pre></div></div>
+
+<h3 id="run-queries-from-an-external-file">Run queries from an external file</h3>
+
+<p>One of the great features of Steampipe is that you can store queries in external files and then run the queries by specifying the filename on the command line.</p>
+
+<p><strong>Example:</strong></p>
+
+<p>Let’s take a look at an example SQL file from the <abbr title="Oracle Cloud Infrastructure">OCI</abbr> Compliance mod (more on this later).</p>
+
+<ol>
+  <li>
+    <p>Let’s create a file <code class="language-plaintext highlighter-rouge">objectstorage_bucket_public_access_blocked.sql</code> with the following content:</p>
+
+    <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   <span class="k">select</span>
+     <span class="c1">-- Required Columns</span>
+     <span class="n">a</span><span class="p">.</span><span class="n">id</span> <span class="k">as</span> <span class="n">resource</span><span class="p">,</span>
+     <span class="k">case</span>
+       <span class="k">when</span> <span class="n">public_access_type</span> <span class="k">like</span> <span class="s1">'Object%'</span> <span class="k">then</span> <span class="s1">'alarm'</span>
+       <span class="k">else</span> <span class="s1">'ok'</span>
+     <span class="k">end</span> <span class="k">as</span> <span class="n">status</span><span class="p">,</span>
+     <span class="k">case</span>
+       <span class="k">when</span> <span class="n">public_access_type</span> <span class="k">like</span> <span class="s1">'Object%'</span> <span class="k">then</span> <span class="n">a</span><span class="p">.</span><span class="n">title</span> <span class="o">||</span> <span class="s1">' publicly accessible.'</span>
+       <span class="k">else</span> <span class="n">a</span><span class="p">.</span><span class="n">title</span> <span class="o">||</span> <span class="s1">' not publicly accessible.'</span>
+     <span class="k">end</span> <span class="k">as</span> <span class="n">reason</span><span class="p">,</span>
+     <span class="c1">-- Additional Dimensions</span>
+     <span class="n">region</span><span class="p">,</span>
+     <span class="n">coalesce</span><span class="p">(</span><span class="k">c</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">'root'</span><span class="p">)</span> <span class="k">as</span> <span class="n">compartment</span>
+   <span class="k">from</span>
+     <span class="n">oci_objectstorage_bucket</span> <span class="k">as</span> <span class="n">a</span>
+     <span class="k">left</span> <span class="k">join</span> <span class="n">oci_identity_compartment</span> <span class="k">as</span> <span class="k">c</span> <span class="k">on</span> <span class="k">c</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">a</span><span class="p">.</span><span class="n">compartment_id</span><span class="p">;</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Run this query on the command line:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">   steampipe query objectstorage_bucket_public_access_blocked.sql
+</span></code></pre></div>    </div>
+
+    <p>Your output will look something like:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">   +-----------------------------------------------------------------------------------+--------+---------------------------------------------------+--------------+---------------+
+   | resource                                                                          | status | reason                                            | region       | compartment   |
+   +-----------------------------------------------------------------------------------+--------+---------------------------------------------------+--------------+---------------+
+</span><span class="gp">   | ocid1.bucket.oc1.iad.&lt;sanitized&gt;</span><span class="w"> </span>| ok     | jon-test-rep not publicly accessible.             | us-ashburn-1 | mytest02-dev  |
+<span class="gp">   | ocid1.bucket.oc1.phx.&lt;sanitized&gt;</span><span class="w"> </span>| ok     | bootstrap_testing not publicly accessible.        | us-phoenix-1 | mytest02-dev  |
+<span class="gp">   | ocid1.bucket.oc1.phx.&lt;sanitized&gt;</span><span class="w"> </span>| ok     | Inventory not publicly accessible.                | us-phoenix-1 | root          |
+<span class="gp">   | ocid1.bucket.oc1.phx.&lt;sanitized&gt;</span><span class="w"> </span>| ok     | bucket-20210428-0949 not publicly accessible.     | us-phoenix-1 | mytest03-dev  |
+<span class="gp">   | ocid1.bucket.oc1.phx.&lt;sanitized&gt;</span><span class="w"> </span>| ok     | mybucket not publicly accessible.                 | us-phoenix-1 | mytest01-dev  |
+<span class="go">   +-----------------------------------------------------------------------------------+--------+---------------------------------------------------+--------------+---------------+
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<h3 id="interactive-steampipe-shell">Interactive Steampipe shell</h3>
+
+<p>You can also run an interactive Steampipe shell, which offers more tools for navigating tables as well as tab completion:</p>
+
+<ol>
+  <li>Run the <code class="language-plaintext highlighter-rouge">steampipe query</code> command to enter the shell.</li>
+  <li>From the shell, you can run queries by typing them out, or by copying and pasting them from an external source.</li>
+</ol>
+
+<p>Other helpful shell commands (note that they all start with a dot):</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">.inspect</code> - inspect the contents of a table</li>
+  <li><code class="language-plaintext highlighter-rouge">.tables</code> - list the tables available to query</li>
+  <li><code class="language-plaintext highlighter-rouge">.output</code> - change the output format (JSON, CSV, or table)</li>
+</ul>
+
+<p><strong>Example -</strong> opening the CLI and listing the available tables:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">steampipe query
+</span></code></pre></div></div>
+
+<p>Your output should look something like:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">Welcome to Steampipe v0.9.0
+For more information, type .help
+</span><span class="gp">&gt;</span><span class="w"> </span>.tables
+<span class="gp"> ==&gt;</span><span class="w"> </span>oci
+<span class="go">+--------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+| table                                      | description                                                                                                                    |
++--------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+| oci_apigateway_api                         | OCI Apigateway Api                                                                                                             |
+| oci_autoscaling_auto_scaling_configuration | OCI Auto Scaling Configuration                                                                                                 |
+| oci_cloud_guard_configuration              | OCI Cloud Guard Configuration                                                                                                  |
+| oci_cloud_guard_detector_recipe            | OCI Cloud Guard Detector Recipe                                                                                                |
+| oci_cloud_guard_managed_list               | OCI Cloud Guard Managed List                                                                                                   |
+| oci_cloud_guard_responder_recipe           | OCI Cloud Guard Responder Recipe                                                                                               |
+| oci_cloud_guard_target                     | OCI Cloud Guard Target                                                                                                         |
+| oci_core_boot_volume_backup                | OCI Core Boot Volume Backup                                                                                                    |
+| oci_core_dhcp_options                      | OCI Core DHCP Options
+</span></code></pre></div></div>
+
+<h2 id="using-mods-oci-compliance">Using mods (<abbr title="Oracle Cloud Infrastructure">OCI</abbr> compliance)</h2>
+
+<p>In general, mods are a collection of SQL scripts built for custom reporting. Compliance is an important aspect of what <a href="https://docs.oracle.com/en/solutions/pci-compliant-webapp-terraform">my team works on</a>, so that made finding an <code class="language-plaintext highlighter-rouge">oci_compliance</code> module an exciting discovery. The <code class="language-plaintext highlighter-rouge">oci_compliance</code> mod has Center for Internet Security (CIS) compliance reporting built on top of Steampipe, and that just scratches the surface of its possibilities.</p>
+
+<p><strong>References:</strong></p>
+
+<ul>
+  <li>
+    <p>Steampipe mods <a href="https://hub.steampipe.io/mods">can be found here</a>.</p>
+  </li>
+  <li>
+    <p>For additional information, including examples and instructions, be sure to visit <a href="https://hub.steampipe.io/mods/turbot/oci_compliance">the oci_compliance page</a>.</p>
+  </li>
+</ul>
+
+<h3 id="install-the-mod">Install the mod</h3>
+
+<p>Let’s install the mod and run a check for a specific control in this example:</p>
+
+<ol>
+  <li>
+    <p>Install the mod by running:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">   git clone https://github.com/turbot/steampipe-mod-oci-compliance.git
+</span></code></pre></div>    </div>
+
+    <p>Your output should look something like:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">   Cloning into 'steampipe-mod-oci-compliance'...
+   remote: Enumerating objects: 254, done.
+   remote: Counting objects: 100% (254/254), done.
+   remote: Compressing objects: 100% (184/184), done.
+   remote: Total 254 (delta 121), reused 155 (delta 61), pack-reused 0
+   Receiving objects: 100% (254/254), 468.38 KiB | 949.00 KiB/s, done.
+   Resolving deltas: 100% (121/121), done.
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Check for a specific control:</p>
+    <ol>
+      <li>cd steampipe-mod-oci-compliance/</li>
+      <li>
+        <p>Run the following command:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">      steampipe check control.cis_v110_2_1
+</span></code></pre></div>        </div>
+
+        <p>Your output should look something like:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">   + 2.1 Ensure no security lists allow ingress from 0.0.0.0/0 to port 22 ................................................................................... 26 / 77 [==========]
+     |
+     ALARM: Default Security List for ca_vcn contains 1 ingress rule(s) allowing SSH from 0.0.0.0/0. ......................................................... us-ashburn-1 ca_dev
+     ALARM: Default Security List for Inventory_VCN contains 1 ingress rule(s) allowing SSH from 0.0.0.0/0. .................................................... us-phoenix-1 root
+     ALARM: Default Security List for Primary VCN contains 1 ingress rule(s) allowing SSH from 0.0.0.0/0. ............................................. us-phoenix-1 oci-test
+     ALARM: Bastion Security List contains 1 ingress rule(s) allowing SSH from 0.0.0.0/0. ............................................................. us-phoenix-1 oci-test
+     OK   : App Security List ingress restricted for SSH from 0.0.0.0/0. .............................................................................. us-phoenix-1 oci-test
+     OK   : Wazuh Security List ingress restricted for SSH from 0.0.0.0/0. ............................................................................ us-phoenix-1 oci-test
+     OK   : DMZ Security List - Egress ingress restricted for SSH from 0.0.0.0/0. ..................................................................... us-phoenix-1 oci-test
+     OK   : DMZ Security List - Ingress ingress restricted for SSH from 0.0.0.0/0. .................................................................... us-phoenix-1 oci-test
+
+   *** OUTPUT CUT ***
+</span></code></pre></div>        </div>
+      </li>
+    </ol>
+  </li>
+</ol>
+
+<h2 id="wrapping-up">Wrapping Up</h2>
+
+<p>Steampipe shows tremendous potential. It’s definitely easier to use Steampipe to query <abbr title="Oracle Cloud Infrastructure">OCI</abbr> resources than it is to remember complex command line options. Results come back quickly, especially with a well-tuned query, and modules provide an additional layer of reporting and glue for the data. I look forward to working with Steampipe and adding this tool to my toolbox.</p>
+
+<p>To explore more information about development with Oracle products:</p>
+
+<ul>
+  <li><a href="https://developer.oracle.com/">Oracle Developers Portal</a></li>
+  <li><a href="https://www.oracle.com/cloud/">Oracle Cloud Infrastructure</a></li>
+</ul>
+
+<!--- links -->
+
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/open-source">open-source</a>
+            <a class="animated-link tag" href="/topics/steampipe">steampipe</a>
+            <a class="animated-link tag" href="/topics/iac">iac</a>
+            <a class="animated-link tag" href="/topics/devops">devops</a>
+            <a class="animated-link tag" href="/topics/get-started">get-started</a>
+            <a class="animated-link tag" href="/topics/field-notes">field-notes</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Jon DeCamp</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Jon has a passion for infrastructure automation and improving the lives of his customers.</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/jondecamp" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/jondecamp" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-11-24T10:56:00+00:00">November 24, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

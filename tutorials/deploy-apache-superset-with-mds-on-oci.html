@@ -1,0 +1,304 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Deploy Apache Superset with MySQL Database Service on Oracle Cloud Infrastructure">
+    
+    <meta itemprop="datePublished" content="2021-10-20T09:18:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Deploy Apache Superset with MySQL Database Service on Oracle Cloud Infrastructure
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <p>It’s easy to deploy solutions on OCI (Oracle Cloud Infrastructure) using Terraform and Resource Manager’s Stack. I’ve published several resources available on <a href="https://lefred.be/deploy-to-oci/">this page</a>.</p>
+
+<p>Today we will see how easy it is to deploy Apache Superset on OCI using MySQL Data Service.</p>
+
+<p>Apache Superset is an open source BI, Reporting, Charting tool that competes with Tableau, Looker, etc.  For a list of companies that have deployed Superset, see <a href="https://github.com/apache/superset/blob/master/RESOURCES/INTHEWILD.md">this page</a>.</p>
+
+<p>Superset is loaded with options that make it easy for users of all skill sets to explore and visualize their data, from simple line charts to highly detailed geospatial charts.</p>
+
+<p>For a gallery of available charts, <a href="https://superset.apache.org/gallery">go here</a>.</p>
+
+<p>MySQL can be used as a backend to store the needed information related to the platform (users, settings, dashboards, …) , this represents 55 tables. MySQL can also be used as source for the data visualization.</p>
+
+<h2 id="preparation">Preparation</h2>
+
+<p>The easiest way to install Apache Superset on OCI is to click this button:</p>
+
+<p><a href="https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/lefred/oci-superset-mds/releases/download/v1.0.0/stack_superset_mds.zip"><picture class="aligncenter">
+                <source srcset="assets/mds_superset/deploy_on_oci.svg 1x" />
+                <img loading="lazy" src="assets/mds_superset/deploy_on_oci.svg" data-original="assets/mds_superset/deploy_on_oci.svg" />
+            </picture></a></p>
+
+<p>You can also use the Terraform modules available on <a href="https://github.com/lefred/oci-superset-mds">this GitHub repo</a>.</p>
+
+<p>If you use the Red Pill (by clicking on the image above), you will redirected to OCI’s Dashboard Resource Manager Stack:</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/01.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/01.webp" data-original="assets/mds_superset/01.webp" />
+            </picture>
+
+<p>You need to accept the Oracle Terms of Use and then the stack’s configuration will be loaded.</p>
+
+<p>Check that you are in the desired compartment and then click Next:</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/02.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/02.webp" data-original="assets/mds_superset/02.webp" />
+            </picture>
+
+<p>You will be redirected to the second screen, for variables configuration. Some variables are mandatory and self explanatory:</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/03.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/03.webp" data-original="assets/mds_superset/03.webp" />
+            </picture>
+
+<p>You also have the possibility to choose HA for MySQL DB instance, to load superset sample data (the deployment is then longer) and the Shape Selection. If you plan to use HeatWave on that instance, I recommend you to directly choose a HeatWave compatible Shape (default):</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/04.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/04.webp" data-original="assets/mds_superset/04.webp" />
+            </picture>
+
+<p>If you already have a VNC and/or a MDS instance you want to use, you can also use the existing OCI infrastructure you have previously deployed:</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/05.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/05.webp" data-original="assets/mds_superset/05.webp" />
+            </picture>
+
+<p>You need the OCIDs of all the existing resources.</p>
+
+<p>When you have performed all the selection you need, you can continue the process… Usually default should be good, you only require to add the MDS admin’s password and if this is the first Apache Superset deployment, I also recommend to load the sample data.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/06.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/06.webp" data-original="assets/mds_superset/06.webp" />
+            </picture>
+
+<h2 id="deployment">Deployment</h2>
+
+<p>The deployment will start, with the sample data load, and this takes approximately 30 minutes…</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/07.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/07.webp" data-original="assets/mds_superset/07.webp" />
+            </picture>
+
+<p>When ready, the status will change:</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/08.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/08.webp" data-original="assets/mds_superset/08.webp" />
+            </picture>
+
+<p>At the end of the logs section we already have the output variables we need to use to join our deployment:</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/09.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/09.webp" data-original="assets/mds_superset/09.webp" />
+            </picture>
+
+<p>And we can retrieve that info in the Outputs section too:</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/10.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/10.webp" data-original="assets/mds_superset/10.webp" />
+            </picture>
+
+<h2 id="apache-superset">Apache Superset</h2>
+
+<p>To reach the Apache Superset we just deployed, we paste the superset_public_ip‘s value on a browser and we use the superset_admin_username and superset_admin_password to connect:</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/11.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/11.webp" data-original="assets/mds_superset/11.webp" />
+            </picture>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/12.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/12.webp" data-original="assets/mds_superset/12.webp" />
+            </picture>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/13.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/13.webp" data-original="assets/mds_superset/13.webp" />
+            </picture>
+
+<p>Congratulations! Apache Superset is available and working on OCI with MySQL Database Service.</p>
+
+<p>If you want to connect to another MDS instance that you would use as a data source for some visualization graphs, you will need to be able to reach it (usually on the same VCN’s subnet or having routing between different VCN’s) and you must use the following syntax, as the MySQL Connector installed is mysql-connector-python:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mysql+mysqlconnector://&lt;login&gt;:&lt;password&gt;@&lt;mds IP&gt;:3306/&lt;schema_name&gt;
+</code></pre></div></div>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/14.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/14.webp" data-original="assets/mds_superset/14.webp" />
+            </picture>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/15.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/15.webp" data-original="assets/mds_superset/15.webp" />
+            </picture>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/16.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/16.webp" data-original="assets/mds_superset/16.webp" />
+            </picture>
+
+<picture class="aligncenter">
+                <source srcset="assets/mds_superset/17.webp 1x" />
+                <img loading="lazy" src="assets/mds_superset/17.webp" data-original="assets/mds_superset/17.webp" />
+            </picture>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Using OCI’s Resource Manager Stack (or Terraform) it is very easy to deploy Apache Superset on OCI using MySQL Database Service (MDS) as a backend.</p>
+
+<p>In a few minutes you have an Open Source Data Visualization solution that you can use with your MySQL Database Service instances.</p>
+
+<p>Enjoy OCI, MySQL and MySQL Database Service!</p>
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/data-management">data-management</a>
+            <a class="animated-link tag" href="/topics/front-end">front-end</a>
+            <a class="animated-link tag" href="/topics/mysql">mysql</a>
+            <a class="animated-link tag" href="/topics/oci">oci</a>
+            <a class="animated-link tag" href="/topics/analytics">analytics</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <a href="https:/lefred.be/"><h3 class="author__name" itemprop="name">lefred</h3></a>
+    
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/lefred" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/freddescamps" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/lefred" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-10-20T09:18:00+00:00">October 20, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

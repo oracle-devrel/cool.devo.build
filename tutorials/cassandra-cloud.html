@@ -1,0 +1,341 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Deploying Cassandra in Oracle Linux">
+    
+    <meta itemprop="datePublished" content="2021-12-03T19:45:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Deploying Cassandra in Oracle Linux
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <p><a href="https://cassandra.apache.org/_/index.html">Apache Cassandra</a> is a scalable, open-source NoSQL distributed database known for its high availability and compatibility with Oracle Cloud Infrastructure (OCI).</p>
+
+<p>This quick start guides you through configuring your environment to run Cassandra in OCI.</p>
+
+<p>It’s fun, we promise!</p>
+
+<p>For more information, see:</p>
+
+<ul>
+  <li><a href="https://docs.oracle.com/iaas/Content/GSG/Tasks/signingup.htm">Signing Up for Oracle Cloud Infrastructure</a></li>
+</ul>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<p>In order to successfully complete this tutorial, you will need to:</p>
+
+<ul>
+  <li>Have deployed a VM 2.1 with Oracle Linux 7.9 (OEL7) in OCI.</li>
+  <li>Have installed Oracle Linux 7.9 with pip3.6 by default.</li>
+  <li>Installed Python 3.6 or higher.</li>
+  <li>Have access to root, either directly or by using sudo.<br />
+By default in OCI, you are connected like an “opc” user with sudo privilege.</li>
+  <li>Have an Oracle Cloud Infrastructure Free Tier account. <a href="https://signup.cloud.oracle.com/?language=en&amp;sourceType=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted&amp;intcmp=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted">Start for Free</a>.</li>
+</ul>
+
+<h2 id="getting-started">Getting started</h2>
+
+<p>Let’s start with setting up the Python environment.</p>
+
+<h3 id="python-setup">Python setup</h3>
+
+<p>By default, OEL7 runs Python 3. In order to prepare us for the JupyterLab installation later in the guide, we’ll use pip to install virtualenv in this next section.</p>
+
+<h4 id="install-virtualenv">Install virtualenv</h4>
+
+<p>Virtualenv enables us to create isolated sandboxes to develop Python applications without running into module or library conflicts. It’s also super easy to install:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">sudo pip3.6 install virtualenv
+</span></code></pre></div></div>
+
+<p>With virtualenv installed, we can create a virtual environment and enable it.</p>
+
+<h4 id="create-an-environment-myvirtualenv">Create an environment <code class="language-plaintext highlighter-rouge">myvirtualenv</code></h4>
+
+<pre><code class="language-conosle">virtualenv -p /usr/bin/python3 myvirtualenv
+# Activate the env
+source myvirtualenv/bin/activate
+</code></pre>
+
+<h3 id="list-python-libraries-in-your-environment">List Python libraries in your environment</h3>
+
+<p>Running <code class="language-plaintext highlighter-rouge">pip3 list</code> will show which Python models we currently have installed:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">(myvirtualenv) [opc@lab1 ~]$</span><span class="w"> </span>pip3 list
+</code></pre></div></div>
+
+<p>Which should return output similar to:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">Package    Version
+---------- -------
+pip        21.1.3
+setuptools 57.1.0
+wheel      0.36.2
+</span><span class="gp">WARNING: You are using pip version 21.1.3;</span><span class="w"> </span>however, version 21.2.1 is available.
+<span class="go">You should consider upgrading via the '/home/opc/myvirtualenv/bin/python -m pip install --upgrade pip' command.
+</span></code></pre></div></div>
+
+<h4 id="upgrade-your-pip-environment-for-this-virtual-environment">Upgrade your pip environment for this virtual environment</h4>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">/home/opc/myvirtualenv/bin/python -m pip install --upgrade pip
+</span></code></pre></div></div>
+
+<h2 id="jupyterlab-setup">Jupyterlab setup</h2>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">pip3 install jupyterlab
+</span></code></pre></div></div>
+
+<h3 id="install-python-libraries-for-machine-learning-or-etl-process">Install Python libraries for Machine Learning or ETL Process</h3>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">pip install pandas
+pip install pandarallel
+pip install dask
+pip install seaborn
+pip install matplotlib
+pip install plotly
+
+pip install -lxml==4.6.3
+pip install selenium
+pip install beautifulsoup4
+
+pip install scikit-learn
+</span></code></pre></div></div>
+
+<h4 id="install-additional-python-libraries-for-kafka-and-web-server-access">Install additional Python libraries for Kafka and web server access</h4>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">pip install kafka-python (v2.0.0)
+pip install Flask
+pip install gunicorn
+</span></code></pre></div></div>
+
+<h3 id="install-extensions-for-jupyterlab-environment">Install extensions for JupyterLab environment</h3>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">pip install jupyter_contrib_nbextensions
+jupyter contrib nbextension install --user
+jupyter nbextension enable execute_time/ExecuteTime
+</span></code></pre></div></div>
+
+<h2 id="configure-jupyterlab-like-an-oel7-linux-service">Configure JupyterLab like an OEL7 Linux service</h2>
+
+<p>Create a script to automatically instantiate and reboot JupyterLab with user <code class="language-plaintext highlighter-rouge">opc</code>:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">vi /home/opc/launchjupyterlab.sh
+</span></code></pre></div></div>
+
+<h3 id="script-for-launchjupyterlabsh">Script for <code class="language-plaintext highlighter-rouge">launchjupyterlab.sh</code></h3>
+
+<p>Using the virtualenv, you can launch JupyterLab on a specific port (e.g., 8001) and listen via public IP:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">#</span><span class="o">!</span>/bin/bash
+<span class="go">
+</span><span class="gp">#</span><span class="w"> </span>Activate myvirtualenv Environment
+<span class="go">source myvirtualenv/bin/activate
+
+cd /home/opc
+
+</span><span class="gp">if [ "$</span>1<span class="s2">" = "</span>start<span class="s2">" ]
+</span><span class="go">then
+</span><span class="gp">nohup jupyter-lab --ip=0.0.0.0 --port=8001 &gt;</span><span class="w"> </span>./nohup.log 2&gt;&amp;1 &amp;
+<span class="gp">echo $</span><span class="o">!</span> <span class="o">&gt;</span> /home/opc/jupyter.pid
+<span class="go">else
+</span><span class="gp">kill $</span><span class="o">(</span><span class="nb">cat</span> /home/opc/jupyter.pid<span class="o">)</span>
+<span class="go">fi
+</span></code></pre></div></div>
+
+<p>Set the script to executable mode in order to be executed from the <em>jupyterlab</em> service:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">chmod 777 /home/opc/launchjupyterlab.sh
+</span></code></pre></div></div>
+
+<h3 id="connect-to-root-user">Connect to <code class="language-plaintext highlighter-rouge">root</code> user</h3>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">sudo -i
+</span></code></pre></div></div>
+
+<h3 id="create-a-script-to-startstop-jupyterlab-service">Create a script to start/stop <em>jupyterlab</em> service</h3>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">vi /etc/systemd/system/jupyterlab.service
+</span></code></pre></div></div>
+
+<h3 id="add-code-to-launch-the-script-launchjupyterlabsh-as-an-oci-user">Add code to launch the script <code class="language-plaintext highlighter-rouge">launchjupyterlab.sh</code> as an <code class="language-plaintext highlighter-rouge">oci</code> user</h3>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">[Unit]
+Description=Service to start jupyterlab for opc
+Documentation=
+[Service]
+User=opc
+Group=opc
+Type=forking
+WorkingDirectory=/home/opc
+ExecStart=/home/opc/launchjupyterlab.sh start
+ExecStop=/home/opc/launchjupyterlab.sh stop
+[Install]
+WantedBy=multi-user.target
+</span></code></pre></div></div>
+
+<h3 id="test-jupyterlab-service">Test <em>jupyterlab</em> service</h3>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">systemctl start jupyterlab
+systemctl status jupyterlab
+systemctl enable jupyterlab
+</span></code></pre></div></div>
+
+<h2 id="reboot-your-machine-for-a-final-check">Reboot your machine for a final check</h2>
+
+<p>Home stretch!</p>
+
+<ol>
+  <li>Reboot your machine to check if the JupyterLab script is enabled by default on port 8001.</li>
+  <li>
+    <p>Open port 8001 to your virtual machine VM 2.1 in order to access it using your Public IP:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">   firewall-cmd  --permanent --zone=public --list-ports
+   firewall-cmd --get-active-zones
+   firewall-cmd --permanent --zone=public --add-port=8001/tcp
+   firewall-cmd --reload
+</span></code></pre></div>    </div>
+
+    <blockquote class="notice">
+      <p><strong>Note:</strong> If you’re running directly on a virtual machine and have a browser installed, it should take you directly into the Jupyter environment.<br />
+Connection on port 8001: <code class="language-plaintext highlighter-rouge">http://xxx.xxx.xxx.xxx:8001/</code>.</p>
+    </blockquote>
+  </li>
+</ol>
+
+<p>You should now see the next Python Web environment <strong>JupyterLab</strong>.</p>
+
+<p>That’s it! Enjoy using Cassandra with OCI.</p>
+
+<h2 id="whats-next">What’s next</h2>
+
+<p>To explore more information about development with Oracle products:</p>
+
+<ul>
+  <li><a href="https://developer.oracle.com/">Oracle Developers Portal</a></li>
+  <li><a href="https://www.oracle.com/cloud/">Oracle Cloud Infrastructure</a></li>
+</ul>
+
+<!--- links -->
+
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/open-source">open-source</a>
+            <a class="animated-link tag" href="/topics/oci">oci</a>
+            <a class="animated-link tag" href="/topics/back-end">back-end</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name"></h3>
+    
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-12-03T19:45:00+00:00">December 3, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

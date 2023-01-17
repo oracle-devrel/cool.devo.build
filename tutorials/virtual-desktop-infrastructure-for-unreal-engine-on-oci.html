@@ -1,0 +1,397 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Virtual Desktop Infrastructure(VDI) for Unreal Engine 5 on Oracle Cloud Infrastructure with nVidia GPU">
+    
+    <meta itemprop="datePublished" content="2021-12-12T08:00:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Virtual Desktop Infrastructure(VDI) for Unreal Engine 5 on Oracle Cloud Infrastructure with nVidia GPU
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <p>In this blog you’ll learn how to set up Virtual Desktop Infrastructure on Oracle Cloud Infrastructure (OCI).</p>
+
+<p>A few weeks ago, Unreal Engine 5.1 was released. There are a lot of improvements and many new cool features that, for me, are making this release kind of of a big deal.</p>
+
+<p><a href="https://www.youtube.com/watch?v=FUGqzE6Je5c&amp;ab_channel=UnrealSensei"><figure class="">
+              <picture>
+                  <source srcset="img/UE5/UE5.png 1x" />
+                  <img loading="lazy" src="img/UE5/UE5.png" data-original="img/UE5/UE5.png" title="UE5.1" alt="UE5.1" />
+              </picture>
+              &lt;figcaption&gt;UE5.1&lt;/figcaption&gt;
+            </figure></a></p>
+
+<picture class="">
+                <source srcset="img/UE5/VPT.png 1x" />
+                <img loading="lazy" src="img/UE5/VPT.png" data-original="img/UE5/VPT.png" />
+            </picture>
+
+<p>Let’s get started with setting this up.</p>
+
+<h2 id="configuration">Configuration</h2>
+
+<h3 id="setting-up-the-gpu-compute-shape">Setting up the GPU Compute shape.</h3>
+
+<ol>
+  <li>
+    <p>First, log into your Oracle Cloud console</p>
+  </li>
+  <li>
+    <p>Once there, click on the hamburger menu</p>
+
+    <picture class="">
+             <source srcset="img/hamburger.png 1x" />
+             <img loading="lazy" src="img/hamburger.png" data-original="img/hamburger.png" />
+         </picture>
+  </li>
+  <li>
+    <p>Click “Compute”</p>
+
+    <picture class="">
+             <source srcset="img/compute.png 1x" />
+             <img loading="lazy" src="img/compute.png" data-original="img/compute.png" />
+         </picture>
+  </li>
+  <li>
+    <p>Click “Instances”</p>
+
+    <picture class="">
+             <source srcset="img/instances.png 1x" />
+             <img loading="lazy" src="img/instances.png" data-original="img/instances.png" />
+         </picture>
+  </li>
+  <li>
+    <p>Click “Create instance”</p>
+
+    <picture class="">
+             <source srcset="img/create.png 1x" />
+             <img loading="lazy" src="img/create.png" data-original="img/create.png" />
+         </picture>
+  </li>
+  <li>
+    <p>Change name</p>
+
+    <picture class="">
+             <source srcset="img/changeName.png 1x" />
+             <img loading="lazy" src="img/changeName.png" data-original="img/changeName.png" />
+         </picture>
+  </li>
+  <li>
+    <p>Choose the compartment that you want to run it on</p>
+  </li>
+  <li>This guide will focus on Ubuntu OS, so select Canonical Ubuntu.</li>
+  <li>Next, select Bare Metal Machine and GPU shape</li>
+  <li>Tick Terms and Conditions (Please note that the GPU shape will be charged against your account event when instance is stopped)</li>
+  <li>
+    <p>Confirm by clicking on Select Shape</p>
+
+    <picture class="">
+             <source srcset="img/selectShape.png 1x" />
+             <img loading="lazy" src="img/selectShape.png" data-original="img/selectShape.png" />
+         </picture>
+  </li>
+</ol>
+
+<h3 id="setting-up-networking">Setting up networking</h3>
+
+<ol>
+  <li>
+    <p>For the purpuse of this guide we will create new virtual network called “GPUVCN” but you can reuse your exisiting one if you wish</p>
+
+    <picture class="">
+             &lt;source srcset="img/newVCN.png" 1x" /&gt;
+             &lt;img loading="lazy" src="img/newVCN.png"" data-original="img/newVCN.png""  /&gt;
+         </picture>
+  </li>
+  <li>
+    <p>Also create new subnet and call it “GPUSUBNET”</p>
+
+    <picture class="">
+             <source srcset="img/newSubnet.png 1x" />
+             <img loading="lazy" src="img/newSubnet.png" data-original="img/newSubnet.png" />
+         </picture>
+  </li>
+  <li>
+    <p>Next, create new SSH keys (or upload your public key files.pub)</p>
+
+    <picture class="">
+             &lt;source srcset="img/newSSH.png" 1x" /&gt;
+             &lt;img loading="lazy" src="img/newSSH.png"" data-original="img/newSSH.png""  /&gt;
+         </picture>
+  </li>
+</ol>
+
+<h3 id="other-settings">Other settings</h3>
+
+<ol>
+  <li>
+    <p>Running Unreal usually requires a lot of hard drive space, so I recommend selecting a boot volume starting from 500GB+. This may vary depending on your requirements</p>
+
+    <picture class="">
+             &lt;source srcset="img/bootVolume.png" 1x" /&gt;
+             &lt;img loading="lazy" src="img/bootVolume.png"" data-original="img/bootVolume.png""  /&gt;
+         </picture>
+  </li>
+  <li>
+    <p>I also recommend setting up a high performance VPU as this will speed things up when compiling, calculating shaders etc. Hit create once you finish</p>
+
+    <picture class="">
+             <source srcset="img/VPU.png 1x" />
+             <img loading="lazy" src="img/VPU.png" data-original="img/VPU.png" />
+         </picture>
+  </li>
+</ol>
+
+<h3 id="security-rules">Security rules</h3>
+
+<ol>
+  <li>
+    <p>Once our instance is provisioned, let’s create network security rules to allow connections for Remote desktop and SSH</p>
+
+    <picture class="">
+             <source srcset="img/NSG/1VNICnoNSG.png 1x" />
+             <img loading="lazy" src="img/NSG/1VNICnoNSG.png" data-original="img/NSG/1VNICnoNSG.png" />
+         </picture>
+  </li>
+  <li>
+    <p>Next, create a new security rule by navigating to our VCN</p>
+
+    <picture class="">
+             <source srcset="img/NSG/2openVCN.png 1x" />
+             <img loading="lazy" src="img/NSG/2openVCN.png" data-original="img/NSG/2openVCN.png" />
+         </picture>
+
+    <picture class="">
+             <source srcset="img/NSG/3createNSG.png 1x" />
+             <img loading="lazy" src="img/NSG/3createNSG.png" data-original="img/NSG/3createNSG.png" />
+         </picture>
+  </li>
+  <li>
+    <p>Navigate back to our compute instance and add the new Security Rule</p>
+
+    <picture class="">
+             <source srcset="img/NSG/4addAllowNSG.png 1x" />
+             <img loading="lazy" src="img/NSG/4addAllowNSG.png" data-original="img/NSG/4addAllowNSG.png" />
+         </picture>
+  </li>
+</ol>
+
+<h3 id="setting-up-remote-desktop-on-your-gpu-compute-shape">Setting up remote desktop on your GPU Compute shape.</h3>
+
+<p>The next steps will focus on enabling the Ubuntu GUI on the GPU shape. These steps can be done either in Terminal or Visual Studio Code.</p>
+
+<ol>
+  <li>In order to connect to your instance, you can <a href="https://docs.oracle.com/en-us/iaas/Content/GSG/Tasks/testingconnection.htm">follow this guide</a></li>
+  <li>Now that we are in, lets run few commands to set up our GUI for Ubuntu</li>
+  <li>
+    <p>Run the following to update and upgrade your OS and install nVidia drivers:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> $</span><span class="w"> </span><span class="nb">sudo </span>apt-get update
+<span class="gp"> $</span><span class="w"> </span><span class="nb">sudo </span>apt-get upgrade
+<span class="gp"> $</span><span class="w"> </span><span class="nb">sudo </span>apt <span class="nb">install </span>libnvidia-common-515
+<span class="gp"> $</span><span class="w"> </span><span class="nb">sudo </span>apt <span class="nb">install </span>libnvidia-gl-515
+<span class="gp"> $</span><span class="w"> </span><span class="nb">sudo </span>apt <span class="nb">install </span>nvidia-driver-515
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Install the Ubuntu GUI:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> $</span><span class="w"> </span><span class="nb">sudo </span>apt <span class="nb">install </span>ubuntu-desktop
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>In order to enable remote access, let’s <a href="http://xrdp.org/">install XRDP</a>, an open-source Remote Desktop Protocol server:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> $</span><span class="w"> </span><span class="nb">sudo </span>apt <span class="nb">install </span>xrdp
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Install net tools so we can debug our connectivity:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> sudo apt install net-tools
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Change your port setting from tcp6 to tcp4:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> sudo nano /etc/xrdp/xrdp.ini
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Inside that config file, change <code class="language-plaintext highlighter-rouge">port=3389</code> to <code class="language-plaintext highlighter-rouge">port=tcp://:3389</code></p>
+  </li>
+  <li>
+    <p>The next step is to flush your iptables so that we can reset our linux firewall (https://www.comparitech.com/net-admin/beginners-guide-ip-tables/). You can do that by running:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> $</span><span class="w"> </span><span class="nb">sudo </span>iptables <span class="nt">-F</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Save your config:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> sudo netfilter-persistent save
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<p>I recommend creating a new user and securing your admin account with a password, or whitelisting your external IP. You can find out how using <a href="https://youtu.be/amqxaw2Ujn4?t=909">this video we did a while back</a>.</p>
+
+<p>You should now be able to access the virtual machine using the Remote Desktop solution of your choice. Just type your external IP to connect to your machine.</p>
+
+<h3 id="using-unreal-engine-on-your-cloud">Using Unreal Engine on your Cloud</h3>
+
+<ol>
+  <li>Get Unreal Engine downloaded to your machine. Since we have a GUI interface, you can install it in terminal by running <code class="language-plaintext highlighter-rouge">sudo apt install -y chromium-browser</code>.</li>
+  <li>Open browser on your machine</li>
+  <li>Navigate to <a href="https://www.unrealengine.com/en-US/linux">https://www.unrealengine.com/en-US/linux</a> and log in/create an epic account</li>
+  <li>
+    <p>Download your preferred version of the engine and extract the zip file:</p>
+
+    <picture class="">
+             <source srcset="img/UE5/UEforLinux.png 1x" />
+             <img loading="lazy" src="img/UE5/UEforLinux.png" data-original="img/UE5/UEforLinux.png" />
+         </picture>
+  </li>
+  <li>
+    <p>To open Unreal Engine, run <code class="language-plaintext highlighter-rouge">/path/to/ue5.1/Engine/Binaries/Linux/UnrealEditor</code> in terminal:</p>
+
+    <picture class="">
+             <source srcset="img/UE5/Terminal.png 1x" />
+             <img loading="lazy" src="img/UE5/Terminal.png" data-original="img/UE5/Terminal.png" />
+         </picture>
+
+    <picture class="">
+             <source srcset="img/UE5/UEStart.png 1x" />
+             <img loading="lazy" src="img/UE5/UEStart.png" data-original="img/UE5/UEStart.png" />
+         </picture>
+  </li>
+</ol>
+
+<h2 id="outro">Outro</h2>
+
+<p>As a word of caution, I would say that Unreal Editor still require a bit of work in order to be as intuitive as it is on Windows. Hence, the use case here is probably focusing on accelerating the rendering for video generation and pixel streaming.</p>
+
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Oracle Developers</h3>
+    
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/oracle-devrel" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-12-12T08:00:00+00:00">December 12, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

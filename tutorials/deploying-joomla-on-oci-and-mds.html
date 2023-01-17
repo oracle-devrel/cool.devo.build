@@ -1,0 +1,237 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Deploying Joomla! on OCI and MDS">
+    
+    <meta itemprop="datePublished" content="2021-10-28T17:03:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Deploying Joomla! on OCI and MDS
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <p>The easiest way to deploy <a href="https://www.joomla.org/">Joomla!</a> on Oracle Cloud Infrastructure and MySQL Database Service, is to use OCI Resource Manager’s stack.</p>
+
+<p>Let’s see how easy it is to deploy such solution.</p>
+
+<p>If you don’t already have an OCI account, you can <a href="https://signup.cloud.oracle.com/?language=en&amp;sourceType=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted&amp;intcmp=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted">get started for free</a>.</p>
+
+<p>The easiest way to deploy all the required resources (vcn, subnets, gateways, compute and MySQL instances, security lists, …) is to use a stack for Resource Manager. It consists in Terraform modules and information to easily deploy the architecture on OCI.</p>
+
+<p>To deploy Joomla! and a MDS instance, visit this GitHub repo and click on the button to deploy on OCI:</p>
+
+<p><img src="assets/joomla-deploy-button.png" alt="A callout highlighting the deploy button for Joola found in the OCI-Joomla repo" /></p>
+
+<p>The Oracle Cloud Dashboard will be open and the stack creation form will be loaded like this:</p>
+
+<p><img src="assets/joomla-stack-1-termsService.png" alt="OCI's Create Stack page, with a callout highlighting to the user to accept Oracle's terms of use" /></p>
+
+<p>As soon as we accept the Oracle Terms of Use, the form will be automatically filled with the stack’s information:</p>
+
+<p><img src="assets/joomla-stack-populates-next.png" alt="The form to create a stack automatically completes with information to create your stack with Joomla. A callout displays highlighting the page's Next button" /></p>
+
+<p>We can click on Next to reach the second form dedicated to the variables:</p>
+
+<p><img src="assets/joomla-form-for-variables.png" alt="A secondary form in the stack-creation process to configure the stack's variables" /></p>
+
+<p>As you can see some variables are already pre-filled. We need to enter some mandatory ones like the password the MDS admin password.</p>
+
+<p>We also have the possibility to enable HA for the MySQL Database Service instance, to have multiple webservers in case we want to have multiple Joomla! in front on the same database or multiple Joomla! with multiple dedicated databases… there are different possibilities.</p>
+
+<p>We also have the possibility to use existing resources in case you already created an architecture in OCI and you want to use it for Joomla! too.</p>
+
+<p><img src="assets/joomla-form-existing-variables.png" alt="The form to use existing variables to use with your Joomla-equipped stack" /></p>
+
+<p>When we are ready, we click Next and the review summary screen appears:</p>
+
+<p><img src="assets/joomla-review-screen.png" alt="The review summary screen for creating the stack" /></p>
+
+<p>When we apply the stack, OCI will create a job to create all the resources and deploy everything that we need. This will take some minutes (+/- 10min):</p>
+
+<p><img src="assets/joomla-job-details-partialLogs-banner.png" alt="Job details after creating the stack with a banner communicating the only partial logs may appear while the stack is being created" /></p>
+
+<p>When everything is created and deployed, the job will return a status:</p>
+
+<p><img src="assets/joomla-job-status-complete.png" alt="Job Information panel with complete job status message" /></p>
+
+<p>All the required information to finish the installation is reported in the Outputs section:</p>
+
+<p><img src="assets/joomla-outputs-tab.png" alt="Information to complete Joomla installation can be found in the Outputs tab" /></p>
+
+<p>Now we can paste the public IP (<code class="language-plaintext highlighter-rouge">joomla_public_ip</code>) in our Internet browser:</p>
+
+<p><img src="assets/joomla-ip-address-in-browser.png" alt="Browser with partially obscured IP address in the address bar and Joomla displaying in the main browser window" /></p>
+
+<p>After we enter the required information, we click Next to reach the database configuration form:</p>
+
+<p><img src="assets/joomla-database-configuration.png" alt="Joomla's Database Configuration window with complete forms, including database name and table prefix, and username, among other fields" /></p>
+
+<p>We enter all the information from the stack’s outputs section. As the database is not local to Joomla!, we also need to delete a file for security reasons.</p>
+
+<p>To connect to the Joomla! server, we need to use the generate ssh key (you can get it from the Outputs section) and connect to the public IP with the opc user. Then we need to remove the file generated by Joomla!’s installation wizard:</p>
+
+<p><img src="assets/joomla-SSH-terminal.png" alt="Terminal highlighting SSH key needed to connect with Joomla" /></p>
+
+<p>When this is done, we can continue with Joomla!’s installation:</p>
+
+<p><img src="assets/joomla-third-step-config-FTP.png" alt="Third step in Joomla configuration process, specifying FTP details" />
+<img src="assets/joomla-success-msg.png" alt="Success message in Joomla after installing it" /></p>
+
+<p>To finish the installation, we need to delete the installation folder:</p>
+
+<p><img src="assets/joomla-delete-installation-folder.png" alt="Terminal with command to delete Joomla's installation folder" /></p>
+
+<p>And here we go, Joomla! is installed:</p>
+
+<p><img src="assets/joomla-success-install-msg.png" alt="Joomla succcess message for installation" /></p>
+
+<p>The administration dashboard is also available on <code class="language-plaintext highlighter-rouge">/administrator/</code>:</p>
+
+<p><img src="assets/joomla-control-panel.png" alt="Obscured IP address with /administrator/ in its path, Joola dashboard in main browser window" /></p>
+
+<p>As you can see, deploying Joomla! on OCI to use MySQL Database Service is very easy. The most complicate operation if to remove the files and folders during the installation.</p>
+
+<p>Enjoy MySQL!</p>
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/docker">docker</a>
+            <a class="animated-link tag" href="/topics/nodejs">nodejs</a>
+            <a class="animated-link tag" href="/topics/mysql">mysql</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <a href="https:/lefred.be/"><h3 class="author__name" itemprop="name">Frédéric Descamps</h3></a>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>@lefred has been consulting OpenSource and MySQL for 20+ years. After graduating in Management Information Technology, Frédéric started his career as a developer for an ERP under HPUX.</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/lefred" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/freddescamps" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/lefred" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-10-28T17:03:00+00:00">October 28, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

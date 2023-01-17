@@ -1,0 +1,485 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Deploying Verrazzano on Oracle Container Engine for Kubernetes (OKE)">
+    
+    <meta itemprop="datePublished" content="2021-12-03T09:11:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Deploying Verrazzano on Oracle Container Engine for Kubernetes (OKE)
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <picture class="alignright">
+                <source srcset="assets/verrazzano-logo.png 1x" />
+                <img loading="lazy" width="400" height="400" src="assets/verrazzano-logo.png" data-original="assets/verrazzano-logo.png" alt="Verrazzano Logo" title="Verrazzano Logo" />
+            </picture>
+
+<p>You may have been following Oracle’s open-source development of Verrazzano and were curious to know what it was about. Technically speaking, <a href="https://verrazzano.io/">Verrazzano</a> is an “end-to-end container platform to deploy cloud native and traditional applications in multi-cloud and hybrid environments.” If that’s a lot to take in, it’s because Verrazzano, (v8o for short) packs a lot in! But in essence, Verrazzano is a bridge between on-premises and the cloud, enabling you to deploy your container applications to any of the Kubernetes clusters where Verrazzano is installed.</p>
+
+<p>In this first part of the series, we’ll first cover the single-cluster deployment of Verrazzano on the <a href="https://docs.oracle.com/en-us/iaas/Content/ContEng/home.htm#top">Oracle Container Engine</a> (OKE) and then learn how to deploy an example application and monitor its activity.</p>
+
+<p>Topics include learning how to:</p>
+
+<ul>
+  <li>Create a Kubernetes cluster</li>
+  <li>Install the Verrazzano platform operator</li>
+  <li>Install and access Verrazzano</li>
+  <li>Deploy, access, and monitor an example application</li>
+</ul>
+
+<p>For additional information, see:</p>
+
+<ul>
+  <li><a href="https://docs.oracle.com/iaas/Content/GSG/Tasks/signingup.htm">Signing Up for Oracle Cloud Infrastructure</a></li>
+  <li><a href="https://blogs.oracle.com/developers/post/introducing-oracle-verrazzano-enterprise-container-platform">Introducing Verrazzano Enterprise</a></li>
+  <li><a href="https://verrazzano.io/latest/docs/quickstart/">Verrazzano quickstart guide</a></li>
+</ul>
+
+<h2 id="before-you-begin">Before you begin</h2>
+
+<p>To successfully complete this tutorial, you will need to have the following:</p>
+
+<ul>
+  <li>An Oracle Cloud Infrastructure Free Tier account. <a href="https://signup.cloud.oracle.com/?language=en&amp;sourceType=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted&amp;intcmp=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted">Start for Free</a></li>
+  <li>A MacOS, Linux, or Windows computer with <code class="language-plaintext highlighter-rouge">ssh</code> support installed</li>
+  <li>Git</li>
+  <li><a href="https://docs.oracle.com/en-us/iaas/developer-tutorials/tutorials/tf-provider/01-summary.htm">Terraform 1.0.0</a> or later</li>
+</ul>
+
+<h2 id="creating-the-oke-cluster">Creating the OKE cluster</h2>
+
+<p>Time to dig in! Let’s start by creating the OKE cluster using the <a href="https://github.com/oracle-terraform-modules/terraform-oci-oke">Terraform OKE module</a>. Fortunately, since we’re only taking Verrazzano for a spin, we just need the bare minimum of features.</p>
+
+<p>For this, we’ve prepared a <a href="https://github.com/oracle-terraform-modules/terraform-oci-oke/blob/main/docs/quickstart.adoc">quickstart</a> guide to get you going.</p>
+
+<ol>
+  <li>
+    <p>Begin by following the instructions to create:</p>
+
+    <ul>
+      <li>the providers, <em>and</em></li>
+      <li>a copy of the file, <code class="language-plaintext highlighter-rouge">terraform.tfvars.example</code>
+        <blockquote class="alert">
+          <p><strong>NOTE:</strong> Be sure that you rename the copy to <code class="language-plaintext highlighter-rouge">terraform.tfvars</code>.</p>
+        </blockquote>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>Before moving ahead, confirm that the following features/resources are enabled/created:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">create_bastion_host</span> <span class="err">=</span> <span class="kc">true</span>
+<span class="nx">bastion_access</span> <span class="err">=</span> <span class="p">[</span><span class="s2">"anywhere"</span><span class="p">]</span>
+<span class="nx">create_operator</span>                    <span class="err">=</span> <span class="kc">true</span>
+<span class="nx">enable_operator_instance_principal</span> <span class="err">=</span> <span class="kc">true</span>
+<span class="nx">node_pools</span> <span class="err">=</span> <span class="p">{</span>
+  <span class="nx">np1</span> <span class="p">=</span> <span class="p">{</span> <span class="nx">shape</span> <span class="p">=</span> <span class="s2">"VM.Standard.E4.Flex"</span><span class="p">,</span> <span class="nx">ocpus</span> <span class="p">=</span> <span class="mi">2</span><span class="p">,</span> <span class="nx">memory</span> <span class="p">=</span> <span class="mi">32</span><span class="p">,</span> <span class="nx">node_pool_size</span> <span class="p">=</span> <span class="mi">2</span><span class="p">,</span> <span class="nx">boot_volume_size</span> <span class="p">=</span> <span class="mi">150</span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Now that we have the environment just as we need it, continue with the rest of the quickstart to run <code class="language-plaintext highlighter-rouge">terraform init</code> and <code class="language-plaintext highlighter-rouge">tarraform apply</code>.</p>
+  </li>
+  <li>
+    <p>Once the cluster is created, we can use the output to conveniently copy the command that tells us how to ssh to the operator host:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">ssh_to_operator = "ssh -i ~/.ssh/id_rsa -J opc@xyz.xyz.xyz.xyz opc@10.0.0.12"
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<blockquote class="alert">
+  <p><strong>NOTE:</strong> For the rest of the tutorial, all <code class="language-plaintext highlighter-rouge">kubectl</code> commands are executed on the operator host.</p>
+</blockquote>
+
+<h2 id="installing-the-verrazzano-operator">Installing the Verrazzano operator</h2>
+
+<p>Verrazzano provides a Kubernetes operator to manage the life cycle of Verrazzano installations. In this section, we’ll learn how to install this operator.</p>
+
+<ol>
+  <li>
+    <p>Deploy the Verrazzano operator by running:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">kubectl apply -f https://github.com/verrazzano/verrazzano/releases/download/v1.0.1/operator.yaml
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Wait for the deployment to complete:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>kubectl <span class="nt">-n</span> verrazzano-install rollout status deployment/verrazzano-platform-operator
+<span class="go">Waiting for deployment "verrazzano-platform-operator" rollout to finish: 0 of 1 updated replicas are available...
+</span></code></pre></div>    </div>
+
+    <blockquote class="alert">
+      <p><strong>NOTE:</strong> Be patient! The operator make take a couple of minutes to deploy.</p>
+    </blockquote>
+  </li>
+  <li>
+    <p>Verify that the operator is running:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>kubectl <span class="nt">-n</span> verrazzano-install get pods
+<span class="go">NAME                                            READY   STATUS    RESTARTS   AGE
+verrazzano-platform-operator-5f788568fd-w8cz7   1/1     Running   0          80s
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<h2 id="installing-verrazzano">Installing Verrazzano</h2>
+
+<p>Now that we have all of the preliminary set up out of the way, we’re ready to install Verrazzano.</p>
+
+<ol>
+  <li>
+    <p>For this exercise, install Verrazzano with the <code class="language-plaintext highlighter-rouge">dev</code> profile:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>kubectl apply <span class="nt">-f</span> - <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh">
+</span><span class="go">apiVersion: install.verrazzano.io/v1alpha1
+kind: Verrazzano
+metadata:
+  name: hello-verrazzano
+spec:
+  profile: dev
+EOF
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Wait for Verrazzano to install:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>kubectl <span class="nb">wait</span> <span class="se">\</span>
+<span class="go">    --timeout=20m \
+    --for=condition=InstallComplete \
+    verrazzano/
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<h2 id="accessing-verrazzano">Accessing Verrazzano</h2>
+
+<p>We’ve successfully installed Verrazzano, so how do we access it? We’ll first need to determine the Verrazzano console URL.</p>
+
+<ol>
+  <li>
+    <p>To obtain the console URL, run:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">kubectl get vz -o yaml
+</span></code></pre></div>    </div>
+
+    <p>This command will return a list of URLs. For example, a Verrazzano console URL may look similar to: <code class="language-plaintext highlighter-rouge">https://verrazzano.default.168.138.102.88.nip.io</code>.</p>
+  </li>
+  <li>
+    <p>Once you have the console URL, copy it into your browser. At this point, you’ll be prompted to log in:</p>
+
+    <picture class="aligncenter">
+             <source srcset="assets/verrazzano-login.png 1x" />
+             <img loading="lazy" width="1024" height="557" src="assets/verrazzano-login.png" data-original="assets/verrazzano-login.png" alt="Verrazzano Login Screen" title="Verrazzano Login Screen" />
+         </picture>
+
+    <dl>
+      <dt><strong>username:</strong></dt>
+      <dd>The username is: <code class="language-plaintext highlighter-rouge">verrazzano</code></dd>
+      <dt><strong>password:</strong></dt>
+      <dd>To get the password, run:
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> $</span><span class="w"> </span>kubectl get secret <span class="se">\</span>
+<span class="go">     --namespace verrazzano-system verrazzano \
+     -o jsonpath={.data.password} | base64 \
+</span><span class="gp">     --decode;</span><span class="w"> </span><span class="nb">echo</span>
+</code></pre></div>        </div>
+      </dd>
+    </dl>
+
+    <p>You should now be able to access the Verrazzano console:</p>
+
+    <picture class="aligncenter">
+             <source srcset="assets/verrazzano-console.png 1x" />
+             <img loading="lazy" width="1024" height="557" src="assets/verrazzano-console.png" data-original="assets/verrazzano-console.png" alt="Verrazzano Console" title="Verrazzano Console" />
+         </picture>
+  </li>
+</ol>
+
+<h3 id="deploy-an-example-application-to-verrazzano">Deploy an example application to Verrazzano</h3>
+
+<p>With Verrazzano installed and configured, we’re ready to deploy our first application. We’ll keep it simple to start by creating a version of an old friend, the hello-world example. The <a href="https://verrazzano.io/latest/docs/samples/hello-helidon/">Hello World Helidon</a> application returns a friendly and familiar “Hello World” response when invoked.</p>
+
+<ol>
+  <li>
+    <p>Create a namespace for the <code class="language-plaintext highlighter-rouge">hello-helidon</code> application:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">kubectl create namespace hello-helidon
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Add labels to identify the namespace as managed by Verrazzano and enabled for Istio:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">kubectl label namespace hello-helidon verrazzano-managed=true istio-injection=enabled
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Deploy the Verrazzano <a href="https://verrazzano.io/docs/applications/#components">component</a>:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">kubectl apply -f https://raw.githubusercontent.com/verrazzano/verrazzano/master/examples/hello-helidon/hello-helidon-comp.yaml
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Create the <a href="https://verrazzano.io/docs/applications/#application-configurations">Application Configuration</a>:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">kubectl apply -f https://raw.githubusercontent.com/verrazzano/verrazzano/master/examples/hello-helidon/hello-helidon-app.yaml
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>You can now get the name of your pod:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>kubectl get pods <span class="nt">-n</span> hello-helidon
+<span class="go">NAME                                        READY   STATUS    RESTARTS   AGEhello-helidon-deployment-54979d7d74-6c9nw   1/1     Running   0          2m18s
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>To check to see if the application is ready, run:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>kubectl <span class="nb">wait</span> — <span class="nb">timeout</span><span class="o">=</span>300s — <span class="k">for</span><span class="o">=</span><span class="nv">condition</span><span class="o">=</span>Ready <span class="nt">-n</span> hello-helidon pod/hello-helidon-deployment-54979d7d74–6c9nw
+<span class="go">pod/hello-helidon-deployment-54979d7d74-6c9nw condition met
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Look up the hostname of the load balancer:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span><span class="nv">HOST</span><span class="o">=</span><span class="si">$(</span>kubectl get gateway hello-helidon-hello-helidon-appconf-gw <span class="se">\</span>
+<span class="go">    -n hello-helidon \
+    -o jsonpath='{.spec.servers[0].hosts[0]}')
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<h3 id="test-the-deployment">Test the deployment</h3>
+
+<p>The moment of truth! You can then test the application by running:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>curl <span class="nt">-sk</span> <span class="se">\</span>
+<span class="go">    -X GET \
+</span><span class="gp">    "https://$</span><span class="o">{</span>HOST<span class="o">}</span>/greet<span class="s2">"
+</span></code></pre></div></div>
+
+<p>This should return you the following:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">{"message":"Hello World!"}
+</span></code></pre></div></div>
+
+<p>Success! You’ve deployed your first application in Verrazzano.</p>
+
+<h2 id="observability">Observability</h2>
+
+<p>Now that we have our application running and accessible, we’ll want to keep track of how its performing and have a look at its logs and metrics. In both cases, Verrazzano has you covered! Verrazano provides the ELK stack for logging and a combination of <a href="https://blogs.oracle.com/linux/post/learn-to-monitor-cloud-apps-and-services-with-prometheus">Prometheus</a> and <a href="https://blogs.oracle.com/oracle-systems/post/oracle-pca-x9-2-monitoring-and-alerting-with-grafana">Grafana</a> for metrics and performance monitoring.</p>
+
+<h3 id="grafana">Grafana</h3>
+
+<p>On the main page of the Verrazzano console, you’ll see a link to Grafana. The same combination of username and password you used for Verrazzano will work here to connect to Grafana.</p>
+
+<ol>
+  <li>
+    <p>Once logged in, select <strong>Home</strong> and then the <strong>Helidon Monitoring Dashboard</strong>:</p>
+
+    <picture class="aligncenter">
+             <source srcset="assets/verrazzano-grafana.png 1x" />
+             <img loading="lazy" width="1024" height="557" src="assets/verrazzano-grafana.png" data-original="assets/verrazzano-grafana.png" alt="Grafana" title="Grafana" />
+         </picture>
+  </li>
+  <li>
+    <p>Similarly, access the <strong>Kibana</strong> dashboard and then select the <strong>Visualize</strong> icon in the left-hand menu.<br />
+You’ll be prompted to create an index pattern.</p>
+    <ol>
+      <li>Select *verrazzano** and then follow the wizard to add the index pattern.</li>
+      <li>
+        <p>Search for our example application, <code class="language-plaintext highlighter-rouge">hello-helidon</code>, and you should see the following:</p>
+
+        <picture class="aligncenter">
+          <source srcset="assets/verrazzano-kibana.png 1x" />
+          <img loading="lazy" width="1024" height="557" src="assets/verrazzano-kibana.png" data-original="assets/verrazzano-kibana.png" alt="Kibana" title="Kibana" />
+      </picture>
+      </li>
+    </ol>
+  </li>
+</ol>
+
+<p>From here, you can create your own visualizations and dashboards.</p>
+
+<h3 id="checking-in-on-the-kubernetes-cluster-with-rancher">Checking in on the Kubernetes cluster with Rancher</h3>
+
+<p>What if we want a peek at the Kubernetes cluster itself? Again, Verrazzano has your back.</p>
+
+<ol>
+  <li>
+    <p>From the Verrazzano console, locate the link to <strong>Rancher</strong> and select it.</p>
+
+    <dl>
+      <dt><strong>username:</strong></dt>
+      <dd>The default username is: <code class="language-plaintext highlighter-rouge">admin</code></dd>
+      <dt><strong>password:</strong></dt>
+      <dd>To retrieve the password, run:
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> $</span><span class="w"> </span>kubectl get secret <span class="se">\</span>
+<span class="go">     --namespace cattle-system rancher-admin-secret \
+     -o jsonpath={.data.password} | base64 \
+</span><span class="gp">     --decode;</span><span class="w"> </span><span class="nb">echo</span>
+</code></pre></div>        </div>
+      </dd>
+    </dl>
+  </li>
+  <li>
+    <p>Once logged in, you’ll land on the cluster page and see an <strong>Explorer</strong> button. Select it to view your Kubernetes cluster:</p>
+
+    <picture class="aligncenter">
+             <source srcset="assets/verrazzano-rancher.png 1x" />
+             <img loading="lazy" width="1024" height="557" src="assets/verrazzano-rancher.png" data-original="assets/verrazzano-rancher.png" alt="Rancher" title="Rancher" />
+         </picture>
+  </li>
+</ol>
+
+<h2 id="whats-next">What’s next</h2>
+
+<p>Verrazzano packs in a nice set of capabilities that helps you with the operational side of Kubernetes. From monitoring to logging and security, there’s a lot productivity that a Kubernetes or an application administrator can gain.</p>
+
+<p>Hopefully, you’ve found this article helpful and piqued your interest in what Verrazzano has to offer. In the <a href="2-deploy-multi-cluster-verrazzano-oke.md">next part</a> of this series, we’ll begin exploring other features of Verrazzano, including multi-cluster deployment and network security.</p>
+
+<p>For more information about development with Oracle products:</p>
+
+<ul>
+  <li><a href="https://developer.oracle.com/">Oracle Developers Portal</a></li>
+  <li><a href="https://www.oracle.com/cloud/">Oracle Cloud Infrastructure</a></li>
+</ul>
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/open-source">open-source</a>
+            <a class="animated-link tag" href="/topics/oke">oke</a>
+            <a class="animated-link tag" href="/topics/kubernetes">kubernetes</a>
+            <a class="animated-link tag" href="/topics/verrazzano">verrazzano</a>
+            <a class="animated-link tag" href="/topics/terraform">terraform</a>
+            <a class="animated-link tag" href="/topics/devops">devops</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <a href="https:/lmukadam.medium.com"><h3 class="author__name" itemprop="name">Ali Mukadam</h3></a>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Technical Director, Asia Pacific Center of Excellence.</p>
+
+<p>For the past 16 years, Ali has held technical presales, architect and industry consulting roles in BEA Systems and Oracle across Asia Pacific, focusing on middleware and application development. Although he pretends to be Thor, his real areas of expertise are Application Development, Integration, SOA (Service Oriented Architecture) and BPM (Business Process Management). An early and worthy Docker and Kubernetes adopter, Ali also leads a few open source projects (namely <a href="https://github.com/oracle-terraform-modules/terraform-oci-oke">terraform-oci-oke</a>) aimed at facilitating the adoption of Kubernetes and other cloud native technologies on Oracle Cloud Infrastructure.</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/alimukadam" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-12-03T09:11:00+00:00">December 3, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

@@ -1,0 +1,359 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar has-slides" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Get Started with the Feature Store HopsWorks (LogicalClocks) on Oracle Cloud">
+    
+    <meta itemprop="datePublished" content="2021-11-18T09:45:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Get Started with the Feature Store HopsWorks (LogicalClocks) on Oracle Cloud
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+        <!-- <aside class="sidebar__right sticky">
+          <nav class="slides-nav"><ul><li class="active" data-target-slide="0"><a href="javascript:cool.slides.goToSlide(0)">Intro</a></li>
+<li data-target-slide="1"><a href="javascript:cool.slides.goToSlide(1)">Jupyterlab Installation</a></li>
+<li data-target-slide="2"><a href="javascript:cool.slides.goToSlide(2)">Configure Jupyterlab Like the OEL7 Linux Service</a></li>
+<li data-target-slide="3"><a href="javascript:cool.slides.goToSlide(3)">Reboot for a Final Check</a></li></ul></nav>
+        </aside> -->
+      
+
+        <div class="slides" id="slideshow">
+
+  <div class="slide active" id="slide-0">
+
+    <h2 class="slide__title"><span class="slide__num">1</span> Introduction</h2>
+
+    <p>In this walk-through you’ll configure your environment to run HopsWorks in Oracle Cloud Infrastructure.</p>
+
+    <h3 id="prerequisites">Prerequisites</h3>
+
+    <ul>
+      <li>VM 2.1 with Oracle Linux 7.9 (OEL7) has been deployed in Oracle Cloud Infrastructure (OCI)</li>
+      <li>Oracle Linux 7.9 uses <code class="language-plaintext highlighter-rouge">pip3.6</code> by default</li>
+      <li>Python 3.6 or higher is installed</li>
+      <li>You have access to root either directly or using <code class="language-plaintext highlighter-rouge">sudo</code>. In OCI you are connected as user <code class="language-plaintext highlighter-rouge">opc</code> with sudo privilege by default</li>
+    </ul>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)" class="slides__btn--begin">Begin &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-1">
+
+    <h2 class="slide__title"><span class="slide__num">2</span> Jupyterlab Installation</h2>
+
+    <p>The Jupyterlab install is pretty simple. It consists of setting up Python, then installing Python components and libraries.</p>
+
+    <p>Let’s start with setting up the Python environment.</p>
+
+    <h3 id="python-setup">Python Setup</h3>
+
+    <p>By default, OEL7 runs Python 3. The first step is to install <code class="language-plaintext highlighter-rouge">virtualenv</code> and <code class="language-plaintext highlighter-rouge">pip</code>.</p>
+
+    <h4 id="install-virtualenv">Install virtualenv</h4>
+
+    <p>Virtualenv enables us to create isolated sandpits to develop Python applications without running into module or library conflicts. It’s simple to install.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span><span class="nb">sudo </span>pip3.6 <span class="nb">install </span>virtualenv
+</code></pre></div>    </div>
+
+    <p>Next, we can create a virtual environment and enable it.</p>
+
+    <h4 id="create-a-myvirtualenv-environment">Create a myvirtualenv Environment</h4>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>virtualenv <span class="nt">-p</span> /usr/bin/python3 myvirtualenv
+<span class="gp">#</span><span class="w"> </span>Activate the <span class="nb">env</span>
+<span class="gp">$</span><span class="w"> </span><span class="nb">source </span>myvirtualenv/bin/activate
+</code></pre></div>    </div>
+
+    <h4 id="check-the-list-of-python-libraries-in-your-environment">Check the List of Python Libraries in Your Environment</h4>
+
+    <p>Running the following command will show what Python models we have installed at this point.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>pip3 list
+<span class="go">Package    Version
+---------- -------
+pip        21.1.3
+setuptools 57.1.0
+wheel      0.36.2
+</span><span class="gp">WARNING: You are using pip version 21.1.3;</span><span class="w"> </span>however, version 21.2.1 is available.
+<span class="go">You should consider upgrading via the '/home/opc/myvirtualenv/bin/python -m pip install --upgrade pip' command.
+</span></code></pre></div>    </div>
+
+    <h4 id="upgrade-your-pip-environment">Upgrade Your pip Environment</h4>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>/home/opc/myvirtualenv/bin/python <span class="nt">-m</span> pip <span class="nb">install</span> <span class="nt">--upgrade</span> pip
+</code></pre></div>    </div>
+    <h3 id="jupyterlab-setup">Jupyterlab Setup</h3>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>pip3 <span class="nb">install </span>jupyterlab
+</code></pre></div>    </div>
+
+    <h4 id="install-python-libraries-for-machine-learning-or-an-etl-process">Install Python Libraries for Machine Learning or an ETL Process</h4>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>pip <span class="nb">install </span>pandas
+<span class="gp">$</span><span class="w"> </span>pip <span class="nb">install </span>pandarallel
+<span class="gp">$</span><span class="w"> </span>pip <span class="nb">install </span>dask
+<span class="gp">$</span><span class="w"> </span>pip <span class="nb">install </span>seaborn
+<span class="gp">$</span><span class="w"> </span>pip <span class="nb">install </span>matplotlib
+<span class="gp">$</span><span class="w"> </span>pip <span class="nb">install </span>plotly
+<span class="gp">$</span><span class="w"> </span>pip <span class="nb">install</span> <span class="nt">-lxml</span><span class="o">==</span>4.6.3
+<span class="gp">$</span><span class="w"> </span>pip <span class="nb">install </span>selenium
+<span class="gp">$</span><span class="w"> </span>pip <span class="nb">install </span>beautifulsoup4
+<span class="gp">$</span><span class="w"> </span>pip <span class="nb">install </span>scikit-learn
+</code></pre></div>    </div>
+
+    <h4 id="install-other-python-libraries-for-kafka-access-and-web-server-access">Install Other Python Libraries for Kafka Access and WEB Server Access</h4>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>pip <span class="nb">install </span>kafka-python <span class="o">(</span>v2.0.0<span class="o">)</span>
+<span class="gp">$</span><span class="w"> </span>pip <span class="nb">install </span>Flask
+<span class="gp">$</span><span class="w"> </span>pip <span class="nb">install </span>gunicorn
+</code></pre></div>    </div>
+
+    <h4 id="install-extensions-for-jupyterlab-environment">Install Extensions for Jupyterlab Environment</h4>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>pip <span class="nb">install </span>jupyter_contrib_nbextensions
+<span class="gp">$</span><span class="w"> </span>jupyter contrib nbextension <span class="nb">install</span> <span class="nt">--user</span>
+<span class="gp">$</span><span class="w"> </span>jupyter nbextension <span class="nb">enable </span>execute_time/ExecuteTime
+</code></pre></div>    </div>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(0)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(2)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-2">
+
+    <h2 class="slide__title"><span class="slide__num">3</span> Configure Jupyterlab Like the OEL7 Linux Service</h2>
+
+    <p>Create a script to automatically instantiate and reboot Jupyterlab with <code class="language-plaintext highlighter-rouge">opc</code> user.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>vi /home/opc/launchjupyterlab.sh
+</code></pre></div>    </div>
+
+    <h3 id="script-for-launchjupyterlabsh">Script for launchjupyterlab.sh</h3>
+
+    <p>Using virtualenv, you can launch Jupyterlab on a specific port (for example: 8001) and listen on a public IP.</p>
+
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+
+<span class="c"># Activate myvirtualenv Environment</span>
+<span class="nb">source </span>myvirtualenv/bin/activate
+
+<span class="nb">cd</span> /home/opc
+
+<span class="k">if</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span> <span class="o">=</span> <span class="s2">"start"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">nohup </span>jupyter-lab <span class="nt">--ip</span><span class="o">=</span>0.0.0.0 <span class="nt">--port</span><span class="o">=</span>8001 <span class="o">&gt;</span> ./nohup.log 2&gt;&amp;1 &amp;
+    <span class="nb">echo</span> <span class="nv">$!</span> <span class="o">&gt;</span> /home/opc/jupyter.pid
+<span class="k">else
+    </span><span class="nb">kill</span> <span class="si">$(</span><span class="nb">cat</span> /home/opc/jupyter.pid<span class="si">)</span>
+<span class="k">fi</span>
+</code></pre></div>    </div>
+
+    <p>We need to make the script executable so it can be run from the jupyterlab service.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span><span class="nb">chmod </span>777 /home/opc/launchjupyterlab.sh
+</code></pre></div>    </div>
+
+    <h3 id="connect-to-root-user">Connect to Root User</h3>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span><span class="nb">sudo</span> <span class="nt">-i</span>
+</code></pre></div>    </div>
+
+    <h3 id="create-script-to-start-stop-jupyterlab">Create Script to Start, Stop “jupyterlab”</h3>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>vi /etc/systemd/system/jupyterlab.service
+</code></pre></div>    </div>
+
+    <h3 id="launch-opc-user-with-launchjupyterlabsh">Launch “opc” User with “launchjupyterlab.sh”</h3>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">[Unit]
+Description=Service to start jupyterlab for opc
+Documentation=
+[Service]
+User=opc
+Group=opc
+Type=forking
+WorkingDirectory=/home/opc
+ExecStart=/home/opc/launchjupyterlab.sh start
+ExecStop=/home/opc/launchjupyterlab.sh stop
+[Install]
+WantedBy=multi-user.target
+</span></code></pre></div>    </div>
+
+    <h3 id="test-jupyterlab-service">Test Jupyterlab Service</h3>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>systemctl start jupyterlab
+<span class="gp">$</span><span class="w"> </span>systemctl status jupyterlab
+<span class="gp">$</span><span class="w"> </span>systemctl <span class="nb">enable </span>jupyterlab
+</code></pre></div>    </div>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(3)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-3">
+
+    <h2 class="slide__title"><span class="slide__num">4</span> Reboot for a Final Check</h2>
+
+    <p>Now reboot your machine to check if the jupyterlab script is enabled by default on port 8001.</p>
+
+    <p>You need to open port 8001 to your virtual machine VM 2.1 in order to access using your public IP.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>firewall-cmd  <span class="nt">--permanent</span> <span class="nt">--zone</span><span class="o">=</span>public <span class="nt">--list-ports</span>
+<span class="gp">$</span><span class="w"> </span>firewall-cmd <span class="nt">--get-active-zones</span>
+<span class="gp">$</span><span class="w"> </span>firewall-cmd <span class="nt">--permanent</span> <span class="nt">--zone</span><span class="o">=</span>public <span class="nt">--add-port</span><span class="o">=</span>8001/tcp
+<span class="gp">$</span><span class="w"> </span>firewall-cmd <span class="nt">--reload</span>
+</code></pre></div>    </div>
+
+    <p>If you’re running directly on a virtual machine and have a browser installed, it should take you directly into the jupyter environment. Connect to “http://xxx.xxx.xxx.xxx:8001/”.</p>
+
+    <p>You should see the next Python web environment “Jupyterlab.”</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(2)">&laquo; Back</a></div>
+
+  </div>
+
+</div>
+
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/open-source">open-source</a>
+            <a class="animated-link tag" href="/topics/machine-learning">machine-learning</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Olivier Francois Xavier Perard</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Work to teach how to mix AI technologies with micro-services and parallelizable architectures</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/olivier_perard" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/olivier-perard" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/operard" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-11-18T09:45:00+00:00">November 18, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

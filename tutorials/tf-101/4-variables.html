@@ -1,0 +1,564 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar has-slides" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Terraform Variables">
+    
+    <meta itemprop="datePublished" content="2021-10-14T12:00:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Terraform Variables
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+        <!-- <aside class="sidebar__right sticky">
+          <nav class="slides-nav"><ul><li class="active" data-target-slide="0"><a href="javascript:cool.slides.goToSlide(0)">Intro</a></li>
+<li data-target-slide="1"><a href="javascript:cool.slides.goToSlide(1)">Why use variables?</a></li>
+<li data-target-slide="2"><a href="javascript:cool.slides.goToSlide(2)">Types of variables</a></li>
+<li data-target-slide="3"><a href="javascript:cool.slides.goToSlide(3)">Getting the contents of a variable</a></li>
+<li data-target-slide="4"><a href="javascript:cool.slides.goToSlide(4)">Setting variable values</a></li>
+<li data-target-slide="5"><a href="javascript:cool.slides.goToSlide(5)">Defining variables</a></li>
+<li data-target-slide="6"><a href="javascript:cool.slides.goToSlide(6)">Variable Types</a></li>
+<li data-target-slide="7"><a href="javascript:cool.slides.goToSlide(7)">Sample Variable Definitions</a></li></ul></nav>
+        </aside> -->
+      
+
+        <div class="slides" id="slideshow">
+
+  <div class="slide active" id="slide-0">
+
+    <h2 class="slide__title"><span class="slide__num">1</span> Introduction</h2>
+
+    <figure class="aligncenter">
+              <picture>
+                  <source srcset="assets/terraform-101.png 1x" />
+                  <img loading="lazy" width="400" height="400" src="assets/terraform-101.png" data-original="assets/terraform-101.png" title="Terraform 101" alt="Terraform 101 Tutorial Series" />
+              </picture>
+              <figcaption>Terraform 101</figcaption>
+            </figure>
+
+    <p>This lesson will take a deeper look at Terraform variabales. You’ve already had a little bit of exposure to them in the <a href="2-experiencing-terraform">Experiencing Terraform</a> tutorial, as well as a brief summary in the <a href="3-understanding-terraform">Understanding Terraform Concepts</a> tutorial. Let’s dive in and take a deeper look at what these are and how they’re used.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)" class="slides__btn--begin">Begin &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-1">
+
+    <h2 class="slide__title"><span class="slide__num">2</span> Why use variables?</h2>
+
+    <p>Variables provide a way to easily decouple a value and its reference from your Terraform code. A topology may be defined, but the specifics are given programmatically (or manually). Writing parameterized Terraform code (using variables for many of the customizable values), means that as an environment changes, new values for the variables may be provided without requiring any modification to the underlying Terraform code.</p>
+
+    <p>Here are some common use-cases for parameterizing code:</p>
+
+    <ul>
+      <li>Multiple deployments of the same topology – this could be for deploying separate development, staging and production environments that share identical topologies (but have unique names, compartments, CIDR blocks, etc.).</li>
+      <li>Passing secret/sensitive data in via variables – rather than hard-coding credentials, keys and other sensitive data in the Terraform code, this can be passed via variables.</li>
+      <li>Writing extensible modules in Terraform – particularly where variables are used as inputs to the module, determining its behavior or setting resource attributes.</li>
+    </ul>
+
+    <blockquote class="alert">
+      <p><strong>Warning:</strong> NEVER commit secrets, credentials, keys or any other sensitive data to a git repo!</p>
+    </blockquote>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(0)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(2)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-2">
+
+    <h2 class="slide__title"><span class="slide__num">3</span> Types of variables</h2>
+
+    <p>There are two kinds of variables:</p>
+
+    <ul>
+      <li>Input variables (variables)</li>
+      <li>Local values (locals)</li>
+    </ul>
+
+    <h3 id="input-variables-variables">Input variables (variables)</h3>
+
+    <p>Most Terraform projects use variables in one way or another. Variables are very common, and for good reason. Variables are accessible within the entire project (or module, if you’re building projects made of one or more modules).</p>
+
+    <h3 id="local-values-locals">Local values (locals)</h3>
+
+    <p>There’s another kind of variable called a local variable (aka “locals”) which is not accessible to your entire project, but is limited to the context of a single Terraform file. This means that if you define a local variable in a particular Terraform file, it will only be available to code within that same file (but not to code in other Terraform files).</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(3)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-3">
+
+    <h2 class="slide__title"><span class="slide__num">4</span> Getting the contents of a variable</h2>
+
+    <p>To use a variable, prepend <code class="language-plaintext highlighter-rouge">var.</code> at the beginning of the variable name. Take, for example, the <code class="language-plaintext highlighter-rouge">var.tenancy_ocid</code> which is used in the following VCN resource block:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">resource</span> <span class="nx">oci_core_vcn</span> <span class="nx">tf_101</span> <span class="p">{</span>
+  <span class="nx">cidr_block</span>     <span class="p">=</span> <span class="s2">"192.168.1.0/24"</span>
+  <span class="nx">compartment_id</span> <span class="p">=</span> <span class="kd">var</span><span class="p">.</span><span class="nx">tenancy_ocid</span>
+  <span class="nx">display_name</span>   <span class="p">=</span> <span class="s2">"tf-101"</span>
+  <span class="nx">dns_label</span>      <span class="p">=</span> <span class="s2">"tf101"</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>This may look familiar. It’s borrowed from the <a href="2-experiencing-terraform">Experiencing Terraform</a> tutorial! This is how the <code class="language-plaintext highlighter-rouge">tenancy_ocid</code> variable is referenced (read and used).</p>
+
+    <h3 id="getting-the-contents-of-a-local">Getting the contents of a local</h3>
+
+    <p>To use a local variable, simply prepend the local variable name with <code class="language-plaintext highlighter-rouge">local</code>  Here’s an example:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">resource</span> <span class="nx">oci_core_vcn</span> <span class="nx">tf_101</span> <span class="p">{</span>
+  <span class="nx">cidr_block</span>     <span class="p">=</span> <span class="kd">local</span><span class="p">.</span><span class="nx">cidr</span>
+  <span class="nx">compartment_id</span> <span class="p">=</span> <span class="kd">var</span><span class="p">.</span><span class="nx">tenancy_ocid</span>
+  <span class="nx">display_name</span>   <span class="p">=</span> <span class="s2">"tf-101"</span>
+  <span class="nx">dns_label</span>      <span class="p">=</span> <span class="s2">"tf101"</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>The above example sets the <code class="language-plaintext highlighter-rouge">cidr_block</code> attribute to whatever is in the <code class="language-plaintext highlighter-rouge">cidr</code> local.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(2)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(4)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-4">
+
+    <h2 class="slide__title"><span class="slide__num">5</span> Setting variable values</h2>
+
+    <p>There are multiple ways to set the values of a variable. Terraform uses the following order of precedence when setting the value of a variable (listed from the highest to lowest priority):</p>
+
+    <ol>
+      <li>CLI arguments (-var and -var-file CLI parameters)</li>
+      <li>*.auto.tfvars</li>
+      <li>terraform.tfvars</li>
+      <li>Environment variables</li>
+    </ol>
+
+    <h3 id="setting-local-values-locals">Setting local values (locals)</h3>
+
+    <p>Local values are a little different than regular variables (which we’ll be looking at in the rest of this section).  Locals (aka “local values”) are set in the Terraform code itself. Because locals are set within the Terraform code, they can be computed programmatically, granting the ability to use Terraform functions, reference to other variables, locals, and resources.</p>
+
+    <p>Here’s an example of how locals are defined:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">locals</span> <span class="p">{</span>
+  <span class="nx">comp_id</span> <span class="p">=</span> <span class="nx">len</span><span class="p">(</span><span class="kd">var</span><span class="p">.</span><span class="nx">compartment_id</span><span class="p">)</span> <span class="err">&gt;</span> <span class="mi">0</span> <span class="err">?</span> <span class="kd">var</span><span class="p">.</span><span class="nx">compartment_id</span> <span class="err">:</span> <span class="s2">"abcd.1234"</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>The above example is fictitious (and not even the most efficient method of defining locals), but gives you an idea about how you’d set the <code class="language-plaintext highlighter-rouge">comp_id</code> local (variable). Locals are defined within a plural <code class="language-plaintext highlighter-rouge">locals</code> block, but when referenced, are singular (<code class="language-plaintext highlighter-rouge">local.comp_id</code>).</p>
+
+    <h3 id="via-the-command-line-interface">Via the command-line interface</h3>
+
+    <p>Terraform supports many command-line parameters, one of which is the <code class="language-plaintext highlighter-rouge">-var</code> parameter which allows you to set the value of a variable when you run Terraform. Here’s an example of how you might set the <code class="language-plaintext highlighter-rouge">compartment_id</code> variable using the command-line.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>terraform plan <span class="nt">-var</span> <span class="s1">'compartment_id=abcd.1234'</span>
+</code></pre></div>    </div>
+
+    <p>Or, alternatively, you can use the following formatting.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>terraform plan <span class="nt">-var</span><span class="o">=</span><span class="s2">"compartment_id=abcd.1234"</span>
+</code></pre></div>    </div>
+
+    <p>You can set one or more variables using this technique. This method is a bit tedious because it can result in a really long command when running Terraform, especially if there are a lot of variables being set. This would need to be used every time you want to run Terraform!</p>
+
+    <h3 id="variable-files">Variable files</h3>
+
+    <p>Files ending in <code class="language-plaintext highlighter-rouge">.tfvars</code> can be used to set the value of variables. You can tell Terraform which files to read at run-time with the <code class="language-plaintext highlighter-rouge">-var-file</code> parameter or you can let it auto-load files (based on their filename).</p>
+
+    <p>If the <code class="language-plaintext highlighter-rouge">terraform.tfvars</code> file exists in the working directory, Terraform will read it and set the variable values that are given there. Here’s a sample <code class="language-plaintext highlighter-rouge">terraform.tfvars</code> file:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">compartment_id</span>   <span class="err">=</span> <span class="s2">"&lt;your_compartment_OCID_here&gt;"</span>
+<span class="nx">region</span>           <span class="err">=</span> <span class="s2">"us-phoenix-1"</span>
+<span class="nx">cidr</span>             <span class="err">=</span> <span class="s2">"172.16.0.0/20"</span>
+</code></pre></div>    </div>
+
+    <p>These are setting variable values (note that there’s no <code class="language-plaintext highlighter-rouge">var.</code> prefix used). Terraform implicitly uses the <code class="language-plaintext highlighter-rouge">terraform.tfvars</code> file for setting variable values.</p>
+
+    <p>The <code class="language-plaintext highlighter-rouge">terraform.tfvars</code> file is statically read, meaning that there’s no computation that takes place. Terraform does not reference other variables, resources, or other Terraform functions. It reads only static values.</p>
+
+    <p>The <code class="language-plaintext highlighter-rouge">terraform.tfvars</code> file can often be used for setting environment-specific settings. It is usually not committed to git repos (at least alongside the Terraform code), as its values might determine the characteristics for the environment.</p>
+
+    <h3 id="autotfvars"><code class="language-plaintext highlighter-rouge">*.auto.tfvars</code></h3>
+
+    <p>You can specify as many files as you’d like that end in <code class="language-plaintext highlighter-rouge">.auto.tfvars</code> and Terraform will gladly read these and set variable values accordingly. This allows you to set different variable definitions between different files. For instance, it might make sense to set the variable definitions as-follows (this is just an example, by no means the only way):</p>
+
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">network.auto.tfvars</code></li>
+      <li><code class="language-plaintext highlighter-rouge">storage.auto.tfvars</code></li>
+      <li><code class="language-plaintext highlighter-rouge">compute.auto.tfvars</code></li>
+    </ul>
+
+    <p>Grouping variable assignments like this allows a person to better navigate between variables, especially if there’s a large number of variables.</p>
+
+    <h3 id="via-environment-variables">Via environment variables</h3>
+
+    <p>Terraform is smart enough to look at the environment variables at run-time. If there are any variables that begin with <code class="language-plaintext highlighter-rouge">TF_VAR_</code> (the full environment variable would be: <code class="language-plaintext highlighter-rouge">TF_VAR_&lt;variable_name&gt;</code>), Terraform will assign the value to the given variable.</p>
+
+    <p>Here’s an example of how to set the <code class="language-plaintext highlighter-rouge">compartment_id</code> variable on a MacOS/Linux system:</p>
+
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">TF_VAR_compartment_id</span><span class="o">=</span>&lt;your_compartment_OCID_here&gt;
+</code></pre></div>    </div>
+
+    <p>This same environment variable might be set as follows on Windows:</p>
+
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>setx TF_VAR_compartment_id &lt;your_compartment_OCID_here&gt;
+</code></pre></div>    </div>
+
+    <h3 id="via-user-interactive-prompts">Via user-interactive prompts</h3>
+
+    <p>If a variable is not given a value, Terraform will resort to asking the user to provide it at run-time. Terraform cannot proceed without knowing what value to use.</p>
+
+    <p>This is annoying and can be tedious (especially if there are lots of undefined variables), however there are times when this method might make perfect sense. In situations where the user should be asked for a value (such as for a confirmation prompt), this can be a good solution.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(3)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(5)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-5">
+
+    <h2 class="slide__title"><span class="slide__num">6</span> Defining variables</h2>
+
+    <p>To define the existence of a variable, simply provide the following anywhere in the Terraform code:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">variable</span> <span class="s2">"compartment_id"</span> <span class="p">{}</span>
+</code></pre></div>    </div>
+
+    <p>It’s common practice to place variable definitions in a single file: <code class="language-plaintext highlighter-rouge">variables.tf</code>.  This allows for easier management of variable definitions (having them in one place).</p>
+
+    <p>Besides the name of the variable, there are several different attributes you can set for a variable, including (but not limited to):</p>
+
+    <ul>
+      <li>type (some of the common types will be discussed shortly)</li>
+      <li>description (it’s nice to let people know how this variable is used)</li>
+      <li>default</li>
+      <li>sensitive</li>
+    </ul>
+
+    <h3 id="default-values">Default values</h3>
+
+    <p>The <code class="language-plaintext highlighter-rouge">default</code> attribute is important to know about, as its behavior is multi-purpose. Notice how there’s no <code class="language-plaintext highlighter-rouge">required</code> attribute? If a variable does <em>not</em> have a default value, Terraform will require the variable value to be set. This means that <code class="language-plaintext highlighter-rouge">default</code> not only allows you to provide a default, but it can also make a variable “optional” (sort of). This is really just a side effect of providing a value. Every defined variable <em>must</em> have a value.  Giving a default value (even if empty, such as a value of <code class="language-plaintext highlighter-rouge">""</code> or <code class="language-plaintext highlighter-rouge">null</code>) keeps Terraform from “bugging” the operator, which gives the impression that it’s <em>not</em> required. It’s a matter of how you look at it.</p>
+
+    <p>Some variables might best be left blank (so it’s very obvious if the user running Terraform doesn’t set it to a specific value). Oftentimes it’s nice to have “sane defaults” set so that a reasonable default value is used on a variable, minimizing the amount of inputs that must be provided. When a variable is given a default value, the default value is used unless it is overridden (with a value explicitly set).</p>
+
+    <p>To define a default value, add the <code class="language-plaintext highlighter-rouge">default</code> attribute to the variable definition.</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">variable</span> <span class="s2">"compartment_id"</span> <span class="p">{</span>
+  <span class="nx">default</span> <span class="p">=</span> <span class="s2">"abcd.1234"</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>In the above example, unless a value is explicitly provided, the default value of “abcd.1234” will be used for the the <code class="language-plaintext highlighter-rouge">compartment_id</code> variable.</p>
+
+    <h3 id="sensitive-variables">Sensitive variables</h3>
+
+    <p>If you set the sensitive attribute of a variable to <code class="language-plaintext highlighter-rouge">true</code>, Terraform tries to minimize displaying the value to the user. This is not a guarantee that it’s not accessible to the user or that it won’t be shown on the screen. See the <a href="https://www.terraform.io/docs/language/values/variables.html#suppressing-values-in-cli-output">Terraform documentation</a> for more information.</p>
+
+    <p>Here’s an example:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">variable</span> <span class="s2">"api_token"</span> <span class="p">{</span>
+  <span class="nx">sensitive</span> <span class="p">=</span> <span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>In the above example, the visibility of the <code class="language-plaintext highlighter-rouge">api_token</code> variable is minimized through the use of setting the <code class="language-plaintext highlighter-rouge">sensitive</code> attribute to true for the <code class="language-plaintext highlighter-rouge">api_token</code> variable.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(4)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(6)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-6">
+
+    <h2 class="slide__title"><span class="slide__num">7</span> Variable Types</h2>
+
+    <h3 id="strings">Strings</h3>
+    <p>The variables used up to this point have been string values. String values are enclosed by double-quotes (“).</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">compartment_id</span><span class="err">=</span><span class="s2">"&lt;your_compartment_OCID_here&gt;"</span>
+</code></pre></div>    </div>
+
+    <p>Here’s how this is defined in <code class="language-plaintext highlighter-rouge">variables.tf</code>:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">variable</span> <span class="nx">tenancy_id</span> <span class="p">{</span>
+  <span class="nx">type</span> <span class="p">=</span> <span class="nx">string</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>Strings are common, but are by no means the only kind that you can use.</p>
+
+    <h3 id="numbers">Numbers</h3>
+    <p>Numbers are numeric values that are not surrounded by quotes.</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">number_of_computes</span><span class="err">=</span><span class="mi">10</span>
+</code></pre></div>    </div>
+
+    <p>Here’s how this might be defined in <code class="language-plaintext highlighter-rouge">variables.tf</code>:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">variable</span> <span class="s2">"number_of_computes"</span> <span class="p">{</span>
+  <span class="nx">type</span> <span class="p">=</span> <span class="nx">number</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <h3 id="boolean">Boolean</h3>
+
+    <p>Like many other languages, Terraform supports <code class="language-plaintext highlighter-rouge">true</code> and <code class="language-plaintext highlighter-rouge">false</code> boolean values. Here’s an example of a Boolean variable being set.</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">create_computes</span> <span class="err">=</span> <span class="kc">true</span>
+</code></pre></div>    </div>
+
+    <p>In the above example, the <code class="language-plaintext highlighter-rouge">create_computes</code> variable is set to <code class="language-plaintext highlighter-rouge">true</code>. These can be useful for many things, including specifying the desired behavior (like this example, where it might be possible to not create the computes if the value was set to <code class="language-plaintext highlighter-rouge">false</code>).</p>
+
+    <p>Here’s how this might be defined in <code class="language-plaintext highlighter-rouge">variables.tf</code>:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">variable</span> <span class="s2">"create_computes"</span> <span class="p">{</span>
+  <span class="nx">type</span> <span class="p">=</span> <span class="nx">bool</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <h3 id="lists">Lists</h3>
+
+    <p>There are times when a list is needed. Terraform lists are similar to arrays in many other languages. A Terraform list is an ordered list of values of a given type (could be string values, number values, etc.). Here’s an example of a string list.</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">compute_names</span> <span class="err">=</span> <span class="p">[</span> <span class="s2">"web1"</span><span class="p">,</span> <span class="s2">"web2"</span><span class="p">,</span> <span class="s2">"app1"</span><span class="p">,</span> <span class="s2">"app2"</span><span class="p">,</span> <span class="s2">"db1"</span><span class="p">,</span> <span class="s2">"db2"</span> <span class="p">]</span>
+</code></pre></div>    </div>
+
+    <p>Here’s how this might be defined in <code class="language-plaintext highlighter-rouge">variables.tf</code>.</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">variable</span> <span class="s2">"compute_names"</span> <span class="p">{</span>
+  <span class="nx">type</span> <span class="p">=</span> <span class="nx">list</span><span class="p">(</span><span class="nx">string</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>To reference a list element, use the index of the item.  Terraform is zero-indexed, so the first item is index <code class="language-plaintext highlighter-rouge">0</code>, the second item is index <code class="language-plaintext highlighter-rouge">1</code>, and so on. Look at how you might reference the <code class="language-plaintext highlighter-rouge">db1</code> value (from the above list example, being element <code class="language-plaintext highlighter-rouge">5</code>, index <code class="language-plaintext highlighter-rouge">4</code>):</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span><span class="err">.</span><span class="nx">compute_names</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>   <span class="c1"># this equals "db1"</span>
+</code></pre></div>    </div>
+
+    <h3 id="maps">Maps</h3>
+
+    <p>When the power of a key-value relationship is needed, Terraform maps are here to help! Maps are similar to hashes in some other languages, allowing you to have multiple keys, with each key having a value.  Here’s an example of a map.</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">compute_shapes</span> <span class="err">=</span> <span class="p">{</span>
+  <span class="s2">"web1"</span> <span class="p">=</span> <span class="s2">"VM.Standard2.1"</span><span class="p">,</span>
+  <span class="s2">"web2"</span> <span class="p">=</span> <span class="s2">"VM.Standard2.1"</span><span class="p">,</span>
+  <span class="s2">"app1"</span> <span class="p">=</span> <span class="s2">"VM.Standard2.4"</span><span class="p">,</span>
+  <span class="s2">"app2"</span> <span class="p">=</span> <span class="s2">"VM.Standard2.4"</span><span class="p">,</span>
+  <span class="s2">"db1"</span>  <span class="p">=</span> <span class="s2">"VM.Standard2.8"</span><span class="p">,</span>
+  <span class="s2">"db2"</span>  <span class="p">=</span> <span class="s2">"VM.Standard2.8"</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>Here’s how this is defined in <code class="language-plaintext highlighter-rouge">variables.tf</code>.</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">variable</span> <span class="s2">"compute_shapes"</span> <span class="p">{</span>
+  <span class="nx">type</span> <span class="p">=</span> <span class="nx">map</span><span class="p">(</span><span class="nx">string</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>This could’ve been a map of numbers (instead of strings) or another valid variable type.</p>
+
+    <p>To reference a map element, use the item key. Here’s how the <code class="language-plaintext highlighter-rouge">db1</code> value might be referenced.</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span><span class="err">.</span><span class="nx">compute_shapes</span><span class="p">[</span><span class="s2">"db1"</span><span class="p">]</span>   <span class="c1"># this equals "VM.Standard2.8"</span>
+</code></pre></div>    </div>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(5)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(7)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-7">
+
+    <h2 class="slide__title"><span class="slide__num">8</span> Sample Variable Definitions</h2>
+
+    <p>Here’s an example of a “toggle” variable (a boolean, which is either <code class="language-plaintext highlighter-rouge">true</code> or <code class="language-plaintext highlighter-rouge">false</code>):</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">variable</span> <span class="s2">"extra_power"</span> <span class="p">{</span>
+  <span class="nx">type</span> <span class="p">=</span> <span class="nx">bool</span>
+  <span class="nx">default</span> <span class="p">=</span> <span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>And here’s an example of a more complex variable (taken from <a href="https://github.com/oracle-devrel/terraform-oci-ocloud-landing-zone/blob/main/component/network_domain/input.tf">https://github.com/oracle-devrel/terraform-oci-ocloud-landing-zone/blob/main/component/network_domain/input.tf</a>):</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">variable</span> <span class="s2">"subnet"</span> <span class="p">{</span>
+  <span class="nx">type</span> <span class="p">=</span> <span class="nx">object</span><span class="p">({</span>
+    <span class="nx">cidr_block</span>                  <span class="p">=</span> <span class="nx">string</span><span class="p">,</span>
+    <span class="nx">prohibit_public_ip_on_vnic</span>  <span class="p">=</span> <span class="nx">bool</span><span class="p">,</span> 
+    <span class="nx">dhcp_options_id</span>             <span class="p">=</span> <span class="nx">string</span><span class="p">,</span>
+    <span class="nx">route_table_id</span>              <span class="p">=</span> <span class="nx">string</span>
+  <span class="p">})</span>
+  <span class="nx">description</span>                   <span class="p">=</span> <span class="s2">"Parameters for each subnet to be managed"</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>In the above example, the subnet variable contains several attributes (<code class="language-plaintext highlighter-rouge">cidr_block</code>, <code class="language-plaintext highlighter-rouge">prohibit_public_ip_on_vnic</code>, etc.), which are of different types. This is just one example of how complex variables can be crafted. Don’t worry about this though, as complex variables are optional (you can stick with single-value variables for most use-cases).</p>
+
+    <p>These are just a few examples. You can get really crazy with variables!  Have fun with them, be creative, and remember that variables largely define the input interface for the Terraform environment. Look at the <a href="https://www.terraform.io/docs/language/values/variables.html">Terraform language documentation on input variables</a> to discover some of the other variable types and Terraform variable functionality.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(6)">&laquo; Back</a></div>
+
+  </div>
+
+</div>
+
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/open-source">open-source</a>
+            <a class="animated-link tag" href="/topics/terraform">terraform</a>
+            <a class="animated-link tag" href="/topics/iac">iac</a>
+            <a class="animated-link tag" href="/topics/devops">devops</a>
+            <a class="animated-link tag" href="/topics/get-started">get-started</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Tim Clegg</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Code. Share. Secure. Innovate. Automate. Educate.</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/https://www.linkedin.com/in/timothy-clegg/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/timclegg" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+    
+
+<aside class="series-nav">
+  <h6>From this series:</h6>
+  <ul>
+    
+    <li><a href="/tutorials/tf-101/1-why-iac">Why Infrastructure as Code?</a></li>
+    
+    <li><a href="/tutorials/tf-101/5-creating">Creating Resources with Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/6-changing">Making changes using Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/2-experiencing-terraform">Experiencing Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/3-understanding-terraform-basics">Understanding The Basics Of Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/4-variables">Terraform Variables</a></li>
+    
+    <li><a href="/tutorials/tf-101/7-destroying">Destroying resources with Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/8-resources">More Terraform Resources</a></li>
+    
+  </ul>
+</aside>
+
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-10-14T12:00:00+00:00">October 14, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

@@ -1,0 +1,303 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Creating flexible OCI Load Balancers with OKE">
+    
+    <meta itemprop="datePublished" content="2021-11-02T16:17:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Creating flexible OCI Load Balancers with OKE
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <p>Until recently, the OCI Load Balancer shapes were restricted to a handful of options:</p>
+
+<ul>
+  <li>100 Mbps</li>
+  <li>400 Mbps</li>
+  <li>8000 Mbps</li>
+</ul>
+
+<p>What’s more, if you had to change the shape, this would involve recreating the load balancer.</p>
+
+<p><strong>Not anymore!</strong></p>
+
+<p>A few more options have been created for new load balancer shapes:</p>
+
+<ul>
+  <li>10 Mbps-Micro</li>
+  <li>10 Mbps</li>
+  <li><a href="https://blogs.oracle.com/cloud-infrastructure/post/announcing-oracle-cloud-infrastructure-flexible-load-balancing">Flexible</a></li>
+</ul>
+
+<p>And now, [load balancer] shapes are updatable <em>without having to destroy and recreate them</em>.</p>
+
+<p>So, let’s see how we can create them with OKE!</p>
+
+<p>For more information, see:</p>
+
+<ul>
+  <li><a href="https://docs.oracle.com/iaas/Content/GSG/Tasks/signingup.htm">Signing Up for Oracle Cloud Infrastructure</a></li>
+  <li><a href="https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/terraformgettingstarted.htm">Getting started with Terraform</a></li>
+  <li><a href="https://docs.oracle.com/en-us/iaas/Content/API/Concepts/cloudshellintro.htm">Getting started with OCI Cloud Shell</a></li>
+  <li><a href="https://docs.oracle.com/en-us/iaas/Content/Balance/Concepts/balanceoverview.htm">Overview of load balancing</a></li>
+  <li><a href="https://www.ateam-oracle.com/post/comparing-oci-load-balancers">Comparing OCI Load Balancers</a></li>
+  <li><a href="https://docs.oracle.com/en-us/iaas/Content/Balance/Tasks/managingloadbalancer.htm#console">Load Balancer management</a></li>
+</ul>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<p>To successfully complete this tutorial, you will need the following:</p>
+
+<ul>
+  <li>An Oracle Cloud Infrastructure Free Tier account. <a href="https://signup.cloud.oracle.com/?language=en&amp;sourceType=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted&amp;intcmp=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted">Start for Free</a>.</li>
+  <li>A MacOS, Linux, or Windows computer with <code class="language-plaintext highlighter-rouge">ssh</code> support installed.</li>
+  <li><a href="https://docs.oracle.com/en-us/iaas/Content/API/Concepts/cloudshellintro.htm">OCI Cloud Shell</a></li>
+</ul>
+
+<h2 id="creating-load-balancer-shapes">Creating Load Balancer Shapes</h2>
+
+<p>First, let’s see what load balancer shapes are available in our tenancy:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">oci lb shape list --compartment-id ocid1.compartment.oc1..  
+</span></code></pre></div></div>
+
+<p>Output should show the following:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>oci lb shape list <span class="nt">--compartment-id</span> ocid1.compartment.oc1..   
+<span class="go">{ 
+  "data": [
+   {
+    "name": "100Mbps"
+   },
+   {
+    "name": "10Mbps"
+   },
+   {
+    "name": "10Mbps-Micro"
+   },
+   {
+    "name": "400Mbps"
+   },
+   {
+    "name": "8000Mbps"
+   },
+   {
+    "name": "flexible"
+   }
+  ]
+}
+</span></code></pre></div></div>
+
+<p>As you can see, all the shapes are available. We could use a simple service to have the load balancer created, but the goal here is to show that these work equally well with ingress controllers.  So, let’s use the <a href="https://kubernetes.github.io/ingress-nginx/">NGINX Ingress Controller</a> to create one.</p>
+
+<h3 id="creating-and-updating-a-load-balancer-with-an-ingress-controller">Creating and updating a Load Balancer with an Ingress Controller</h3>
+
+<p>Let’s first add an Ingress Controller:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm install nginx ingress-nginx/ingress-nginx
+</span></code></pre></div></div>
+
+<p>By default, this will create a load balancer with a of shape 100 Mbps:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">oci lb load-balancer get --load-balancer-id ocid1.loadbalancer...."shape-name": "100Mbps",...
+</span></code></pre></div></div>
+
+<p><strong>Example - change shape to 400 Mbps:</strong></p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">"shape-name": "100Mbps",
+
+</span><span class="c">...
+</span></code></pre></div></div>
+
+<p><strong>Change shape -</strong> Let’s say we want to change the shape to 400 Mbps. We can do this with a load balancer annotation and a helm upgrade:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">helm upgrade nginx ingress-nginx/ingress-nginx \
+--set controller.service.annotations."service\.beta\.kubernetes\.io/oci-load-balancer-shape"="400Mbps"
+</span></code></pre></div></div>
+
+<p>This can get to be really cumbersome and unwieldy, so if you want to avoid the horrible escapes and <code class="language-plaintext highlighter-rouge">\</code>, use the <code class="language-plaintext highlighter-rouge">values.yaml</code> file provided by the chart. All you would need to do is traverse to the annotations section and add the following:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">service.beta.kubernetes.io/oci-load-balancer-shape</span><span class="pi">:</span> <span class="s2">"</span><span class="s">400Mbps"</span>
+</code></pre></div></div>
+
+<p><strong>Check status -</strong> After the upgrade is done, we can check on the shape again as before. We can see it’s now been upgraded to 400 Mbps:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">...
+</span><span class="go">"shape-name": "400Mbps",
+</span><span class="c">...
+</span></code></pre></div></div>
+
+<p><strong>Example - create a flexible shape with bandwidth limits:</strong></p>
+
+<p>Now, let’s say we want to create a load balancer with flexible shape and also take the opportunity to set bandwidth limits. We can do this by passing the annotations described below.</p>
+
+<p><strong>Check shape -</strong> When we check on the shape, we see the following:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">helm install nginx ingress-nginx/ingress-nginx \ 
+--set controller.service.annotations."service\.beta\.kubernetes\.io/oci-load-balancer-shape"="flexible" \ 
+--set controller.service.annotations."service\.beta\.kubernetes\.io/oci-load-balancer-shape-flex-min"=100 \ 
+--set controller.service.annotations."service\.beta\.kubernetes\.io/oci-load-balancer-shape-flex-max"=200
+</span></code></pre></div></div>
+
+<p><strong>Change the bandwidth -</strong> To dynamically change the bandwidth:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">helm upgrade nginx ingress-nginx/ingress-nginx --set controller.service.annotations."service\.beta\.kubernetes\.$</span><span class="w"> </span>io/oci-load-balancer-shape<span class="s2">"="</span>flexible<span class="s2">" </span><span class="se">\</span><span class="s2">
+</span><span class="go">--set controller.service.annotations."service\.beta\.kubernetes\.io/ oci-load-balancer-shape-flex-min"=10 \
+--set controller.service.annotations."service\.beta\.kubernetes\.io/
+oci-load-balancer-shape-flex-max"=500
+</span></code></pre></div></div>
+
+<p><strong>Recheck shape:</strong> Now when we check the shape, we can see the changes reflected:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">"shape-details": {
+    "maximum-bandwidth-in-mbps": 500,
+    "minimum-bandwidth-in-mbps": 10 
+},                                                                                                                                                                                        
+</span><span class="gp">$</span><span class="w"> </span>helm upgrade nginx ingress-nginx/ingress-nginx <span class="nt">--set</span> controller.service.annotations.<span class="s2">"service</span><span class="se">\.</span><span class="s2">beta</span><span class="se">\.</span><span class="s2">kubernetes</span><span class="se">\.</span><span class="s2">io/oci-load-balancer-shape"</span><span class="o">=</span><span class="s2">"flexible"</span> <span class="se">\</span>
+<span class="go">--set controller.service.annotations."service\.beta\.kubernetes\.io/oci-load-balancer-shape-flex-min"=10 \
+--set controller.service.annotations."service\.beta\.kubernetes\.io/oci-load-balancer-shape-flex-max"=500
+</span></code></pre></div></div>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">"shape-details": {          
+      "maximum-bandwidth-in-mbps": 500,
+      "minimum-bandwidth-in-mbps": 10
+    },
+"shape-name": "flexible",
+</span></code></pre></div></div>
+
+<h3 id="where-to-find-the-load-balancer-annotations">Where to find the Load Balancer annotations</h3>
+
+<p>Finally, all the OCI Load Balancer annotations can be found in the <a href="https://github.com/oracle/oci-cloud-controller-manager/blob/master/docs/load-balancer-annotations.md">Load Balancer Annotations</a> document. These annotations allow you to control the behavior of the load balancers created by OKE.</p>
+
+<h2 id="whats-next">What’s next</h2>
+
+<p>To explore more information about development with Oracle products:</p>
+
+<ul>
+  <li><a href="https://developer.oracle.com/">Oracle Developers Portal</a></li>
+  <li><a href="https://www.oracle.com/cloud/">Oracle Cloud Infrastructure</a></li>
+</ul>
+
+<!--- links -->
+
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/kubernetes">kubernetes</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name"></h3>
+    
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-11-02T16:17:00+00:00">November 2, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

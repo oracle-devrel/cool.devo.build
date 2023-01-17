@@ -1,0 +1,184 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Mr. Stark’s Briefcase and ProximaSafe">
+    
+    <meta itemprop="datePublished" content="2021-08-20T08:00:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Mr. Stark’s Briefcase and ProximaSafe
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <h2 id="welcome-to-proximasafe-an-evolution-of-smart-cities">Welcome to ProximaSafe, an evolution of Smart Cities!</h2>
+
+<p>Wait, what on Earth is Proxima and why is it Safe?</p>
+
+<p>Great questions.</p>
+
+<p>In 2018, Oracle developed ProximaCity, a physical product showcasing how cloud services can optimize the resource-intensive processes which make communities functional. This was an exciting outgrowth of Oracle’s <a href="https://www.oracle.com/industries/public-sector/smart-cities/">Smart City</a> initiative. It was a big hit.</p>
+
+<p>Then there was a pandemic.</p>
+
+<p>ProximaCity needed to adapt from a sprawling physical model to something more streamlined. Optimization was still a priority, but safety came first.</p>
+
+<p>Enter ProximaSafe.</p>
+
+<p>ProximaSafe extends the goals of the old ProximaCity, but uses data to proactively defend against biological threats (monitoring environmental parameters and ensuring sanitation stations, for example).</p>
+
+<h3 id="what-to-expect-from-this-series">What to expect from this series</h3>
+
+<p>This series walks you through creating a personal development lab which you can build at home, or just read to follow along. The theme of the lab, its use cases and sample data, borrows from the COVID pandemic. Using APIs, edge components, and sensors, you’ll use OCI services to build safety-related use cases.</p>
+
+<p>The goal here is to enable teachers, students, developers, and tinkerers to use and improve this “portable lab” and develop new safety-oriented use cases to explore and expand its necessary back-end cloud services.</p>
+
+<h2 id="the-briefcase-dream">The Briefcase Dream</h2>
+
+<p>I’ve always been a fan of Marvel superheroes comics, long before the successful movie franchise known as MCU. Actually, around 1972–1975, I could find several Marvel comics carefully translated and lettered in my native language by visiting my friendly (actually, he wasn’t) news vendor, strategically placed in the market street corner few hundred yards from where I lived.</p>
+
+<p>The hard limit — at the time — was the number of physical coins I was allowed to spend within a month without incurring into Mum’s inevitable semi-verbal reproach.</p>
+
+<p>Few years later, my tastes and interests turned to the Golden Age Sci-Fi (Asimov and all of the Futurians, Heinlein, Bradbury ). The news vendor corner was always there, my monthly allowance was a tad more generous and I could smuggle sci-fi books in my school bag without arousing suspicion. With a notable exception: pooled with the books, a comic, the Iron Man episode where the iconic Mr. Stark briefcase was introduced to my ‘magnets and miracles’ world.</p>
+
+<figure class="alignright">
+              <picture>
+                  <source srcset="assets/marvel.png 1x" />
+                  <img loading="lazy" width="700" height="572" src="assets/marvel.png" data-original="assets/marvel.png" title="I think I should write something like © Marvel Comics — All right reserved" alt="Comic book image of costume in suitcase" />
+              </picture>
+              <figcaption>I think I should write something like © Marvel Comics — All right reserved</figcaption>
+            </figure>
+
+<p>I wish I had that briefcase available in a number of situations, getting a bad grade or running into the inevitable school bully: my curiosity about the relationship between miniaturization and technology remains a fixed point even today.</p>
+
+<p>Then, decades later, the briefcase idea surfaced again while having fun with an iteration of the Oracle’s <a href="https://www.youtube.com/watch?v=aJUSEEagm8Q">Proxima City</a> model made by the Italian Innovation Team, a whimsical (as it’s been called) construction made with Legos, Arduinos, sensors and Oracle Cloud Infrastructure services.</p>
+
+<p>During the 2020 lockdown we had no access to the city model, installed in the Customer Visit Center in Rome. I was struggling to find a way to show a functioning demo either via Zoom or bringing some artifacts into customer premises (no Star Trek transporter available, so far), and urged to prepare something smaller than a city model but powerful enough to show the concept.</p>
+
+<p>“I should definitely do it” was my inner morning echo while sipping my favorite daily americano brew. Changing the model to be portable also meant changing the use cases perimeter: the year 2020 required — for obvious reasons — a rapid transition from Smart City services to an extended and appropriate Safe City scenario.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/bread.jpeg 1x" />
+                <img loading="lazy" src="assets/bread.jpeg" data-original="assets/bread.jpeg" alt="The playground" title="The playground" />
+            </picture>
+
+<p>Requirements were clear: small enough to fit in my backpack, programmable, made with off-the-shelf components, easily connectable to OCI services, and capable to show the end-to-end message flow by means of physical interaction. The stretch goal was to enable teachers, students, developer and tinkerers to improve this ‘portable lab’ and develop new use cases oriented to safety, exploring and expanding the needed back-end cloud services.</p>
+
+<h2 id="from-briefcase-to-cloud-and-back">From Briefcase to Cloud, and Back</h2>
+
+<p>Here’s the link (Note: insert link) to the article series about what I call <strong>ProximaSafe</strong>, showing how to build some Cloud and Edge capabilities to make a testbed for safety-related applications (included, but not limited to) using a number of technologies and tools, such as:</p>
+
+<ul>
+  <li><strong>Oracle Golden Gate Streaming Analytics</strong>, to analyze data in motion and detect anomalies and/or errors</li>
+  <li><strong>OCI Streaming</strong>, the messaging backbone</li>
+  <li><strong>OCI Functions</strong>, the serverless infrastructure used to enable the upstream messages to Edge</li>
+  <li>the <strong>M5Stack</strong> family of development boards, acting as Edge Components enabled to publish and subscribe to IoT topics</li>
+  <li>a <strong>Raspberry Pi 4</strong>, the inevitable Edge gateway taking care of communication between sensors &amp; boards to Cloud — and viceversa</li>
+  <li>a suitable battery pack to power the whole stuff.</li>
+</ul>
+
+<picture class="">
+                <source srcset="assets/case.jpeg 1x" />
+                <img loading="lazy" src="assets/case.jpeg" data-original="assets/case.jpeg" alt="The bag of goodies" title="The bag of goodies" />
+            </picture>
+
+<p>The overall architecture designed for this mobile lab includes the representation of the edge (the boards inside the briefcase) and the communication flow edge -&gt; OCI -&gt; edge with return messages containing anomaly detections and alarms.</p>
+
+<picture class="">
+                <source srcset="assets/wire.png 1x" />
+                <img loading="lazy" src="assets/wire.png" data-original="assets/wire.png" />
+            </picture>
+
+<p>So, given a number of messages that can be recognized as an uptrend/downtrend pattern or a number of messages within a time frame (maybe few seconds), the stream analysis within OCI may (or may not) throw an alarm, sent back to the edge to make something happen.</p>
+
+<picture class="">
+                <source srcset="assets/gates.jpeg 1x" />
+                <img loading="lazy" src="assets/gates.jpeg" data-original="assets/gates.jpeg" alt="Something has definitely happened" title="Something has definitely happened" />
+            </picture>
+
+<p>Here’s a <a href="https://youtu.be/dw_odrtwAUk">short YouTube video</a>.</p>
+
+<p><strong>Three chapters, a common goal</strong></p>
+
+<p>I’ve divided the whole path in chapters that will be published every fortnight or something, trying to avoid the ‘War and Peace’ syndrome (I’m not sure I achieved that). Here’s the breakdown of the articles:</p>
+
+<ul>
+  <li>In <strong>chapter 1</strong>, we’ll set up OCI resources to implement an even-driven engine, capable of analyzing the stream of events (and data) from the edge</li>
+  <li>In <strong>chapter 2</strong>, we’ll set up the feedback mechanism to return alarms to the edge in order to make something happen locally
+In the <strong>final chapter</strong> (three is the magic number), we’ll select and program the edge components (thingies in our briefcase) and we’ll design some pipelines in the cloud corresponding to a number of use cases.</li>
+</ul>
+
+<p>It was fun to build it. The boy I used to be would be proud of it.</p>
+
+<p>The briefcase needs more engineering. I became no Tony, no superpowers, no millionaire, and — overall — my once dark goatee has become white (alas!), so the distant reflection of that boy slipping comics and books in the backpack while wondering about future technology maybe it’s gone forever. My morning back pain reminds me that, indeed, it is.</p>
+
+<p>Well, here’s the <a href="https://developer.oracle.com/proximasafe-intro/">link to the first chapter</a>, for it is time to think about the next thing to write.</p>
+
+<p>I still daydream about that magical briefcase, though.</p>
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/oci">oci</a>
+            <a class="animated-link tag" href="/topics/iot">iot</a>
+            <a class="animated-link tag" href="/topics/streaming">streaming</a>
+            <a class="animated-link tag" href="/topics/serverless">serverless</a>
+            <a class="animated-link tag" href="/topics/rpi">rpi</a>
+            <a class="animated-link tag" href="/topics/full-stack">full-stack</a>
+            </span>
+    </p> -->
+  
+  
+    
+      
+      
+      <ul>
+        
+        <li><a href="https://developer.oracle.com/proximasafe-intro/">Proxima Safe Part 1</a></li>
+        
+        <li><a href="https://developer.oracle.com/proximasafe-part-2/">Proxima Safe Part 2</a></li>
+        
+        <li><a href="https://developer.oracle.com/proximasafe-part-3/">Proxima Safe Part 3</a></li>
+        
+      </ul>
+      
+      
+      
+      
+    
+    
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-08-20T08:00:00+00:00">August 20, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

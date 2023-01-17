@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" >
+  <generator uri="https://jekyllrb.com/" version="4.2.2">Jekyll</generator>
+  <link href="https://cool.devo.build/excerpts.xml" rel="self" type="application/atom+xml" />
+  <link href="https://cool.devo.build/" rel="alternate" type="text/html" />
+  <updated>2023-01-17T15:45:44+00:00</updated>
+  <id>https://cool.devo.build/excerpts.xml</id>
+    <title type="html">Oracle Developer Tutorials</title>
+    <subtitle>Cool stuff from Oracle's Developer Relations team</subtitle>
+    <author>
+        <name>Oracle Developer Community</name>
+    </author>
+    <entry>
+      <title type="html">Getting started with Rust</title>
+      <link href="https://cool.devo.build/tutorials/rust-on-oci/rust-getting-started" rel="alternate" type="text/html" title="Getting started with Rust" />
+      <published>2022-12-12T08:00:00+00:00</published>
+      <updated>2022-12-12T08:00:00+00:00</updated>
+      <id>https://cool.devo.build/tutorials/rust-on-oci/rust-getting-started</id>
+      <content type="html" xml:base="https://cool.devo.build/tutorials/rust-on-oci/rust-getting-started">&lt;p&gt;The beginning of a series on building applications using the Rust programming language.&lt;/p&gt;</content>
+      <author>
+          <name>Oracle Developers</name>
+      </author>
+      <category term="clouddev" />
+      <category term="cloudapps" />
+      <category term="open-source" />
+      <category term="devops" />
+      <category term="get-started" />
+      <category term="back-end" />
+      <category term="rust" />
+      <summary type="html">The beginning of a series on building applications using the Rust programming language.</summary>
+    </entry>
+    <entry>
+      <title type="html">Building an API in Rust and hosting on Oracle Cloud Infrastructure</title>
+      <link href="https://cool.devo.build/tutorials/rust-on-oci/rust-building-an-api" rel="alternate" type="text/html" title="Building an API in Rust and hosting on Oracle Cloud Infrastructure" />
+      <published>2022-12-12T08:00:00+00:00</published>
+      <updated>2022-12-12T08:00:00+00:00</updated>
+      <id>https://cool.devo.build/tutorials/rust-on-oci/rust-building-an-api</id>
+      <content type="html" xml:base="https://cool.devo.build/tutorials/rust-on-oci/rust-building-an-api">&lt;p&gt;How to build an API using Rust and host it on Oracle Cloud Infrastructure.&lt;/p&gt;</content>
+      <author>
+          <name>Oracle Developers</name>
+      </author>
+      <category term="clouddev" />
+      <category term="cloudapps" />
+      <category term="open-source" />
+      <category term="devops" />
+      <category term="get-started" />
+      <category term="back-end" />
+      <category term="rust" />
+      <summary type="html">How to build an API using Rust and host it on Oracle Cloud Infrastructure.</summary>
+    </entry>
+    <entry>
+      <title type="html">Using Sybl to connect to your Oracle Database</title>
+      <link href="https://cool.devo.build/tutorials/rust-on-oci/rust-using-sybl-to-connect-oci" rel="alternate" type="text/html" title="Using Sybl to connect to your Oracle Database" />
+      <published>2022-12-12T08:00:00+00:00</published>
+      <updated>2022-12-12T08:00:00+00:00</updated>
+      <id>https://cool.devo.build/tutorials/rust-on-oci/rust-using-sybl-to-connect-oci</id>
+      <content type="html" xml:base="https://cool.devo.build/tutorials/rust-on-oci/rust-using-sybl-to-connect-oci">&lt;p&gt;How to build safely with modern technology.&lt;/p&gt;</content>
+      <author>
+          <name>Oracle Developers</name>
+      </author>
+      <category term="clouddev" />
+      <category term="cloudapps" />
+      <category term="open-source" />
+      <category term="devops" />
+      <category term="get-started" />
+      <category term="back-end" />
+      <category term="rust" />
+      <summary type="html">How to build safely with modern technology.</summary>
+    </entry>
+    <entry>
+      <title type="html">Building Safe, Fast, and Manageable Applications with Rust and Oracle Cloud Infrastructure</title>
+      <link href="https://cool.devo.build/tutorials/rust-on-oci/rust-safe-fast-manageable" rel="alternate" type="text/html" title="Building Safe, Fast, and Manageable Applications with Rust and Oracle Cloud Infrastructure" />
+      <published>2022-12-12T08:00:00+00:00</published>
+      <updated>2022-12-12T08:00:00+00:00</updated>
+      <id>https://cool.devo.build/tutorials/rust-on-oci/rust-safe-fast-manageable</id>
+      <content type="html" xml:base="https://cool.devo.build/tutorials/rust-on-oci/rust-safe-fast-manageable">&lt;p&gt;How to build safely with modern technology.&lt;/p&gt;</content>
+      <author>
+          <name>Oracle Developers</name>
+      </author>
+      <category term="clouddev" />
+      <category term="cloudapps" />
+      <category term="open-source" />
+      <category term="devops" />
+      <category term="get-started" />
+      <category term="back-end" />
+      <category term="rust" />
+      <summary type="html">How to build safely with modern technology.</summary>
+    </entry>
+    <entry>
+      <title type="html">Rust on OCI</title>
+      <link href="https://cool.devo.build/tutorials/rust-on-oci/" rel="alternate" type="text/html" title="Rust on OCI" />
+      <published>2022-12-12T06:00:00+00:00</published>
+      <updated>2022-12-12T06:00:00+00:00</updated>
+      <id>https://cool.devo.build/tutorials/rust-on-oci/</id>
+      <content type="html" xml:base="https://cool.devo.build/tutorials/rust-on-oci/">&lt;p&gt;Use Rust to implement applications on Oracle Cloud Infrastructure&lt;/p&gt;</content>
+      <author>
+          <name>{&quot;name&quot;=&gt;nil}</name>
+      </author>
+      <category term="open-source" />
+      <category term="devops" />
+      <category term="get-started" />
+      <category term="rust" />
+      <summary type="html">Use Rust to implement applications on Oracle Cloud Infrastructure</summary>
+    </entry>
+    <entry>
+      <title type="html">HeatWave on AWS Metrics and Performance Tools</title>
+      <link href="https://cool.devo.build/tutorials/metrics-and-performance-hw-aws-devrel0622" rel="alternate" type="text/html" title="HeatWave on AWS Metrics and Performance Tools" />
+      <published>2022-06-16T17:00:00+00:00</published>
+      <updated>2022-06-16T17:00:00+00:00</updated>
+      <id>https://cool.devo.build/tutorials/metrics-and-performance-hw-aws-devrel0622</id>
+      <content type="html" xml:base="https://cool.devo.build/tutorials/metrics-and-performance-hw-aws-devrel0622">&lt;p&gt;A quick overview of the performance and metrics console windows in MySQL HeatWave on AWS.&lt;/p&gt;</content>
+      <author>
+          <name>Victor Agreda</name>
+      </author>
+      <category term="cloudapps" />
+      <category term="mysql" />
+      <category term="database" />
+      <category term="heatwave" />
+      <summary type="html">A quick overview of the performance and metrics console windows in MySQL HeatWave on AWS.</summary>
+    </entry>
+    <entry>
+      <title type="html">Getting Started with MySQL HeatWave on AWS</title>
+      <link href="https://cool.devo.build/tutorials/oci-getting-started-heatwave-aws-v30622" rel="alternate" type="text/html" title="Getting Started with MySQL HeatWave on AWS" />
+      <published>2022-06-16T17:00:00+00:00</published>
+      <updated>2022-06-16T17:00:00+00:00</updated>
+      <id>https://cool.devo.build/tutorials/oci-getting-started-heatwave-aws-v30622</id>
+      <content type="html" xml:base="https://cool.devo.build/tutorials/oci-getting-started-heatwave-aws-v30622">&lt;p&gt;Getting your OCI tenancy ready to connect to MySQL HeatWave on AWS. We will create a compute instance, DB System, and endpoint. We also began to provision MySQL HeatWave on AWS.&lt;/p&gt;</content>
+      <author>
+          <name>Victor Agreda</name>
+      </author>
+      <category term="cloudapps" />
+      <category term="mysql" />
+      <category term="database" />
+      <category term="heatwave" />
+      <category term="aws" />
+      <summary type="html">Getting your OCI tenancy ready to connect to MySQL HeatWave on AWS. We will create a compute instance, DB System, and endpoint. We also began to provision MySQL HeatWave on AWS.</summary>
+    </entry>
+    <entry>
+      <title type="html">Using the AWS Migration Service with HeatWave on AWS with WordPress as an Example</title>
+      <link href="https://cool.devo.build/tutorials/using-aws-migration-service-wp-ex-devrel0622" rel="alternate" type="text/html" title="Using the AWS Migration Service with HeatWave on AWS with WordPress as an Example" />
+      <published>2022-06-16T17:00:00+00:00</published>
+      <updated>2022-06-16T17:00:00+00:00</updated>
+      <id>https://cool.devo.build/tutorials/using-aws-migration-service-wp-ex-devrel0622</id>
+      <content type="html" xml:base="https://cool.devo.build/tutorials/using-aws-migration-service-wp-ex-devrel0622">&lt;p&gt;A quick example of how you can move data over for use in MySQL HeatWave on AWS.&lt;/p&gt;</content>
+      <author>
+          <name>Victor Agreda</name>
+      </author>
+      <category term="cloudapps" />
+      <category term="mysql" />
+      <category term="database" />
+      <category term="heatwave" />
+      <summary type="html">A quick example of how you can move data over for use in MySQL HeatWave on AWS.</summary>
+    </entry>
+    <entry>
+      <title type="html">Connecting To and Managing HeatWave on AWS</title>
+      <link href="https://cool.devo.build/tutorials/connecting-managing-heatwave-aws-devrel0622" rel="alternate" type="text/html" title="Connecting To and Managing HeatWave on AWS" />
+      <published>2022-06-16T17:00:00+00:00</published>
+      <updated>2022-06-16T17:00:00+00:00</updated>
+      <id>https://cool.devo.build/tutorials/connecting-managing-heatwave-aws-devrel0622</id>
+      <content type="html" xml:base="https://cool.devo.build/tutorials/connecting-managing-heatwave-aws-devrel0622">&lt;p&gt;Getting signed up, signed on, and some basic management tasks for your HeatWave on AWS cluster.&lt;/p&gt;</content>
+      <author>
+          <name>Victor Agreda</name>
+      </author>
+      <category term="cloudapps" />
+      <category term="mysql" />
+      <category term="database" />
+      <category term="heatwave" />
+      <category term="aws" />
+      <summary type="html">Getting signed up, signed on, and some basic management tasks for your HeatWave on AWS cluster.</summary>
+    </entry>
+    <entry>
+      <title type="html">Creating a Simple Chatbot using NodeJS on OCI</title>
+      <link href="https://cool.devo.build/tutorials/create-simple-chatbot-nodejs-oci" rel="alternate" type="text/html" title="Creating a Simple Chatbot using NodeJS on OCI" />
+      <published>2022-05-26T19:42:00+00:00</published>
+      <updated>2022-05-26T19:42:00+00:00</updated>
+      <id>https://cool.devo.build/tutorials/create-simple-chatbot-nodejs-oci</id>
+      <content type="html" xml:base="https://cool.devo.build/tutorials/create-simple-chatbot-nodejs-oci">&lt;p&gt;A very basic chatbot using nodejs on an oracle cloud compute instance.&lt;/p&gt;</content>
+      <author>
+          <name>Victor Agreda</name>
+      </author>
+      <category term="frameworks" />
+      <category term="cloudapps" />
+      <category term="open-source" />
+      <category term="oci" />
+      <category term="nodejs" />
+      <summary type="html">A very basic chatbot using nodejs on an oracle cloud compute instance.</summary>
+    </entry>
+</feed>

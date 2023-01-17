@@ -1,0 +1,418 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar has-slides" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Destroying resources with Terraform">
+    
+    <meta itemprop="datePublished" content="2021-11-01T08:02:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Destroying resources with Terraform
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+        <!-- <aside class="sidebar__right sticky">
+          <nav class="slides-nav"><ul><li class="active" data-target-slide="0"><a href="javascript:cool.slides.goToSlide(0)">Intro</a></li>
+<li data-target-slide="1"><a href="javascript:cool.slides.goToSlide(1)">Removing a Resource</a></li>
+<li data-target-slide="2"><a href="javascript:cool.slides.goToSlide(2)">Removing All Resources</a></li></ul></nav>
+        </aside> -->
+      
+
+        <div class="slides" id="slideshow">
+
+  <div class="slide active" id="slide-0">
+
+    <h2 class="slide__title"><span class="slide__num">1</span> Introduction</h2>
+
+    <figure class="aligncenter">
+              <picture>
+                  <source srcset="assets/terraform-101.png 1x" />
+                  <img loading="lazy" width="400" height="400" src="assets/terraform-101.png" data-original="assets/terraform-101.png" title="Terraform 101" alt="Terraform 101 Tutorial Series" />
+              </picture>
+              <figcaption>Terraform 101</figcaption>
+            </figure>
+
+    <p>So far, we’ve had some fun creating and changing OCI resources. Our tutorial is coming to a close though, so it’s time to remove the resources we’ve added and clean-up after ourselves. Terraform makes this amazingly easy. Let’s explore this now.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)" class="slides__btn--begin">Begin &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-1">
+
+    <h2 class="slide__title"><span class="slide__num">2</span> Removing a Resource</h2>
+
+    <p>To remove the <code class="language-plaintext highlighter-rouge">stage</code> subnet, we’ll first need to remove its resource definition (the following code snippet) from the <code class="language-plaintext highlighter-rouge">main.tf</code> file:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">resource</span> <span class="s2">"oci_core_subnet"</span> <span class="s2">"stage"</span> <span class="p">{</span>
+  <span class="nx">vcn_id</span>                      <span class="p">=</span> <span class="nx">oci_core_vcn</span><span class="p">.</span><span class="nx">tf_101</span><span class="p">.</span><span class="nx">id</span>
+  <span class="nx">cidr_block</span>                  <span class="p">=</span> <span class="s2">"172.16.2.0/24"</span>
+  <span class="nx">compartment_id</span>              <span class="p">=</span> <span class="s2">"&lt;your_compartment_OCID_here&gt;"</span>
+  <span class="nx">display_name</span>                <span class="p">=</span> <span class="s2">"Staging subnet"</span>
+  <span class="nx">prohibit_public_ip_on_vnic</span>  <span class="p">=</span> <span class="kc">true</span>
+  <span class="nx">dns_label</span>                   <span class="p">=</span> <span class="s2">"stage"</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>Look at the Terraform plan to ensure it’s correct:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>terraform plan
+<span class="gp">oci_core_subnet.stage: Refreshing state... [id=ocid1.subnet.oc1.phx.&lt;sanitized&gt;</span><span class="o">]</span>
+<span class="gp">oci_core_vcn.tf101: Refreshing state... [id=ocid1.vcn.oc1.phx.&lt;sanitized&gt;</span><span class="o">]</span>
+<span class="gp">oci_core_subnet.test: Refreshing state... [id=ocid1.subnet.oc1.phx.&lt;sanitized&gt;</span><span class="o">]</span>
+<span class="gp">oci_core_subnet.dev: Refreshing state... [id=ocid1.subnet.oc1.phx.&lt;sanitized&gt;</span><span class="o">]</span>
+<span class="go">
+An execution plan has been generated and is shown below. 
+Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+</span><span class="gp">  #</span><span class="w"> </span>oci_core_subnet.stage will be destroyed
+<span class="go">  - resource "oci_core_subnet" "stage" {
+</span><span class="gp">      - cidr_block                 = "172.16.2.0/24" -&gt;</span><span class="w"> </span>null
+<span class="gp">      - compartment_id             = "ocid1.compartment.oc1..&lt;sanitized&gt;</span><span class="s2">" -&gt; null
+</span><span class="gp">      - defined_tags               = {} -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - dhcp_options_id            = "ocid1.dhcpoptions.oc1.phx.&lt;sanitized&gt;</span><span class="s2">"</span> -&gt; null
+<span class="gp">      - display_name               = "Staging subnet" -&gt;</span><span class="w"> </span>null
+<span class="gp">      - dns_label                  = "stage" -&gt;</span><span class="w"> </span>null
+<span class="gp">      - freeform_tags              = {} -&gt;</span><span class="w"> </span>null
+<span class="gp">      - id                         = "ocid1.subnet.oc1.phx.&lt;sanitized&gt;</span><span class="s2">" -&gt; null
+</span><span class="gp">      - prohibit_public_ip_on_vnic = true -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - route_table_id             = "ocid1.routetable.oc1.phx.&lt;sanitized&gt;</span><span class="s2">"</span> -&gt; null
+<span class="go">      - security_list_ids          = [
+</span><span class="gp">          - "ocid1.securitylist.oc1.phx.&lt;sanitized&gt;</span><span class="s2">",
+</span><span class="gp">        ] -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - state                      = "AVAILABLE" -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - subnet_domain_name         = "stage.example.oraclevcn.com" -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - time_created               = "2021-02-09 20:22:37.634 +0000 UTC" -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - vcn_id                     = "ocid1.vcn.oc1.phx.&lt;sanitized&gt;</span><span class="s2">"</span> -&gt; null
+<span class="gp">      - virtual_router_ip          = "172.16.2.1" -&gt;</span><span class="w"> </span>null
+<span class="gp">      - virtual_router_mac         = "00:11:...:22:33" -&gt;</span><span class="w"> </span>null
+<span class="go">    }
+
+Plan: 0 to add, 0 to change, 1 to destroy.
+
+------------------------------------------------------------------------
+
+Note: You didn't specify an "-out" parameter to save this plan, so Terraform
+can't guarantee that exactly these actions will be performed if
+"terraform apply" is subsequently run.
+</span></code></pre></div>    </div>
+
+    <blockquote class="notice">
+      <p><strong>NOTE:</strong> It might feel redundant to keep looking at the output from <code class="language-plaintext highlighter-rouge">terraform plan</code> when the same output is given when you run <code class="language-plaintext highlighter-rouge">terraform apply</code> (before telling it to continue). It might <em>feel</em> redundant, but it’s a good habit to always review proposed changes <em>before</em> making them. By running the plan and then applying it, you’re forcing yourself to closely look at what’s going to happen to the environment (before it happens) giving you valuable time to stop or change what’s going to take place.</p>
+    </blockquote>
+
+    <p>The minus sign (<code class="language-plaintext highlighter-rouge">-</code>) in front of the <code class="language-plaintext highlighter-rouge">oci_core_subnet.stage</code> is how Terraform indicates it will be removing the resource from the environment (“terminated,” in OCI speak). Proceed with applying it:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>terraform apply
+<span class="go">
+</span><span class="gp">#</span><span class="w"> </span>...
+<span class="go">
+Plan: 0 to add, 0 to change, 1 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+</span><span class="gp">oci_core_subnet.stage: Destroying... [id=ocid1.subnet.oc1.phx.&lt;sanitized&gt;</span><span class="o">]</span>
+<span class="go">oci_core_subnet.stage: Destruction complete after 4s
+
+Apply complete! Resources: 0 added, 0 changed, 1 destroyed.
+</span></code></pre></div>    </div>
+
+    <p>With the <code class="language-plaintext highlighter-rouge">stage</code> subnet removed, the environment is a bit cleaner.</p>
+
+    <h3 id="deleting-and-re-creating-a-resource">Deleting and Re-creating a Resource</h3>
+
+    <p>We chose to permanently delete the <code class="language-plaintext highlighter-rouge">stage</code> subnet. In situations where a single resource should be destroyed and then re-created, there are a couple of options (rather than modifying the Terraform code):</p>
+
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">terraform destroy</code> command</li>
+      <li>taint a resource</li>
+    </ul>
+
+    <p>The <code class="language-plaintext highlighter-rouge">terraform destroy -target=type.name</code> command is handy. Instead of deleting the stage subnet in your code and running <code class="language-plaintext highlighter-rouge">terraform apply</code>, you could have run <code class="language-plaintext highlighter-rouge">terraform destroy -target=oci_core_subnet.stage</code>. Of course, if you don’t remove (or comment out) the code for the stage subnet, the next time you run <code class="language-plaintext highlighter-rouge">terraform apply</code>, it would want to re-create the stage Subnet.</p>
+
+    <p>When a resource is “tainted,” it will be deleted and re-created. The command <code class="language-plaintext highlighter-rouge">terraform taint type.name</code> is how a resource is tainted. Here’s an example of how the staging subnet could’ve been tainted: <code class="language-plaintext highlighter-rouge">terraform taint oci_core_subnet.stage</code> (followed by <code class="language-plaintext highlighter-rouge">terraform plan</code> and <code class="language-plaintext highlighter-rouge">terraform apply</code>). The next time Terraform applies, it will delete and re-create the resource. Look at the <a href="https://www.terraform.io/docs/cli/commands/taint.html">Terraform taint command documentation</a> for more information.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(0)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(2)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-2">
+
+    <h2 class="slide__title"><span class="slide__num">3</span> Removing All Resources</h2>
+
+    <p>When it’s time to fully terminate (destroy) an environment, Terraform has a single command that accomplishes this.</p>
+
+    <p>While this could be accomplished by removing resource definitions from the <code class="language-plaintext highlighter-rouge">main.tf</code> (Terraform code) file, that isn’t ideal. What if the environment needs to be provisioned in the future? Keep the Terraform code and use the <code class="language-plaintext highlighter-rouge">terraform destroy</code> command to clean-up (terminate/destroy) the environment:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>terraform destroy
+<span class="go">
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+</span><span class="gp">  #</span><span class="w"> </span>oci_core_subnet.dev will be destroyed
+<span class="go">  - resource "oci_core_subnet" "dev" {
+</span><span class="gp">      - cidr_block                 = "172.16.0.0/24" -&gt;</span><span class="w"> </span>null
+<span class="gp">      - compartment_id             = "ocid1.compartment.oc1..&lt;sanitized&gt;</span><span class="s2">" -&gt; null
+</span><span class="gp">      - defined_tags               = {} -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - dhcp_options_id            = "ocid1.dhcpoptions.oc1.phx.&lt;sanitized&gt;</span><span class="s2">"</span> -&gt; null
+<span class="gp">      - display_name               = "Dev subnet" -&gt;</span><span class="w"> </span>null
+<span class="gp">      - dns_label                  = "dev" -&gt;</span><span class="w"> </span>null
+<span class="gp">      - freeform_tags              = {} -&gt;</span><span class="w"> </span>null
+<span class="gp">      - id                         = "ocid1.subnet.oc1.phx.&lt;sanitized&gt;</span><span class="s2">" -&gt; null
+</span><span class="gp">      - prohibit_public_ip_on_vnic = true -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - route_table_id             = "ocid1.routetable.oc1.phx.&lt;sanitized&gt;</span><span class="s2">"</span> -&gt; null
+<span class="go">      - security_list_ids          = [
+</span><span class="gp">          - "ocid1.securitylist.oc1.phx.&lt;sanitized&gt;</span><span class="s2">",
+</span><span class="gp">        ] -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - state                      = "AVAILABLE" -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - subnet_domain_name         = "dev.example.oraclevcn.com" -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - time_created               = "2021-02-09 20:22:38.422 +0000 UTC" -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - vcn_id                     = "ocid1.vcn.oc1.phx.&lt;sanitized&gt;</span><span class="s2">"</span> -&gt; null
+<span class="gp">      - virtual_router_ip          = "172.16.0.1" -&gt;</span><span class="w"> </span>null
+<span class="gp">      - virtual_router_mac         = "00:11:...:22:33" -&gt;</span><span class="w"> </span>null
+<span class="go">    }
+
+</span><span class="gp">  #</span><span class="w"> </span>oci_core_subnet.test will be destroyed
+<span class="go">  - resource "oci_core_subnet" "test" {
+</span><span class="gp">      - cidr_block                 = "172.16.1.0/24" -&gt;</span><span class="w"> </span>null
+<span class="gp">      - compartment_id             = "ocid1.compartment.oc1..&lt;sanitized&gt;</span><span class="s2">" -&gt; null
+</span><span class="gp">      - defined_tags               = {} -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - dhcp_options_id            = "ocid1.dhcpoptions.oc1.phx.&lt;sanitized&gt;</span><span class="s2">"</span> -&gt; null
+<span class="gp">      - display_name               = "Testing subnet" -&gt;</span><span class="w"> </span>null
+<span class="gp">      - dns_label                  = "test" -&gt;</span><span class="w"> </span>null
+<span class="gp">      - freeform_tags              = {} -&gt;</span><span class="w"> </span>null
+<span class="gp">      - id                         = "ocid1.subnet.oc1.phx.&lt;sanitized&gt;</span><span class="s2">" -&gt; null
+</span><span class="gp">      - prohibit_public_ip_on_vnic = true -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - route_table_id             = "ocid1.routetable.oc1.phx.&lt;sanitized&gt;</span><span class="s2">"</span> -&gt; null
+<span class="go">      - security_list_ids          = [
+</span><span class="gp">          - "ocid1.securitylist.oc1.phx.&lt;sanitized&gt;</span><span class="s2">",
+</span><span class="gp">        ] -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - state                      = "AVAILABLE" -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - subnet_domain_name         = "test.example.oraclevcn.com" -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - time_created               = "2021-02-09 20:22:38.097 +0000 UTC" -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - vcn_id                     = "ocid1.vcn.oc1.phx.&lt;sanitized&gt;</span><span class="s2">"</span> -&gt; null
+<span class="gp">      - virtual_router_ip          = "172.16.1.1" -&gt;</span><span class="w"> </span>null
+<span class="gp">      - virtual_router_mac         = "00:11:...:22:33" -&gt;</span><span class="w"> </span>null
+<span class="go">    }
+
+</span><span class="gp">  #</span><span class="w"> </span>oci_core_vcn.tf_101 will be destroyed
+<span class="go">  - resource "oci_core_vcn" "example" {
+</span><span class="gp">      - cidr_block               = "172.16.0.0/20" -&gt;</span><span class="w"> </span>null
+<span class="go">      - cidr_blocks              = [
+          - "172.16.0.0/20",
+</span><span class="gp">        ] -&gt;</span><span class="w"> </span>null
+<span class="gp">      - compartment_id           = "ocid1.compartment.oc1..&lt;sanitized&gt;</span><span class="s2">" -&gt; null
+</span><span class="gp">      - default_dhcp_options_id  = "ocid1.dhcpoptions.oc1.phx.&lt;sanitized&gt;</span><span class="s2">"</span> -&gt; null
+<span class="gp">      - default_route_table_id   = "ocid1.routetable.oc1.phx.&lt;sanitized&gt;</span><span class="s2">" -&gt; null
+</span><span class="gp">      - default_security_list_id = "ocid1.securitylist.oc1.phx.&lt;sanitized&gt;</span><span class="s2">"</span> -&gt; null
+<span class="gp">      - defined_tags             = {} -&gt;</span><span class="w"> </span>null
+<span class="gp">      - display_name             = "tf_101" -&gt;</span><span class="w"> </span>null
+<span class="gp">      - dns_label                = "tf101" -&gt;</span><span class="w"> </span>null
+<span class="gp">      - freeform_tags            = {} -&gt;</span><span class="w"> </span>null
+<span class="gp">      - id                       = "ocid1.vcn.oc1.phx.&lt;sanitized&gt;</span><span class="s2">" -&gt; null
+</span><span class="gp">      - state                    = "AVAILABLE" -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - time_created             = "2021-02-09 20:20:05.841 +0000 UTC" -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="gp">      - vcn_domain_name          = "tf101.oraclevcn.com" -&gt;</span><span class="w"> </span><span class="s2">null
+</span><span class="go">    }
+
+Plan: 0 to add, 0 to change, 3 to destroy.
+
+Do you really want to destroy all resources?
+  Terraform will destroy all your managed infrastructure, as shown above.
+  There is no undo. Only 'yes' will be accepted to confirm.
+
+  Enter a value: yes
+
+</span><span class="gp">oci_core_subnet.test: Destroying... [id=ocid1.subnet.oc1.phx.&lt;sanitized&gt;</span><span class="o">]</span>
+<span class="gp">oci_core_subnet.dev: Destroying... [id=ocid1.subnet.oc1.phx.&lt;sanitized&gt;</span><span class="o">]</span>
+<span class="go">oci_core_subnet.test: Destruction complete after 3s
+oci_core_subnet.dev: Destruction complete after 4s
+</span><span class="gp">oci_core_vcn.tf_101: Destroying... [id=ocid1.vcn.oc1.phx.&lt;sanitized&gt;</span><span class="o">]</span>
+<span class="go">oci_core_vcn.tf_101: Destruction complete after 1s
+
+Destroy complete! Resources: 3 destroyed.
+</span></code></pre></div>    </div>
+
+    <p>Much like the <code class="language-plaintext highlighter-rouge">apply</code> command, the destroy command alerts you as to what it intends to do, prompting you to authorize it before continuing.</p>
+
+    <p>Things are now really cleaned up. The subnets and VCN are gone. Speaking of being gone, did you notice how Terraform removed the OCI resources in the order of their dependency? It didn’t try to remove the VCN first (which would’ve failed because of the presence of the subnets), but instead destroyed the two subnets first, then destroyed the VCN. That’s part of the graph logic that Terraform applies to make managing your environment easy. Pretty slick, right?</p>
+
+    <p>We’ve had a great time together, but this tutorial is coming to a close. Before we part, make sure to check out some of the <a href="8-resources">resources offered in the next section</a>.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)">&laquo; Back</a></div>
+
+  </div>
+
+</div>
+
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/open-source">open-source</a>
+            <a class="animated-link tag" href="/topics/terraform">terraform</a>
+            <a class="animated-link tag" href="/topics/iac">iac</a>
+            <a class="animated-link tag" href="/topics/devops">devops</a>
+            <a class="animated-link tag" href="/topics/get-started">get-started</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Tim Clegg</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Code. Share. Secure. Innovate. Automate. Educate.</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/https://www.linkedin.com/in/timothy-clegg/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/timclegg" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+    
+
+<aside class="series-nav">
+  <h6>From this series:</h6>
+  <ul>
+    
+    <li><a href="/tutorials/tf-101/1-why-iac">Why Infrastructure as Code?</a></li>
+    
+    <li><a href="/tutorials/tf-101/5-creating">Creating Resources with Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/6-changing">Making changes using Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/2-experiencing-terraform">Experiencing Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/3-understanding-terraform-basics">Understanding The Basics Of Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/4-variables">Terraform Variables</a></li>
+    
+    <li><a href="/tutorials/tf-101/7-destroying">Destroying resources with Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/8-resources">More Terraform Resources</a></li>
+    
+  </ul>
+</aside>
+
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-11-01T08:02:00+00:00">November 1, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

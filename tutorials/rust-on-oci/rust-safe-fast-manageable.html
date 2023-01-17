@@ -1,0 +1,224 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Building Safe, Fast, and Manageable Applications with Rust and Oracle Cloud Infrastructure">
+    
+    <meta itemprop="datePublished" content="2022-12-12T08:00:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Building Safe, Fast, and Manageable Applications with Rust and Oracle Cloud Infrastructure
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <h2 id="introduction">Introduction</h2>
+
+<p>No question—building and managing modern technology is complex.</p>
+
+<p>Datasets can be massive, expensive to compute, and require highly-performant processes to scale. Data security is critical to business sustainability and is difficult to execute. Architecting systems that can handle modern scale requires intelligent network load balancing and hardware availability.</p>
+
+<p>When you combine all of those challenges (and more!), it becomes a daunting task to imagine how to build an app that simply <em>works</em>. Choosing the tools that solve these issues becomes a crucial question for developers.</p>
+
+<p>In this piece, we’ll make the case that by using <strong>Rust</strong>—a programming language that is fast, secure, memory-safe, and supports complex abstractions—in combination with <strong>OCI</strong>—a Platform-as-a-Service (PaaS) that provides fine-grained control, excellent security measures, and is optimized for performance—developers can have just the right tools to help tame the complexity of building modern software.</p>
+
+<p>We will start with brief backgrounds on Rust and OCI. Then, we’ll dive into several use cases of how Rust and OCI are an excellent solution for modern software applications.</p>
+
+<h2 id="why-rust">Why Rust?</h2>
+
+<p><strong><a href="https://www.rust-lang.org/">Rust</a></strong> is an open source, general-purpose programming language optimized for <strong>safety</strong>, <strong>concurrency</strong>, and <strong>speed</strong>. Rust offers low-level memory access and, as such, can be used for systems programming. It also has a rich set of built-in types and interfaces that allow for code organization and reuse typically associated with higher-level languages.</p>
+
+<p><strong>Safety</strong> - Rust is considered <em>memory safe</em>. This means it protects developers from writing code that results in bugs related to memory access, such as dangling pointers, null pointers, buffer overflows, and so on. These bugs are often exploited as security vulnerabilities. Rust achieves memory safety through features such as a strong type system and the famous <a href="https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html">Borrow Checker</a>.</p>
+
+<p><strong>Concurrency</strong> - Rust has built-in support for concurrent and parallel programming. Developers can easily spawn threads and pass messages between them. A number of abstractions, such as <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html">Atomic Reference Counter</a> (Arc) and <a href="https://www.google.com/url?q=https://tokio.rs&amp;sa=D&amp;source=docs&amp;ust=1666376402644471&amp;usg=AOvVaw0J9DysWwPHFaz8IUfOLRu5">Tokio</a>, protect against many of the classic dangers involved with concurrent programs. Combined with Rust’s memory safety guarantees, this allows the compiler to catch many types of bugs before the code runs. The Rust team calls this “<a href="https://doc.rust-lang.org/book/ch16-00-concurrency.html">Fearless Concurrency</a>.”</p>
+
+<p><strong>Speed</strong> - In terms of performance, Rust is comparable to other lower-level languages like C and C++. Rust is compiled to native code, which results in a low memory footprint. Developers have access to many features that inform the compiler how types will be laid out in memory. Rust’s type system also allows for Zero Cost Abstractions which means that many of the higher-level constructs do not come with a cost at runtime.</p>
+
+<h2 id="why-oracle-cloud-infrastructure-oci">Why Oracle Cloud Infrastructure (OCI)</h2>
+
+<p><a href="https://www.oracle.com/cloud/"><strong>[Oracle Cloud Infrastructure]{.underline}</strong></a> (OCI) is a set of complementary cloud services that enable you to build and run various applications and services in a highly available hosted environment.</p>
+
+<p>OCI provides <strong>high-performance compute capabilities</strong> (as physical hardware instances) and <strong>storage capacity</strong> in a flexible overlay virtual network that is <strong>securely accessible</strong> from your on-premises network. By abstracting away the complexities of safely managing infrastructure, OCI enables businesses to deploy complex, modern applications quickly and for a fraction of the cost of staffing an internal IT team.</p>
+
+<p>Now that we have a little background, let’s look at three services offered on OCI, and explore how Rust works well with these features.</p>
+
+<h2 id="web-and-cloud-native-applications">Web and Cloud Native Applications</h2>
+
+<p>A large percentage of applications today are deployed as cloud-native apps. <strong>OCI provides best-in-class tools for easily building, hosting, and maintaining these web and cloud-native applications</strong>.</p>
+
+<p>When deploying these apps, containerization has become the industry standard. OCI’s <a href="https://docs.oracle.com/en-us/iaas/Content/Registry/Concepts/registryoverview.htm"><strong>[Container Registry]{.underline}</strong></a> allows developers to store container images and then securely access those images at any time. CI/CD pipelines can be designed to build and push images to Container Registry automatically. Containers can then be built from stored images and orchestrated via OCI <a href="https://docs.oracle.com/en-us/iaas/Content/ContEng/Concepts/contengoverview.htm"><strong>[Container Engine for Kubernetes]{.underline}</strong></a>. Once the code is live, OCI offers resource monitoring with its <strong>Events Service</strong>.</p>
+
+<p>Cloud-based applications built on this type of infrastructure can take many forms, such as ecommerce websites, REST APIs, or backend systems managing IoT devices.</p>
+
+<p><strong>Rust</strong></p>
+
+<p>Regardless of the specifics of the business domain, security, usability, performance, and time to market are critical to most apps. As seen above, Rust is designed to handle these challenges, especially with cloud-native applications.</p>
+
+<p><strong>Safety</strong> - Web and cloud-native apps have a much broader attack surface than isolated systems. Not only is the app publicly available, but when building software for the internet, developers typically use frameworks and libraries to solve common problems. This means that the attack surface extends to code that was authored by someone else.</p>
+
+<p>Rust’s memory safety greatly enhances the security of an application and the software it depends on. Fewer vulnerabilities also mean fewer security updates, which means less maintenance and reduced costs.</p>
+
+<p><strong>Concurrency</strong> - Poor app performance leads to higher costs, lower user retention, and the inability to execute expensive computations. This is especially true with cloud-based software that may deal with concurrency issues from socket connections to monetary transactions. Rust’s promise of “Fearless Concurrency” allows developers to take advantage of OCI infrastructure to build correct and performant concurrent software.</p>
+
+<p><strong>Speed</strong> - In addition to the built-in Rust features that increase execution speed, the Rust ecosystem also has several frameworks that encourage rapid development. ORMs exist for data modeling and persistence layer abstraction. Some notable web frameworks that are gaining popularity include <a href="https://nickel-org.github.io/">Nickel.rs</a> or <a href="https://actix.rs/">Actix</a>, both of which can take advantage of projects like <a href="https://diesel.rs/">Diesel</a> for the database abstraction layer.</p>
+
+<h2 id="serverless-functions">Serverless Functions</h2>
+
+<p>Serverless functions are short-running processes that perform discrete tasks, such as processing image data, persisting data to cloud storage, or sending emails. They are usually invoked in response to events and can be chained together to accomplish tasks of arbitrary complexity. When the code is invoked, resources are automatically allocated to achieve configurable performance characteristics. When the code stops running, resources are deallocated. This allows for a cheap and sustainable choice over other alternatives.</p>
+
+<p>OCI supports serverless functions with its <strong><a href="https://docs.oracle.com/en-us/iaas/Content/Functions/Concepts/functionsoverview.htm">Cloud Functions</a>.</strong> Cloud Functions conform to <a href="https://fnproject.io/">Fn Project</a> standards and utilize OCI <strong>Cloud Events</strong> to trigger the invocation of functions. Because Cloud Functions are based on standards from the Fn Project, the code is portable between OCI and other infrastructures that also conform to Fn Project standards.</p>
+
+<p>Cloud Functions has built-in support for several popular programming languages, such as Go, Node, and Ruby. Developers can use the Fn Project CLI to create, configure, and manage serverless functions easily.</p>
+
+<p><strong>Rust</strong></p>
+
+<p><strong>Safety</strong> - Rust’s compile time checks allow developers to write serverless functions with peace of mind knowing that the code is memory safe and free of many types of bugs prior to deployment. Rust also has a built-in test harness, providing even more confidence through the use of unit testing. Test code is not compiled into releases which keeps binaries small.</p>
+
+<p><strong>Speed</strong> - The event-based nature of serverless functions allows for triggering the process on a predefined schedule. One example is sending a notification to an IoT device every minute. Rust’s low memory footprint and emphasis on performance make it an ideal choice for serverless functions, as tasks can be completed quickly and with low resource consumption. This saves money and energy resulting in fast, sustainable, cheap software solutions.</p>
+
+<p>OCI Cloud Functions run inside docker images. Although Cloud Functions do not have direct support for Rust, developers can design and build images conforming to the Fn Project standards and deploy those images to the OCI infrastructure. Rust code can easily be compiled into executable binaries and built into container images for use in Cloud Functions.</p>
+
+<h2 id="high-performance-computing-workloads">High Performance Computing Workloads</h2>
+
+<p>Sometimes it’s necessary to perform computational operations that are extremely resource-intensive. Situations like this require massive processing power, which translates to large numbers of cores working in parallel. Core clusters are connected over a network and often write output to some form of storage. For these types of programs, performance is key.</p>
+
+<p>OCI supports performance-intensive workloads with <a href="https://www.oracle.com/cloud/hpc/"><strong>[High Performance Computing]{.underline}</strong></a> services. Programs have access to potentially tens of thousands of cores connected over a low-latency network. Developers can choose to run code on bare metal or virtual machines. OCI also offers preconfigured virtual machines for ML/AI data science applications with access to large storage volumes.</p>
+
+<p><strong>Rust</strong></p>
+
+<p><strong>Speed</strong> - Again, Rust’s performance characteristics make it a natural fit for these situations. Having low-level access allows developers to finely tune how data structures are laid out in memory and how algorithms interact with resources. When dealing with resource-intensive programming, speed directly translates to reduced energy consumption and costs.</p>
+
+<p><strong>Concurrency</strong> - Access to massive clusters of cores only increases productivity if the code running on the system can efficiently utilize as many cores as possible at any given time. Rust’s support for parallel and concurrent programming has huge advantages here. Rust’s memory safety and “Fearless Concurrency” allow developers to write complex parallel programs confidently and securely.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>The complex nature of software development requires developers to choose tools wisely. The correct combination of infrastructure and programming language has huge implications for the success or failure of a software system.</p>
+
+<p>Successful modern software systems need to be secure, performant, and flexible enough to meet the changing needs of the domain in which they operate. OCI’s commitment to, and investment in, fine grain control, security, and optimization is echoed by the Rust team and is reflected in the language and ecosystem. This makes Rust an excellent choice for building complex software on top of OCI.</p>
+
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/open-source">open-source</a>
+            <a class="animated-link tag" href="/topics/devops">devops</a>
+            <a class="animated-link tag" href="/topics/get-started">get-started</a>
+            <a class="animated-link tag" href="/topics/back-end">back-end</a>
+            <a class="animated-link tag" href="/topics/rust">rust</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Oracle Developers</h3>
+    
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/oracle-devrel" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-12-12T08:00:00+00:00">December 12, 2022</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

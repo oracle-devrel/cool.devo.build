@@ -1,0 +1,508 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar has-slides" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Understanding The Basics Of Terraform">
+    
+    <meta itemprop="datePublished" content="2021-10-14T08:13:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Understanding The Basics Of Terraform
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+        <!-- <aside class="sidebar__right sticky">
+          <nav class="slides-nav"><ul><li class="active" data-target-slide="0"><a href="javascript:cool.slides.goToSlide(0)">Intro</a></li>
+<li data-target-slide="1"><a href="javascript:cool.slides.goToSlide(1)">Prerequisites</a></li>
+<li data-target-slide="2"><a href="javascript:cool.slides.goToSlide(2)">Major Terraform Components</a></li>
+<li data-target-slide="3"><a href="javascript:cool.slides.goToSlide(3)">Terraform code</a></li>
+<li data-target-slide="4"><a href="javascript:cool.slides.goToSlide(4)">Terraform commands</a></li>
+<li data-target-slide="5"><a href="javascript:cool.slides.goToSlide(5)">A Terraform project</a></li>
+<li data-target-slide="6"><a href="javascript:cool.slides.goToSlide(6)">Terraform State</a></li>
+<li data-target-slide="7"><a href="javascript:cool.slides.goToSlide(7)">What's next</a></li></ul></nav>
+        </aside> -->
+      
+
+        <div class="slides" id="slideshow">
+
+  <div class="slide active" id="slide-0">
+
+    <h2 class="slide__title"><span class="slide__num">1</span> Introduction</h2>
+
+    <figure class="aligncenter">
+              <picture>
+                  <source srcset="assets/terraform-101.png 1x" />
+                  <img loading="lazy" width="400" height="400" src="assets/terraform-101.png" data-original="assets/terraform-101.png" title="Terraform 101" alt="Terraform 101 Tutorial Series" />
+              </picture>
+              <figcaption>Terraform 101</figcaption>
+            </figure>
+
+    <p>In our <a href="1-why-iac">first lesson</a>, we covered why you should care about Infrastructure as Code (IaC).  We also touched on a few of the many tools in this space, and finally, we decided to narrow our focus down to Terraform.</p>
+
+    <p>The <a href="2-experiencing-terraform">last lesson</a> took you through a really quick and simple scenario using Terraform, setting up a virtual cloud network (VCN) and a subnet.  It was short but powerful, and hopefully helped you understand a bit of why Terraform (and IaC) is such a great tool.</p>
+
+    <p>This lesson will dive a little deeper and take you through some of the basic concepts you’ll need to effectively work with Terraform.</p>
+
+    <p>Key topics covered in this tutorial:</p>
+
+    <ul>
+      <li>Learning about some of the major Terraform components (executables, providers, code, and states)</li>
+      <li>Discovering some of the basic Terraform commands (<em>init</em>, <em>plan</em>, <em>apply</em>, and <em>console</em>)</li>
+      <li>Setting up a Terraform project (inputs, outputs, and logic)</li>
+    </ul>
+
+    <p>For additional information, see:</p>
+
+    <ul>
+      <li><a href="https://docs.oracle.com/iaas/Content/GSG/Tasks/signingup.htm">Signing Up for Oracle Cloud Infrastructure</a></li>
+      <li><a href="https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/terraformgettingstarted.htm">Getting started with Terraform</a></li>
+      <li><a href="https://docs.oracle.com/en-us/iaas/Content/API/Concepts/cloudshellintro.htm">Getting started with OCI Cloud Shell</a></li>
+    </ul>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)" class="slides__btn--begin">Begin &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-1">
+
+    <h2 class="slide__title"><span class="slide__num">2</span> Prerequisites</h2>
+
+    <p>To successfully complete this tutorial, you will need to have the following:</p>
+
+    <ul>
+      <li>An Oracle Cloud Infrastructure Free Tier account. <a href="https://signup.cloud.oracle.com/?language=en&amp;sourceType=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted&amp;intcmp=:ow:de:te::::RC_WWMK211116P00260:DotBuildGetStarted">Start for Free</a>.</li>
+      <li>A MacOS, Linux, or Windows computer with <code class="language-plaintext highlighter-rouge">ssh</code> support installed.</li>
+      <li>Terraform CLI</li>
+      <li><a href="(https://docs.oracle.com/en-us/iaas/Content/API/Concepts/cloudshellintro.htm)">OCI Cloud Shell</a></li>
+    </ul>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(0)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(2)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-2">
+
+    <h2 class="slide__title"><span class="slide__num">3</span> Major Terraform Components</h2>
+
+    <p>In the IaC world, resources are defined using code.  Terraform follows a <em>declarative</em> language model, meaning that you tell it where you want to be after it executes and it figures out what’s needed to get there. Terraform doesn’t need to be told “do this, then that, then finish with this,” as is common with many procedural languages. You simply tell it where you want it to end up and it’ll map out the path to get there.  Most of the time, Terraform is able to figure out the right steps on its own.  Occasionally, it’ll need some help, but we’ll talk a little more about that in a later tutorial in this series.</p>
+
+    <p>Terraform has several core components that you should become familiar with:</p>
+
+    <ul>
+      <li><a href="#terraform-executable">Terraform executable</a></li>
+      <li><a href="#terraform-providers">Terraform providers</a></li>
+      <li><a href="#terraform-code">Terraform code</a></li>
+      <li><a href="#terraform-state">Terraform state</a></li>
+    </ul>
+
+    <h3 id="terraform-executable">Terraform executable</h3>
+
+    <p>The Terraform executable can be easily downloaded and installed on a variety of different platforms.  Check out <a href="https://www.terraform.io/downloads.html">Terraform’s download page</a> to locate the Terraform CLI binaries for your system.</p>
+
+    <h4 id="linux">Linux</h4>
+
+    <p>If you’re using Linux, it’s possible that Terraform might exist in your favorite package manager (look at <code class="language-plaintext highlighter-rouge">yum install terraform</code> or <code class="language-plaintext highlighter-rouge">apt-get install terraform</code>). Oracle Linux makes it simple and painless to <a href="https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/terraforminstallation.htm">install Terraform</a>. If you’re Using Oracle Linux, just use Yum for the best experience.</p>
+
+    <p>However, if you’re not using Oracle Linux, you’ll likely need to configure your package manager (see: <a href="https://www.terraform.io/docs/cli/install/yum.html">RHEL/Fedora Yum docs</a> or <a href="https://www.terraform.io/docs/cli/install/apt.html">Debian/Ubuntu APT docs</a>).</p>
+
+    <h4 id="macos">MacOS</h4>
+
+    <p>In MacOS, simply download the binary and place it somewhere in your path.  To verify that your system can locate the executable and confirm that Terraform is up and running, just run <code class="language-plaintext highlighter-rouge">terraform -v</code> in a terminal window. If it echoes the current Terraform version number, you should be good to go!</p>
+
+    <p>If you like, you can also use <a href="https://brew.sh">Homebrew</a> to get things going with Terraform. All you need to do is run <code class="language-plaintext highlighter-rouge">brew install terraform</code> in a terminal window.</p>
+
+    <h3 id="terraform-providers">Terraform providers</h3>
+
+    <p>Providers allow Terraform to interact with different platforms.  This is the component that bridges the gap between the Terraform code and a specific platform such as OCI. For instance, the OCI provider translates the Terraform code to a form Terraform requires to interact with the OCI API directly.</p>
+
+    <p>However, Terraform isn’t limited to a single provider. At any given time, one or more providers can be in use. Many clouds have Terraform providers, allowing you to define resources that are specific to a cloud using a standard format, tool, and language.</p>
+
+    <p>When you have a moment, take a look at <a href="https://registry.terraform.io/providers/hashicorp/oci/latest/docs">the OCI Terraform provider documentation</a> to get a better sense of the different kinds of resources that can be managed with it.  At the end of this tutorial, we’ll walk through a really simple example, so don’t sweat the details now.  Just hang in there and it’ll all come together!</p>
+
+    <h4 id="getting-started-with-providers">Getting started with providers</h4>
+
+    <p>In order to start using providers with Terraform, you’ll first need to tell Terraform exactly which providers you’ll be using in your code.  Providers are typically referenced in <code class="language-plaintext highlighter-rouge">terraform</code> and <code class="language-plaintext highlighter-rouge">provider</code> blocks.</p>
+
+    <blockquote class="notice">
+      <p><strong>NOTE:</strong> A block of Terraform code is anything enclosed within curly brackets.</p>
+    </blockquote>
+
+    <h4 id="set-up-terraform-to-use-the-oci-provider">Set up Terraform to use the OCI provider</h4>
+
+    <p>Let’s look at an example of how to tell Terraform we want to use the OCI provider:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">terraform</span> <span class="p">{</span>
+  <span class="nx">required_version</span> <span class="p">=</span> <span class="s2">"&gt;= 0.14.0"</span>
+  <span class="nx">required_providers</span> <span class="p">{</span>
+    <span class="nx">oci</span> <span class="p">=</span> <span class="p">{</span>
+      <span class="nx">source</span>  <span class="p">=</span> <span class="s2">"hashicorp/oci"</span>
+      <span class="nx">version</span> <span class="p">=</span> <span class="s2">"&gt;= 4.39.0"</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">provider</span> <span class="s2">"oci"</span> <span class="p">{</span>
+  <span class="nx">region</span> <span class="p">=</span> <span class="kd">var</span><span class="p">.</span><span class="nx">region</span>
+  <span class="nx">auth</span>   <span class="p">=</span> <span class="s2">"InstancePrincipal"</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>Zooming in a little closer, the first <code class="language-plaintext highlighter-rouge">terraform</code> block instructs Terraform to download and include specific providers (those within the <code class="language-plaintext highlighter-rouge">required_providers</code> block).  In this case, we’re including the <code class="language-plaintext highlighter-rouge">oci</code> provider, specifically version <code class="language-plaintext highlighter-rouge">4.39.0</code> or greater.</p>
+
+    <blockquote class="notice">
+      <p><strong>NOTE:</strong> The <code class="language-plaintext highlighter-rouge">required_providers</code> portion of the <code class="language-plaintext highlighter-rouge">terraform</code> block is optional, but it’s nice to have in there since it allows you to constrain the version and source of a given provider.</p>
+    </blockquote>
+
+    <p>Next up, the OCI provider block contains information that’s specific to the provider.  In this case, we’re telling the OCI provider which region to use and asking it to authenticate against the OCI API using <a href="https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm">Instance Principals</a>.</p>
+
+    <blockquote class="notice">
+      <p><strong>NOTE:</strong> The <code class="language-plaintext highlighter-rouge">auth</code> line in the OCI provider block is <strong>optional</strong>. It’s one way of authenticating (using <a href="https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm">Instance Principals</a>), but certainly not the only way.</p>
+    </blockquote>
+
+    <h4 id="managing-terraform-providers">Managing Terraform providers</h4>
+
+    <p>Although it’s possible to manually download and install Terraform providers, by default, Terraform will automatically download and install (manage) providers for you.  This is accomplished by running the <code class="language-plaintext highlighter-rouge">terraform init</code> command from the directory containing your Terraform code.</p>
+
+    <blockquote class="notice">
+      <p><strong>NOTE:</strong> Managed Terraform services such as <a href="https://docs.oracle.com/en-us/iaas/Content/ResourceManager/home.htm">OCI Resource Manager (ORM)</a> do not require you to go through any Terraform initialization process.  This is managed for you by ORM.  This step is needed when running Terraform from your own computer (or server).</p>
+    </blockquote>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(3)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-3">
+
+    <h2 class="slide__title"><span class="slide__num">4</span> Terraform code</h2>
+
+    <p>Terraform uses a proprietary <a href="https://www.terraform.io/docs/language/index.html">configuration language</a>. Like any language, it’s reasonable to expect a slight learning curve when you’re first starting out, but it’s ease and versatility will grow on you as you gain some familiarity with it.</p>
+
+    <p>It’s highly recommended that you at least skim the <a href="https://www.terraform.io/docs/language/index.html">Terraform configuration language documentation</a> to get some familiarity with its basic concepts, structural components, and functions.</p>
+
+    <blockquote class="notice">
+      <p><strong>NOTE:</strong> Terraform’s configuration language has undergone some significant changes over the past several years.  If you come across code that was written for Terraform v0.11 (or earlier), you’ll likely need to update it to a more recent version.</p>
+    </blockquote>
+
+    <p>Within the code, you’ll likely define a combination of variables (user-provided input), locals (local variables), outputs (values shown as output after running Terraform), providers, and resources.  Most of the other code elements are engineered to support the management of resources.  These remaining elements are really the parts that get changed in OCI (or another environment, depending on the providers you’re using and the resources you’re managing) when Terraform is run. When you get down to it, resources are the beating heart of Terraform.  Whether you’re declaring a single resource or many, resources are typically what we’re trying to manage with Terraform.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(2)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(4)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-4">
+
+    <h2 class="slide__title"><span class="slide__num">5</span> Terraform commands</h2>
+
+    <p>Terraform has a broad set of capabilities, and as you might imagine, there are many different commands that it accepts.  Here are some of the most common ones that you’ll find yourself using:</p>
+
+    <dl>
+      <dt><code class="language-plaintext highlighter-rouge">terraform init</code></dt>
+      <dd><strong>This must be run at least once for a Terraform project.</strong>  During the init process, Terraform downloads any needed providers, sets up the state (if it doesn’t already exist), and performs any other necessary start-up tasks.</dd>
+      <dt><code class="language-plaintext highlighter-rouge">terraform plan</code></dt>
+      <dd>Prompts Terraform to do a dry run, non-destructively determining what it would do if it was to apply the configuration settings.  Terraform simply tells you what it thinks <em>should</em> be done and lets you review the outcomes without any changes being made.<br />
+It’s always a good idea to run <code class="language-plaintext highlighter-rouge">terraform plan</code> and review the output before applying. This way you can make sure that you fully understand what Terraform is intending to do.</dd>
+      <dt><code class="language-plaintext highlighter-rouge">terraform apply</code></dt>
+      <dd><strong>Changes are made with this command.</strong>  By default, it will show you the same output as <code class="language-plaintext highlighter-rouge">terraform plan</code>, but will additionally prompt you to enact the proposed changes.<br />
+There are ways you can short-circuit this process and automatically accept all of the changes, but it’s generally a good idea to review the recommendations before applying them, especially when you’re running Terraform manually.</dd>
+      <dt><code class="language-plaintext highlighter-rouge">terraform console</code></dt>
+      <dd>Gives you an interactive console where you can enter different Terraform commands. This is particularly useful for building and testing logic in Terraform code.</dd>
+    </dl>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(3)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(5)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-5">
+
+    <h2 class="slide__title"><span class="slide__num">6</span> A Terraform project</h2>
+
+    <p>In this section, we’ll take a look at the various parts of a Terraform project. In general, a typical Terraform project can be broken down into familiar constructs common to many other applications:</p>
+
+    <ul>
+      <li>Inputs</li>
+      <li>Outputs</li>
+      <li>Logic</li>
+    </ul>
+
+    <h3 id="inputs">Inputs</h3>
+
+    <p>Terraform receives input through variables.  Variables may be set via command-line parameters, static files, or environment variables.  There are a lot of facets to mastering the usage of variables, so we’ll cover these in greater detail in a <a href="4-variables">separate lesson</a>.  For now, know that each variable must be given a unique name and value, like in the following example:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">variable</span> <span class="s2">"region"</span> <span class="p">{}</span>
+</code></pre></div>    </div>
+
+    <p>The above example is the most basic variable definition. They definitely can get more complex, though.  If you want to jump ahead, feel free to look ahead to the <a href="4-variables">lesson on variables</a> and check out the <a href="(https://www.terraform.io/docs/language/values/variables.html)">Terraform variable documentation</a>.</p>
+
+    <h4 id="variable-definitions-file">Variable definitions file</h4>
+
+    <p>At this point, you’re probably wondering where you should place your variables.  Most often, variables are defined in a file called <code class="language-plaintext highlighter-rouge">variables.tf</code>.  Pretty straightforward, right?  This isn’t required, but it’s good form and common practice for everything but really small projects.  Most of the time, it’s a good idea to make the filename specific to the type of resources defined in it.</p>
+
+    <p>To dig in deeper, check out the excellent <a href="https://www.terraform.io/docs/language/values/variables.html">Terraform variables documentation</a>.</p>
+
+    <h3 id="outputs">Outputs</h3>
+
+    <p>There are times when Terraform needs to direct data about the environment back to the display. For example, when a compute instance is deployed, a private IP address may be specified.  If it’s not specified, OCI will pick an IP address for us from the subnet the instance is being deployed in.  Wouldn’t it be nice to be able to see this private IP address? Outputs provide a way to make that information visible to you. Many different attributes are exported by Terraform resources, allowing you to easily examine them through the use of outputs.</p>
+
+    <p>In Terraform, outputs are technically referred to as “output variables.”  The current values of these variables are included at the end of the output for the <code class="language-plaintext highlighter-rouge">terraform apply</code> command. Note that these values are not displayed when you run <code class="language-plaintext highlighter-rouge">terraform plan</code>.</p>
+
+    <p>Let’s take a look at an example of an output:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">output</span> <span class="s2">"vcn_state"</span> <span class="p">{</span>
+  <span class="nx">description</span> <span class="p">=</span> <span class="s2">"The state of the VCN."</span>
+  <span class="nx">value</span>       <span class="p">=</span> <span class="nx">oci_core_vcn</span><span class="p">.</span><span class="nx">tf_101</span><span class="p">.</span><span class="nx">state</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <h4 id="outputs-definition-file">Outputs definition file</h4>
+
+    <p>While outputs can be defined in any Terraform code file, it’s best to get into the practice of separating Terraform code into logical files so the code base is easier to navigate.  For this purpose, it’s recommended that you use the <code class="language-plaintext highlighter-rouge">outputs.tf</code> file for these definitions.</p>
+
+    <h4 id="terraform-functions-as-output-definitions">Terraform functions as output definitions</h4>
+
+    <p>Additionally, the value of an output variable doesn’t have to be static, it can be any programmatic calculation supported in Terraform code. We can see this at work with the following example:</p>
+
+    <div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">output</span> <span class="s2">"two_plus_two"</span> <span class="p">{</span>
+  <span class="nx">value</span>       <span class="p">=</span> <span class="mi">2</span><span class="err">+</span><span class="mi">2</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+
+    <p>While this is a trivial example, you can use many <a href="https://www.terraform.io/docs/language/functions/index.html">functions in Terraform</a>.  String substitutions, merging, changes, calculating hashes, etc.  The world’s your oyster!</p>
+
+    <p>With this added functionality, accessing outputs can be particularly useful when you’re using Terraform as part of an automated pipelines. It can also be an invaluable resource to users running it manually.</p>
+
+    <h3 id="logic">Logic</h3>
+
+    <p>Another aspect of Terraform’s versatility is its ability to provide a wealth of functions to embed logic and perform complex computations.  Need to iterate through a list or map?  You’re covered!  How about concatenating strings (or string manipulations in general)?  Got it.  If-then-else logic?  Yep, it’s in there.  Need to do some CIDR calculations?  There are functions for that too.</p>
+
+    <p>If you’d like to learn more, take a look at these resources on <a href="https://www.terraform.io/docs/language/functions/index.html">Terraform functions</a>, <a href="https://www.terraform.io/docs/language/expressions/conditionals.html">Terraform conditional expressions</a>, and the <a href="https://www.terraform.io/docs/language/expressions/for.html">Terraform <code class="language-plaintext highlighter-rouge">for</code> expressions</a>. It’s well worth checking out, even if you’re just trying to get some familiarity with what’s available and possible.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(4)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(6)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-6">
+
+    <h2 class="slide__title"><span class="slide__num">7</span> Terraform State</h2>
+
+    <p>When interacting with an environment, there are three main components Terraform needs (in addition to the Terraform binary):</p>
+
+    <ol>
+      <li>Terraform code</li>
+      <li>Environment being managed</li>
+      <li>Terraform state</li>
+    </ol>
+
+    <p>The first two components (code and environment) are topics you should already be familiar with. What’s left to cover is how Terraform use these resources to develop an accurate picture of available resources.</p>
+
+    <p>Terraform uses a lot of intelligence to map out relationships between managed resources.  Many applications rely on a local database to store information needed by the application.  Terraform’s no different, and is very transparent in how it manages its application content, by default storing what’s needed in a local JSON file.</p>
+
+    <p>The <em>state</em> is where Terraform caches a copy of what it knows about the environment.  Details about the managed resources are stored there in verbose form, along with Inputs (variable values).</p>
+
+    <blockquote>
+      <p><strong>NOTE:</strong> State files should be carefully guarded as it’s possible to have secrets or other sensitive data stored in them.  Even though a variable might be marked as sensitive, Terraform can still store its contents in the state file.  Although it might not show via <code class="language-plaintext highlighter-rouge">terraform apply</code>, it might be right there in plain text in the state file. {:.warn}</p>
+    </blockquote>
+
+    <h3 id="updates-and-deltas">Updates and Deltas</h3>
+
+    <p>When Terraform runs, it will update the state with what actually exists in the managed environment and compare that state against the code.  Any deltas (variances between the code and state) will be marked as requiring a remediation (changes that must be made to bring the current resource state in line with the code is asking for it).</p>
+
+    <h3 id="keeping-the-terraform-state-in-sync">Keeping the Terraform state in sync</h3>
+
+    <p>It’s important to always use the latest copy of the state, as <code class="language-plaintext highlighter-rouge">terraform apply</code> might update the state file.  This is particularly important when sharing the management responsibilities for a single environment among multiple people.  Each environment has a <em>single</em> state file.  If the state file becomes corrupted or out of sync, Terraform can do weird and unexpected things.  So, carefully guard your state file!</p>
+
+    <h3 id="where-the-terraform-state-lives">Where the Terraform state lives</h3>
+
+    <p>By default, the state (<code class="language-plaintext highlighter-rouge">terraform.tfstate</code>) is stored locally within the project directory.  But, keep in mind that there are cases where backends may be defined in such a way that Terraform is required to store the state in a different location.</p>
+
+    <p>For the remaining parts of the tutorial, though, we’ll stick to keeping the state local.</p>
+
+    <h3 id="backends---common-use-scenarios">Backends - common use scenarios</h3>
+
+    <p>For production deployments, many Terraform users find the <a href="https://docs.oracle.com/en-us/iaas/Content/ResourceManager/home.htm">OCI Resource Manager</a> beneficial, as it maintains the Terraform state file for each stack automatically.  However, you might find that <a href="https://www.oracle.com/cloud/storage/object-storage/">OCI Object Storage</a> works better for you as a backend. Or, you might prefer using git. Whichever way you prefer, Terraform has you covered.</p>
+
+    <p>Terraform supports many different kinds of backends are supported. For a full list, check out the <a href="https://www.terraform.io/docs/language/settings/backends/index.html">backend documentation</a> for more information.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(5)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(7)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-7">
+
+    <h2 class="slide__title"><span class="slide__num">8</span> What's next</h2>
+
+    <p>Now that you understand some of the basic components used in a Terraform project, let’s dive into <a href="4-variables">variables in the next lesson</a>.</p>
+
+    <p>To explore more information about development with Oracle products:</p>
+
+    <ul>
+      <li><a href="https://developer.oracle.com/">Oracle Developers Portal</a></li>
+      <li><a href="https://www.oracle.com/cloud/">Oracle Cloud Infrastructure</a></li>
+    </ul>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(6)">&laquo; Back</a></div>
+
+  </div>
+
+</div>
+
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/open-source">open-source</a>
+            <a class="animated-link tag" href="/topics/terraform">terraform</a>
+            <a class="animated-link tag" href="/topics/iac">iac</a>
+            <a class="animated-link tag" href="/topics/devops">devops</a>
+            <a class="animated-link tag" href="/topics/get-started">get-started</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Tim Clegg</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Code. Share. Secure. Innovate. Automate. Educate.</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/https://www.linkedin.com/in/timothy-clegg/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/timclegg" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+    
+
+<aside class="series-nav">
+  <h6>From this series:</h6>
+  <ul>
+    
+    <li><a href="/tutorials/tf-101/1-why-iac">Why Infrastructure as Code?</a></li>
+    
+    <li><a href="/tutorials/tf-101/5-creating">Creating Resources with Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/6-changing">Making changes using Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/2-experiencing-terraform">Experiencing Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/3-understanding-terraform-basics">Understanding The Basics Of Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/4-variables">Terraform Variables</a></li>
+    
+    <li><a href="/tutorials/tf-101/7-destroying">Destroying resources with Terraform</a></li>
+    
+    <li><a href="/tutorials/tf-101/8-resources">More Terraform Resources</a></li>
+    
+  </ul>
+</aside>
+
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-10-14T08:13:00+00:00">October 14, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

@@ -1,0 +1,716 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Build Your Own Language Translator on Oracle Cloud">
+    
+    <meta itemprop="datePublished" content="2021-08-15T12:00:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Build Your Own Language Translator on Oracle Cloud
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <picture class="alignright">
+                <source srcset="assets/the-whiteboard.jpg 1x" />
+                <img loading="lazy" width="400" height="400" src="assets/the-whiteboard.jpg" data-original="assets/the-whiteboard.jpg" alt="A whiteboard for learning the Japanese language." title="A whiteboard for learning the Japanese language." />
+            </picture>
+
+<p>こんにちは！</p>
+
+<p>Have you always wanted to learn a new language and be introduced to a new and different culture? I have, and for the last six months, I have been using <a href="https://www.duolingo.com/">Duolingo</a> to get an introduction to the Japanese language. Among the seven secrets recommended by <a href="http://www.ted.com/">TED</a> translators in this <a href="https://blog.ted.com/how-to-learn-a-new-language-7-secrets-from-ted-translators/">blog post</a>, the general consensus seems to be integrating the language in your daily lives.</p>
+
+<h2 id="background">Background</h2>
+
+<p>Since I started learning the language, I have been exposed to many new words. However, they remain in my memory, only as long as I keep using them in my daily conversations, or at very least, reading them on a regular basis. My wife has a habit of scribbling on pieces of paper, filling them with words that she had learned. Thinking that we could keep them tidy in one spot, we purchased a small whiteboard where she could write them in erasable ink. Not surprisingly, it filled up quickly and became harder each day to decide what to keep or erase, as our vocabulary increased.</p>
+
+<p><a href="https://wikipedia.org/wiki/Flashcard">Flashcards</a> are a commonly used tool to aid memorizing new concepts and terms and are a promising replacement. These days, there are many applications available on mobile devices and computers for creating flashcards. However, we wanted the words to be flashed constantly and the device needed to be placed in a common area that we frequented. That would be the kitchen!</p>
+
+<p>It didn’t make sense to devote a mobile device for a single purpose and they were probably too expensive in cost and power consumption. Furthermore, we would have had to invest in a special mount to hold the device in place, unobtrusively. A fridge magnet would have been perfect!</p>
+
+<p>As a gadget freak, I had acquired a wide range of electronic components over the years. More recently, I have been intrigued by a low-powered, small-form factor <a href="https://wikipedia.org/wiki/Microcontroller">Microcontroller Unit</a> (MCU), manufactured by <a href="https://www.espressif.com/">Espressif</a>. The chip I am referring to is the <a href="https://www.espressif.com/en/products/socs/esp32">ESP32</a>. Out of the box, the device comes with WiFi and Bluetooth support and only required minimal amount of power to run.</p>
+
+<p>To build one though, I would need to source the right parts and possibly custom 3D-print the enclosure like I did a few years ago when I created my own <a href="https://twitter.com/fuzziebrain/status/1141135537308225537">e-badge</a> for the annual <a href="https://www.odtug.com">ODTUG</a> Kscope conference. Fortunately, the clever folks at <a href="https://m5stack.com/">M5Stack</a> came up with a 4.7 inch <a href="https://wikipedia.org/wiki/Electronic_paper">e-ink</a> device that more than met my requirements.</p>
+
+<p>The <a href="https://m5stack.com/collections/m5stack-new-arrival/products/m5paper-esp32-development-kit-960x540-4-7-eink-display-235-ppi">M5Paper</a> is powered by a variant of the ESP32 chip and comes with all the ingredients I needed for this project. As mentioned earlier, the ESP32 comes with WiFi support and a sizable amount of memory (for an embedded device), built-in magnet, a self-contained power supply, and a MicroSD card slot. As a bonus, I also had access to a built-in RTC (real-time clock), temperature and humidity sensor, buttons and a touch screen for interactivity and three expansion slots to further extend my application. This was the perfect device for my APEX Language Learner!</p>
+
+<h2 id="objective">Objective</h2>
+
+<p>Before starting out to build the solution, I had in mind the following goals:</p>
+
+<ol>
+  <li>Create an easy to use web application to manage a repository of Japanese characters, <a href="https://wikipedia.org/wiki/Romanization_of_Japanese">Romaji</a> to aid pronunciation for an English speaker, and of course, the English translation of the word or sentence.</li>
+  <li>Create a web service that returns a random word.</li>
+  <li>Display the random word on the M5Paper.</li>
+</ol>
+
+<p>Here’s what it looks like upon completion:</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/the-final-product.jpg 1x" />
+                <img loading="lazy" width="500" height="500" src="assets/the-final-product.jpg" data-original="assets/the-final-product.jpg" alt="The electronic flashcard powered by the Oracle Cloud" title="The electronic flashcard powered by the Oracle Cloud" />
+            </picture>
+
+<p>All that in a weekend of fun!</p>
+
+<h2 id="toolkit">Toolkit</h2>
+
+<p>To achieve my goals, here are the ingredients I used:</p>
+
+<ul>
+  <li>01x M5Stack M5Paper ESP32 Development Kit</li>
+  <li>01x MicroSD card</li>
+  <li>01x <a href="https://www.oracle.com/cloud/free">Oracle Cloud Free Tier</a> account</li>
+  <li>01x Oracle Always Free <a href="https://www.oracle.com/autonomous-database/">Autonomous Database</a> (ADB)</li>
+  <li><a href="https://apex.oracle.com">Oracle Application Express</a> (APEX, pre-installed with the ADB)</li>
+  <li><a href="https://www.oracle.com/ca-en/database/technologies/appdev/rest.html">Oracle REST Data Services</a> (ORDS, pre-installed with the ADB)</li>
+</ul>
+
+<h3 id="oracle-cloud-free-tier-resources">Oracle Cloud Free Tier Resources</h3>
+
+<p>The Oracle Cloud Free Tier account offers a suite of resources offered by Oracle at no charge and no time limits. Yes, you read that correctly! Inside the bag of free resources, you will find not one, but two Always Free Autonomous Databases! There are many great reads on how to get started setting up your Oracle Cloud account and creating your first ADB, including this <a href="https://blogs.oracle.com/developers/launching-your-first-free-autonomous-db-instance">piece</a> by <a href="https://twitter.com/recursivecodes">Todd Sharp</a>.</p>
+
+<p><a href="https://twitter.com/lucdemanche">Luc Demanche</a> and I had also written a comprehensive overview on what Always Free resources are available and some ideas on fully exploiting them. The book <a href="https://www.apress.com/gp/book/9781484260104"><em>Getting Started with Oracle Cloud Free Tier</em></a> is available for purchase at your favorite book store.</p>
+
+<h3 id="rapid-application-development-with-apex">Rapid Application Development with APEX</h3>
+
+<p>As noted in the contents of the toolkit, the ADB already comes preinstalled with the powerful rapid application development frame work affectionately known as APEX. To get up and running quickly with APEX on the ADB, please check out this <a href="https://blogs.oracle.com/database/get-started-with-apex">guide</a> by <a href="https://twitter.com/toddbott1">Todd Bottger</a>. To learn more about this low-code platform, please check out the resources available on this <a href="https://apex.oracle.com/learnmore">webpage</a>. There you will find links to documentations, tutorials and books for getting started.</p>
+
+<p>As part of the package, the ADB also comes installed with ORDS, an enabler of web services that interface the web with the database using standard protocols. ORDS also comes with a feature called SQL Developer Web. This is a browser-based application for working with and managing the Oracle Database and if you are interested to learn more, please check out this <a href="https://www.thatjeffsmith.com/archive/2019/12/sql-developer-web-is-now-available/">blog post</a> by <a href="https://twitter.com/thatjeffsmith">(that) Jeff Smith</a>.</p>
+
+<h2 id="content-management">Content Management</h2>
+
+<p>The first objective is to create a simple <a href="https://wikipedia.org/wiki/Create,_read,_update_and_delete">CRUD</a> web application for us to enter Japanese characters that we wanted to memorize, the romanized form for easier pronunciation and the English translation. As the goal is to quickly build up the content and write the necessary software for displaying the words, I really did not want to fuss with choosing a front-end and back-end programming framework, implementing security features etc., just to get this rolling.</p>
+
+<p>APEX provides me a declarative approach to create a modern CRUD application that I can use on any device, with security and performance built right in the heart of the platform.</p>
+
+<h3 id="crud-simplified">CRUD Simplified</h3>
+
+<p>To enter the words into the repository, I will only need a page listing all the Japanese words in the database and a form to enter or edit the words and their translations. There are different ways to start creating the application. One approach would require me to create the required database objects using SQL scripts and then walk through the steps of creating the application and web components. Or, I could simply start with a spreadsheet and let APEX do all the heavy lifting.</p>
+
+<ol>
+  <li>In the spreadsheet, all I need to do is fill the three columns with starter data and the column names in the first row, and then save it as a CSV file.</li>
+  <li>
+    <p>Next, from the APEX App Builder, click on the <em>Create</em> button to create a new application.</p>
+
+    <picture class="">
+             <source srcset="assets/spreadsheet-data.jpg 1x" />
+             <img loading="lazy" src="assets/spreadsheet-data.jpg" data-original="assets/spreadsheet-data.jpg" alt="Sample spreadsheet with data" title="Sample spreadsheet with data" />
+         </picture>
+  </li>
+  <li>
+    <p>Select the <em>From a File</em> option. We will use the spreadsheet as the starting point.</p>
+
+    <picture class="">
+             <source srcset="assets/apex-create-application.png 1x" />
+             <img loading="lazy" src="assets/apex-create-application.png" data-original="assets/apex-create-application.png" alt="Start the application creation workflow" title="Start the application creation workflow" />
+         </picture>
+  </li>
+  <li>
+    <p>Drag and drop the CSV file containing the seed data.</p>
+
+    <picture class="">
+             <source srcset="assets/apex-drop-file.png 1x" />
+             <img loading="lazy" src="assets/apex-drop-file.png" data-original="assets/apex-drop-file.png" alt="Drag and drop files to initiate the data import process." title="Drag and drop files to initiate the data import process." />
+         </picture>
+  </li>
+  <li>
+    <p>Enter a suitable name for your data and then click the <em>Configure</em> button.</p>
+
+    <picture class="">
+             <source srcset="assets/apex-name-table.png 1x" />
+             <img loading="lazy" src="assets/apex-name-table.png" data-original="assets/apex-name-table.png" alt="Provide a table name for storing the data." title="Provide a table name for storing the data." />
+         </picture>
+  </li>
+  <li>
+    <p>In this modal dialog, you can make any customizations to the database table that you are about to create, for example, the data type, the column name etc. Click <em>Save Changes</em> to save any customizations that you make.</p>
+
+    <picture class="">
+             <source srcset="assets/apex-configure-import.png 1x" />
+             <img loading="lazy" src="assets/apex-configure-import.png" data-original="assets/apex-configure-import.png" alt="Fine-tune the data import process." title="Fine-tune the data import process." />
+         </picture>
+  </li>
+  <li>When returned to the <em>Load Data</em> page, click the button <em>Load Data</em> to proceed with the import. The number of rows imported should tally with contents of the CSV file. If so, click <em>Create Application</em> for the final step.</li>
+  <li>
+    <p>In the next screen, you will have the opportunity to fine tune some settings before the application is created. You will notice that APEX has already added a few starting pages like the <em>Faceted Search</em> (if you are keen to know more, I wrote a more in-depth discussion on this topic <a href="https://fuzziebrain.com/content/id/1917/">here</a>) and <em>Interactive Report</em> page. You may also introduce addition prefabricated features and change the <em>Authentication Scheme</em>. When you are done, click the <em>Create Application</em> button and the APEX engine will generate the application as defined.</p>
+
+    <picture class="">
+             <source srcset="assets/apex-create-application-final.png 1x" />
+             <img loading="lazy" src="assets/apex-create-application-final.png" data-original="assets/apex-create-application-final.png" alt="Create the application with the imported data." title="Create the application with the imported data." />
+         </picture>
+  </li>
+</ol>
+
+<p>Once the application has been created, you will be returned to the App Builder with the new application open. Simply click the <em>Run Application</em> button to launch the application. APEX has security built-in and you will be required to login in order to use the application. Both authentication and authorization rules can be defined declaratively and usually does not require much coding. For example, APEX supports <a href="https://oauth.net/2/">OAuth2</a> and you may choose to use this by creating and specifying a new Authentication Scheme called <em>Social Sign-In</em>. In my case, I chose to use Google accounts with a simple authorization rule that checks my email address before allowing access. If you like to learn more about setting up OAuth2 please see these articles on working with <a href="https://fuzziebrain.com/content/id/1709/">Google</a> and <a href="https://fuzziebrain.com/content/id/1908/">Azure AD</a>.</p>
+
+<p>In under an hour, you should have a functional web application that lets you:</p>
+
+<ol>
+  <li>
+    <p>List the words contained in the new table.</p>
+
+    <picture class="">
+             <source srcset="assets/apex-interactive-report.png 1x" />
+             <img loading="lazy" src="assets/apex-interactive-report.png" data-original="assets/apex-interactive-report.png" alt="List of words displayed with an Interactive Report in APEX." title="List of words displayed with an Interactive Report in APEX." />
+         </picture>
+  </li>
+  <li>
+    <p>Create, modify or delete entries.</p>
+
+    <picture class="">
+             <source srcset="assets/apex-form-modal.png 1x" />
+             <img loading="lazy" src="assets/apex-form-modal.png" data-original="assets/apex-form-modal.png" alt="A modal form for editing the data records." title="A modal form for editing the data records." />
+         </picture>
+  </li>
+</ol>
+
+<p>The default application user interface theme is also responsive and will be usable on mobile devices as well.</p>
+
+<h2 id="content-distribution">Content Distribution</h2>
+
+<p>Unlike a mobile device such as an Apple iPad or Android phone, the M5Paper does not come with a web browser for rendering HTML from a web application to display dynamic content. It has to be programmed at a low level to display the information that you require. Since the ESP32 has networking capabilities, we are able to design a solution that pulls the needed data from a web service.</p>
+
+<p>Oracle REST Data Services (ORDS) is a platform that would facilitate the creation of such web services. In the following steps below, you will learn how easy it is to create and publish a web service to be consumed by the embedded device.</p>
+
+<ol>
+  <li>
+    <p>Start by accessing the <em>RESTful Services</em> module in APEX:</p>
+
+    <picture class="">
+             <source srcset="assets/rest-start.jpg 1x" />
+             <img loading="lazy" src="assets/rest-start.jpg" data-original="assets/rest-start.jpg" alt="Launch the RESTful Services module in APEX." title="Launch the RESTful Services module in APEX." />
+         </picture>
+  </li>
+  <li>
+    <p>On the left pane, select the <em>Modules</em> node and then when the page loads, click the <em>Create Module</em> button on the top-right:</p>
+
+    <picture class="">
+             <source srcset="assets/rest-create-module-01.png 1x" />
+             <img loading="lazy" src="assets/rest-create-module-01.png" data-original="assets/rest-create-module-01.png" alt="Click the *Create Module* button to begin." title="Click the *Create Module* button to begin." />
+         </picture>
+  </li>
+  <li>
+    <p>Enter the following details about the new module:</p>
+
+    <p><strong>Module Name:</strong> word<br />
+ <strong>Base Path:</strong> /words</p>
+
+    <p>Leave the remaining fields with their default values and then click the <em>Create Module</em> button to continue.</p>
+
+    <picture class="">
+             <source srcset="assets/rest-create-module-02.png 1x" />
+             <img loading="lazy" src="assets/rest-create-module-02.png" data-original="assets/rest-create-module-02.png" alt="Enter the details for creating the module." title="Enter the details for creating the module." />
+         </picture>
+  </li>
+  <li>
+    <p>Once created, scroll down and then on the left, click the <em>Create Template</em> button:</p>
+
+    <picture class="">
+             <source srcset="assets/rest-create-template-01.png 1x" />
+             <img loading="lazy" src="assets/rest-create-template-01.png" data-original="assets/rest-create-template-01.png" alt="Next, create a Template" title="Next, create a Template" />
+         </picture>
+  </li>
+  <li>
+    <p>Provide the following details about the template:</p>
+
+    <p><strong>URI Template:</strong> random</p>
+
+    <p>Leave the remaining fields with their default values and then click the <em>Create Template</em> button to continue.</p>
+
+    <picture class="">
+             <source srcset="assets/rest-create-template-02.png 1x" />
+             <img loading="lazy" src="assets/rest-create-template-02.png" data-original="assets/rest-create-template-02.png" alt="Enter the details for creating the template." title="Enter the details for creating the template." />
+         </picture>
+  </li>
+  <li>
+    <p>Scroll down again and then click the <em>Create Handler</em> button to create a <em>GET</em> handler for the template.</p>
+
+    <picture class="">
+             <source srcset="assets/rest-create-handler-01.png 1x" />
+             <img loading="lazy" src="assets/rest-create-handler-01.png" data-original="assets/rest-create-handler-01.png" alt="Create a *GET* handler for the new template." title="Create a *GET* handler for the new template." />
+         </picture>
+  </li>
+  <li>
+    <p>Ensure the following options are selected:</p>
+
+    <p><strong>Method:</strong> GET<br />
+ <strong>Source Type:</strong> Collection Query</p>
+
+    <picture class="">
+             <source srcset="assets/rest-create-handler-02.png 1x" />
+             <img loading="lazy" src="assets/rest-create-handler-02.png" data-original="assets/rest-create-handler-02.png" />
+         </picture>
+
+    <p>In the <em>Source</em> field, enter the following SQL statement to perform a simple random selection of a single row:</p>
+
+    <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="k">select</span> <span class="o">*</span>
+ <span class="k">from</span> <span class="p">(</span>
+     <span class="k">select</span> <span class="n">jpn_text</span><span class="p">,</span> <span class="n">romaji</span><span class="p">,</span> <span class="n">eng_text</span>
+     <span class="k">from</span> <span class="n">japanese_word</span>
+     <span class="k">order</span> <span class="k">by</span> <span class="n">dbms_random</span><span class="p">.</span><span class="n">normal</span><span class="p">()</span>
+ <span class="p">)</span>
+ <span class="k">fetch</span> <span class="k">first</span> <span class="mi">1</span> <span class="k">rows</span> <span class="k">only</span>
+</code></pre></div>    </div>
+
+    <blockquote class="alert">
+      <p><strong>IMPORTANT</strong>
+Omit the semi-colon at the end of the statement.</p>
+    </blockquote>
+  </li>
+  <li>
+    <p>Once the web service has been created, simply click the “Copy” button (underlined in red) to obtain the web service URL:</p>
+
+    <picture class="">
+             <source srcset="assets/rest-end.png 1x" />
+             <img loading="lazy" src="assets/rest-end.png" data-original="assets/rest-end.png" alt="Copy the web service URL." title="Copy the web service URL." />
+         </picture>
+  </li>
+</ol>
+
+<p>If you have access to a Bash shell and both <em>curl</em> and <em>json_pp</em> are available, run the following command to test the web service:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl https://apeks.app/ords/lab/words/random | json_pp <span class="nt">-json_opt</span> utf8,pretty
+</code></pre></div></div>
+
+<p>You should get an output similar to this:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   347    0   347    0     0    896      0 <span class="nt">--</span>:--:-- <span class="nt">--</span>:--:-- <span class="nt">--</span>:--:--   896
+<span class="o">{</span>
+   <span class="s2">"count"</span> : 1,
+   <span class="s2">"hasMore"</span> : <span class="nb">false</span>,
+   <span class="s2">"items"</span> : <span class="o">[</span>
+      <span class="o">{</span>
+         <span class="s2">"eng_text"</span> : <span class="s2">"Friday"</span>,
+         <span class="s2">"jpn_text"</span> : <span class="s2">"金曜日"</span>,
+         <span class="s2">"romaji"</span> : <span class="s2">"Kin'yōbi"</span>
+      <span class="o">}</span>
+   <span class="o">]</span>,
+   <span class="s2">"limit"</span> : 25,
+   <span class="s2">"links"</span> : <span class="o">[</span>
+      <span class="o">{</span>
+         <span class="s2">"href"</span> : <span class="s2">"https://apeks.app/ords/lab/words/random"</span>,
+         <span class="s2">"rel"</span> : <span class="s2">"self"</span>
+      <span class="o">}</span>,
+      <span class="o">{</span>
+         <span class="s2">"href"</span> : <span class="s2">"https://apeks.app/ords/lab/metadata-catalog/words/item"</span>,
+         <span class="s2">"rel"</span> : <span class="s2">"describedby"</span>
+      <span class="o">}</span>,
+      <span class="o">{</span>
+         <span class="s2">"href"</span> : <span class="s2">"https://apeks.app/ords/lab/words/random"</span>,
+         <span class="s2">"rel"</span> : <span class="s2">"first"</span>
+      <span class="o">}</span>
+   <span class="o">]</span>,
+   <span class="s2">"offset"</span> : 0
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Alternatively, test the web service by opening the URL in a web browser.</p>
+
+<h2 id="content-consumption-and-display">Content Consumption and Display</h2>
+
+<p>As introduced earlier in the article, I decided to use the M5Paper for the display device for the following reasons and features:</p>
+
+<ol>
+  <li>The ESP32 chip used in the device is low-powered and has built-in WiFi support.</li>
+  <li>It comes with a relatively large sized e-paper display that does not require power to continuously display the same content.</li>
+  <li>The embedded RTC allows the device to power down into a “deep sleep” and then waking up on a predefined schedule.</li>
+  <li>It is powered by a large capacity lithium polymer battery.</li>
+  <li>The enclosure is sturdy and has magnets that I can use to attach to my fridge door.</li>
+  <li>Has a MicroSD slot that allows easy upload of resource files.</li>
+  <li>Multiple IO interfaces, buttons and an embedded temperature and humidity sensor for future extensions.</li>
+  <li>Inexpensive (for what it offers) at a price of $69 USD.</li>
+</ol>
+
+<p>With the M5Paper, I have a choice of using either <a href="https://arduino.cc">Arduino</a> or <a href="https://www.micropyto">MicroPython</a>.</p>
+
+<h3 id="uiflow">UIFlow</h3>
+
+<p>As with many ESP32-based products, the M5Paper supports both Arduino and MicroPython. M5Stack also provides their UIFlow firmware, which is based on MicroPython. It contains APIs that make working with compatible sensor products, and is easily programmable with their graphical Integrated Development Environment (IDE). Developers can choose to program the device using either the <a href="https://developers.google.com/blockly">Blockly</a> interface, or straight up MicroPython.</p>
+
+<picture class="">
+                <source srcset="assets/uiflow.png 1x" />
+                <img loading="lazy" src="assets/uiflow.png" data-original="assets/uiflow.png" alt="UIFlow makes programming M5Stack products easy." title="UIFlow makes programming M5Stack products easy." />
+            </picture>
+
+<p>At the time of writing, the alpha version of the IDE supports and is certainly a great option to consider. Like APEX, it is designed for rapid application development!</p>
+
+<p>While I like the “RADiness” of Blockly, I eventually decided to go with Arduino for two reasons. Firstly, the Arduino libraries appear to be more matured and better documented. The other reason was the ease of adding fonts to the application. As this is a multilingual application, I needed to use a font library that supported unicode characters and it was much easier and straightforward to do when programming with Arduino.</p>
+
+<h3 id="setup">Setup</h3>
+
+<p>Begin by downloading the latest the Arduino IDE from their <a href="https://www.arduino.cc">website</a> and installing it on your computer.</p>
+
+<picture class="">
+                <source srcset="assets/arduino-user-interface.png 1x" />
+                <img loading="lazy" src="assets/arduino-user-interface.png" data-original="assets/arduino-user-interface.png" alt="The Arduino IDE user interface." title="The Arduino IDE user interface." />
+            </picture>
+
+<p>Besides writing code, the next two most commonly performed actions will involve these two buttons:</p>
+
+<picture class="">
+                <source srcset="assets/arduino-buttons.png 1x" />
+                <img loading="lazy" src="assets/arduino-buttons.png" data-original="assets/arduino-buttons.png" alt="Arduino buttons to compile and upload the code to the device" title="Arduino buttons to compile and upload the code to the device" />
+            </picture>
+
+<p>The button with the tick mark on the left is to compile and verify the code, while the button on the right with the right pointing arrow, both compiles and uploads the code to the connected device. However, before you can upload the code, the following configuration is required.</p>
+
+<ol>
+  <li>
+    <p>First, we need to add the board descriptions and required libraries to the Arduino IDE. Under the <em>File</em> menu, select the <em>Preferences</em> item, and then click the button next to the text field labelled <em>Additional Boards Manager URLS</em>. Enter the URL <a href="https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json">https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json</a> and then click <em>OK</em>.</p>
+
+    <picture class="">
+             <source srcset="assets/arduino-boards-manager-urls.png 1x" />
+             <img loading="lazy" src="assets/arduino-boards-manager-urls.png" data-original="assets/arduino-boards-manager-urls.png" alt="Add the board manager URL from M5Stack." title="Add the board manager URL from M5Stack." />
+         </picture>
+  </li>
+  <li>Return to the main window and then go the <em>Boards Manager</em> utility. You will find this under the <em>Tools</em> menu and when you place your mouse cursor over the currently selected <em>Board</em>, you will see an additional item called <em>Board Manager</em>. Launch the Board Manager and then search the term “m5stack”. Install the <em>M5Stack</em> board by <em>M5Stack official</em>.
+    <picture class="">
+             <source srcset="assets/arduino-boards-add-m5stack.png 1x" />
+             <img loading="lazy" src="assets/arduino-boards-add-m5stack.png" data-original="assets/arduino-boards-add-m5stack.png" alt="Add the M5Stack boards to the Arduino IDE." title="Add the M5Stack boards to the Arduino IDE." />
+         </picture>
+  </li>
+  <li>
+    <p>To work with JSON, we will also need a third-party library called <a href="https://arduinojson.org/">ArduinoJson</a>. We can install this using the <em>Library Manager</em> that can be accessed from under the <em>Tools</em> menu (the item is actually called <em>Manage Libraries…</em>).</p>
+
+    <picture class="">
+             <source srcset="assets/arduino-library-install.png 1x" />
+             <img loading="lazy" src="assets/arduino-library-install.png" data-original="assets/arduino-library-install.png" alt="Install the ArduinoJson library using the Library Manager." title="Install the ArduinoJson library using the Library Manager." />
+         </picture>
+  </li>
+  <li>Finally, select the <em>M5Paper</em> board. The preset parameter values should work, but you <strong>must</strong> select the communications port that is assigned to the device when connected <em>via</em> USB.
+    <picture class="">
+             <source srcset="assets/arduino-boards-select.png 1x" />
+             <img loading="lazy" src="assets/arduino-boards-select.png" data-original="assets/arduino-boards-select.png" alt="Select the appropriate board to begin." title="Select the appropriate board to begin." />
+         </picture>
+  </li>
+</ol>
+
+<blockquote class="notice">
+  <p><strong>Note</strong></p>
+
+  <p>For Windows, it may be necessary to install additional device drivers to successfully connect the device to your PC.</p>
+</blockquote>
+
+<p>The code snippets in the remaining sections of this article are intended to highlight key points in the solution and should be read in the context of a larger piece of code. The complete source code I used for this project is published <a href="https://gist.github.com/fuzziebrain/1fe0a548caa0e1a61d4cf7283c746400">here</a>.</p>
+
+<h3 id="initialization">Initialization</h3>
+
+<p>We begin by including the M5EPD library in the code. This library’s code base is open sourced and is published in this GitHub <a href="https://github.com/m5stack/M5EPD">repository</a>. The company has also published the API documentation <a href="https://docs.m5stack.com/#/en/arduino/arduino_home_page?id=m5paper_api">here</a> for reference.</p>
+
+<p>The code below then performs some basic initialization steps:</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;M5EPD.h&gt;</span><span class="cp">
+</span>
+<span class="n">M5EPD_Canvas</span> <span class="nf">canvas</span><span class="p">(</span><span class="o">&amp;</span><span class="n">M5</span><span class="p">.</span><span class="n">EPD</span><span class="p">);</span> <span class="c1">// create the canvas</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="n">M5</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="c1">// Initialize the device</span>
+    <span class="n">M5</span><span class="p">.</span><span class="n">RTC</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="c1">// Initialize the RTC</span>
+    <span class="n">M5</span><span class="p">.</span><span class="n">TP</span><span class="p">.</span><span class="n">SetRotation</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="c1">// Set the orientation of the touch panel</span>
+    <span class="n">M5</span><span class="p">.</span><span class="n">EPD</span><span class="p">.</span><span class="n">SetRotation</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="c1">// Set the orientation of the display</span>
+    <span class="n">M5</span><span class="p">.</span><span class="n">EPD</span><span class="p">.</span><span class="n">Clear</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span> <span class="c1">// Clears the screen content</span>
+
+    <span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="internet-access">Internet Access</h3>
+
+<p>The ESP32 is Internet-ready, but to get connected, we will need to setup and initialize the WiFi connection. M5Stack provides the required library, so simply include that in your application and the following code for establishing the connection.</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;WiFi.h&gt;</span><span class="cp">
+</span>
+<span class="k">const</span> <span class="kt">char</span> <span class="n">SSID</span><span class="p">[]</span> <span class="o">=</span> <span class="s">"mywifissid"</span><span class="p">;</span>
+<span class="k">const</span> <span class="kt">char</span> <span class="n">WLAN_PASSWORD</span><span class="p">[]</span> <span class="o">=</span> <span class="s">"supersecret"</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{}</span>
+
+    <span class="n">WiFi</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="n">SSID</span><span class="p">,</span> <span class="n">WLAN_PASSWORD</span><span class="p">);</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="n">WiFi</span><span class="p">.</span><span class="n">status</span><span class="p">()</span> <span class="o">!=</span> <span class="n">WL_CONNECTED</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">delay</span><span class="p">(</span><span class="mi">500</span><span class="p">);</span>
+        <span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"."</span><span class="p">);</span> <span class="c1">// print dots to the serial monitor to know that we are still waiting for a connection.</span>
+    <span class="p">}</span>
+
+    <span class="n">displayFooter</span><span class="p">(</span><span class="s">"WiFi connected."</span><span class="p">);</span>
+
+    <span class="p">...</span>
+<span class="err">}</span>
+</code></pre></div></div>
+
+<h3 id="retrieve-the-data">Retrieve the Data</h3>
+
+<p>Once connected, we will then require the ability to make the REST call using a suitable client that supports the HTTP protocol. Fortunately, the M5Stack boards also provide this dependency. Include the <code class="language-plaintext highlighter-rouge">HTTPClient</code> library (note the upper-cased “HTTP”) and the third-party ArduinoJson library that we had installed earlier.</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;HTTPClient.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;ArduinoJson.h&gt;</span><span class="cp">
+</span>
+<span class="n">HTTPClient</span> <span class="n">http</span><span class="p">;</span>
+<span class="n">String</span> <span class="n">payload</span><span class="p">;</span>
+
+<span class="n">setup</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="n">http</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="s">"https://apeks.app/ords/lab/words/random"</span><span class="p">);</span>
+    <span class="kt">int</span> <span class="n">httpCode</span> <span class="o">=</span> <span class="n">http</span><span class="p">.</span><span class="n">GET</span><span class="p">();</span>
+
+    <span class="c1">// httpCode will be negative on error</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">httpCode</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">httpCode</span> <span class="o">==</span> <span class="n">HTTP_CODE_OK</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">payload</span> <span class="o">=</span> <span class="n">http</span><span class="p">.</span><span class="n">getString</span><span class="p">();</span> <span class="c1">// get the HTTP response</span>
+            <span class="n">payloadAvailable</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+            <span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="n">payload</span><span class="p">);</span> <span class="c1">// for debugging</span>
+            <span class="n">displayFooter</span><span class="p">(</span><span class="s">"Data received via Oracle REST Data Services."</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">displayFooter</span><span class="p">(</span><span class="s">"Failed to load data."</span><span class="p">);</span>
+        <span class="n">Serial</span><span class="p">.</span><span class="n">printf</span><span class="p">(</span><span class="s">"[HTTP] GET... failed, error: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">http</span><span class="p">.</span><span class="n">errorToString</span><span class="p">(</span><span class="n">httpCode</span><span class="p">).</span><span class="n">c_str</span><span class="p">());</span>
+    <span class="p">}</span>
+
+    <span class="n">http</span><span class="p">.</span><span class="n">end</span><span class="p">();</span>
+
+    <span class="c1">// If the REST call was successful, parse the JSON content</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">payloadAvailable</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">DynamicJsonDocument</span> <span class="n">doc</span><span class="p">(</span><span class="mi">2048</span><span class="p">);</span>
+        <span class="n">deserializeJson</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">payload</span><span class="p">);</span>
+
+        <span class="c1">// Only one row should have been returned by the REST call.</span>
+        <span class="n">String</span> <span class="n">jpnText</span> <span class="o">=</span>  <span class="n">doc</span><span class="p">[</span><span class="s">"items"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">"jpn_text"</span><span class="p">];</span>
+        <span class="n">String</span> <span class="n">romaji</span> <span class="o">=</span> <span class="n">doc</span><span class="p">[</span><span class="s">"items"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">"romaji"</span><span class="p">];</span>
+        <span class="n">String</span> <span class="n">engText</span> <span class="o">=</span>  <span class="n">doc</span><span class="p">[</span><span class="s">"items"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">"eng_text"</span><span class="p">];</span>
+
+        <span class="n">displayFooter</span><span class="p">(</span><span class="s">"Data entered via Oracle Application Express parsed and loaded."</span><span class="p">);</span>
+
+        <span class="n">displayContent</span><span class="p">(</span><span class="n">jpnText</span><span class="p">,</span> <span class="n">romaji</span><span class="p">,</span> <span class="n">engText</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="display-words-and-translations">Display Words and Translations</h3>
+
+<p>With the backend interface done, let’s now focus on the fun part, displaying the data! To display the Japanese characters, I needed a font that supports the appropriate code page. M5Stack has an example code that demonstrates the use of truetype fonts in M5Paper. The code demonstrates how to load and use the <a href="https://github.com/ButTaiwan/gensen-font">Gensen font</a>.</p>
+
+<p>For convenience, I loaded the required <code class="language-plaintext highlighter-rouge">.ttf</code> (truetype font) file, which you can find in the <a href="https://github.com/m5stack/M5EPD/tree/main/examples/Basics/M5EPD_TTF">example code</a>, into the root partition of a freshly formatted MicroSD card with 256 MB storage capacity and loaded it into the single available slot. The code below then loads the font and creates the canvas:</p>
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="n">canvas</span><span class="p">.</span><span class="n">loadFont</span><span class="p">(</span><span class="s">"/GenSenRounded-R.ttf"</span><span class="p">,</span> <span class="n">SD</span><span class="p">);</span> <span class="c1">// Load the font from the MicroSD card.</span>
+    <span class="n">canvas</span><span class="p">.</span><span class="n">createCanvas</span><span class="p">(</span><span class="mi">960</span><span class="p">,</span> <span class="mi">540</span><span class="p">);</span> <span class="c1">// Create the canvas with the maximum dimension of the e-paper in landscape orientation.</span>
+
+    <span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The code to render the display are divided into two functions, <code class="language-plaintext highlighter-rouge">displayContent</code> and <code class="language-plaintext highlighter-rouge">displayFooter</code>. There are three lines of text for rendering the Japanese characters, Romaji and English translations respectively. Text in all three lines are center-aligned, while the single line in the footer are left-aligned.</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">displayContent</span><span class="p">(</span><span class="n">String</span> <span class="n">jpnText</span><span class="p">,</span> <span class="n">String</span> <span class="n">romaji</span><span class="p">,</span> <span class="n">String</span> <span class="n">engText</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">canvas</span><span class="p">.</span><span class="n">fillCanvas</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+    <span class="kt">uint16_t</span> <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="mi">960</span> <span class="o">-</span> <span class="n">canvas</span><span class="p">.</span><span class="n">textWidth</span><span class="p">(</span><span class="n">jpnText</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="kt">uint16_t</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+
+    <span class="n">canvas</span><span class="p">.</span><span class="n">createRender</span><span class="p">(</span><span class="n">JPN_FONT_SIZE</span><span class="p">,</span> <span class="mi">256</span><span class="p">);</span>
+    <span class="n">canvas</span><span class="p">.</span><span class="n">setTextColor</span><span class="p">(</span><span class="mi">15</span><span class="p">);</span>
+    <span class="n">canvas</span><span class="p">.</span><span class="n">setTextSize</span><span class="p">(</span><span class="n">JPN_FONT_SIZE</span><span class="p">);</span>
+    <span class="n">canvas</span><span class="p">.</span><span class="n">setTextDatum</span><span class="p">(</span><span class="n">TC_DATUM</span><span class="p">);</span>
+    <span class="n">canvas</span><span class="p">.</span><span class="n">drawString</span><span class="p">(</span><span class="n">jpnText</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">);</span>
+    <span class="n">canvas</span><span class="p">.</span><span class="n">destoryRender</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+    <span class="p">...</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">displayFooter</span><span class="p">(</span><span class="n">String</span> <span class="n">text</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">uint16_t</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">20</span><span class="p">;</span>
+    <span class="kt">uint16_t</span> <span class="n">y</span> <span class="o">=</span> <span class="n">SCREEN_HEIGHT</span> <span class="o">-</span> <span class="n">FOOTER_BAR_HEIGHT</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+
+    <span class="n">canvas</span><span class="p">.</span><span class="n">fillRect</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">SCREEN_HEIGHT</span> <span class="o">-</span> <span class="n">FOOTER_BAR_HEIGHT</span><span class="p">,</span> <span class="n">SCREEN_WIDTH</span><span class="p">,</span> <span class="n">FOOTER_BAR_HEIGHT</span><span class="p">,</span> <span class="mi">15</span><span class="p">);</span>
+    <span class="n">canvas</span><span class="p">.</span><span class="n">createRender</span><span class="p">(</span><span class="mi">24</span><span class="p">,</span> <span class="mi">256</span><span class="p">);</span>
+    <span class="n">canvas</span><span class="p">.</span><span class="n">setTextSize</span><span class="p">(</span><span class="mi">24</span><span class="p">);</span>
+    <span class="n">canvas</span><span class="p">.</span><span class="n">setTextColor</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="n">canvas</span><span class="p">.</span><span class="n">setTextDatum</span><span class="p">(</span><span class="n">CL_DATUM</span><span class="p">);</span>
+    <span class="n">canvas</span><span class="p">.</span><span class="n">drawString</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">);</span>
+    <span class="n">canvas</span><span class="p">.</span><span class="n">destoryRender</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+    <span class="n">canvas</span><span class="p">.</span><span class="n">pushCanvas</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">UPDATE_MODE_DU</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>There sixteen shades of grey available for use on the e-paper display, beginning with <code class="language-plaintext highlighter-rouge">0</code> for the lightest shade “white”, and <code class="language-plaintext highlighter-rouge">15</code> as the maximum for black. Thus the main content is rendered with text in black on a white background, and the footer is in an inverted color scheme.</p>
+
+<h3 id="saving-power">Saving Power</h3>
+
+<p>It is evident that I am a huge fan of e-paper display technology. Its major advantage is that it can hold the displayed image even after it is powered down. For the electronic flashcard, I did not require real-time display of data or any interactivity with the buttons. I could therefore benefit from putting the device into a deep sleep after it has obtained and rendered the information on screen. This allows the device to run for a pretty long time before needing a recharge.</p>
+
+<p>The code snippets below demonstrate how to power down the device and have it wake automatically after a predefined number of seconds.</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">const</span> <span class="kt">uint16_t</span> <span class="n">WAKE_INTERVAL_SECONDS</span> <span class="o">=</span> <span class="mi">900</span><span class="p">;</span> <span class="c1">// 15 minutes</span>
+<span class="k">const</span> <span class="kt">uint16_t</span> <span class="n">SHUTDOWN_DELAY_SECONDS</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+<span class="p">...</span>
+<span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">delay</span><span class="p">(</span><span class="n">SHUTDOWN_DELAY_SECONDS</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">);</span> <span class="c1">// wait to allow refresh to complete before shutdown</span>
+    <span class="n">M5</span><span class="p">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">WAKE_INTERVAL_SECONDS</span> <span class="o">-</span> <span class="n">SHUTDOWN_DELAY_SECONDS</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">M5.shutdown</code> function is overloaded and provides developers with four different ways to shutdown and wake the device. Check out the API documentation for additional information.</p>
+
+<h3 id="compiling-and-debugging">Compiling and Debugging</h3>
+
+<p>The final step is to compile the code and then uploading it to the M5Paper. To do this, ensure that the correct board and port are selected, and the device is plugged into an available USB port on your computer. If you need to debug the code, then be sure to open the <em>Serial Monitor</em> found under the <em>Tools</em> menu. Any calls like <code class="language-plaintext highlighter-rouge">Serial.println</code> would print the outputs to the Serial Monitor. When you are ready, click the <em>Upload</em> button or <em>Ctrl-U</em> and watch the outputs at the bottom of the IDE for any potential issues. If all goes well, the device will startup and perform the tasks you have programmed it to do.</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>I am a fan of both APEX and M5Stack products for very similar reasons. They are easy to understand, develop and deploy a usable product in a short amount of time, and yet, allows for low-level extensibility should the need arises.</p>
+
+<blockquote>
+  <p><em>“It’s not about our product, our company, our brand. It’s not about how the user feels about us. It’s about how the user feels about himself[/herself], in the context of whatever it is our product, service, cause helps him[/her] do and be.”</em></p>
+
+  <p>Kathy Sierra<br />
+Badass: Making Users Awesome</p>
+</blockquote>
+
+<p>I hope this simple but useful project will inspire you to build your own APEX applications with an IoT extension that interacts with the real world.</p>
+
+<p>読んでくれてありがとう！</p>
+
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/oci">oci</a>
+            <a class="animated-link tag" href="/topics/iot">iot</a>
+            <a class="animated-link tag" href="/topics/apex">apex</a>
+            <a class="animated-link tag" href="/topics/always-free">always-free</a>
+            <a class="animated-link tag" href="/topics/architect">architect</a>
+            <a class="animated-link tag" href="/topics/community">community</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Adrian Png</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>A seasoned solutions architect with over 20 years of experience working with clients to design and implement state-of-the-art infrastructure and applications. He earned a Master of Technology (Knowledge Engineering) degree from the National University of Singapore and is always eager to apply his knowledge and skills in Machine Learning. Adrian is also trained and certified in several Oracle technologies including Oracle Cloud Infrastructure, Oracle Autonomous Database, Oracle cloud native services, Oracle Database, and Oracle Application Express. He is an Oracle ACE and a recognized contributor in the Oracle community. Most recently, he co-authored the book Getting Started with the Oracle Cloud Free Tier. In his spare time, Adrian enjoys tinkering with electronics projects and 3D printing.</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/fuzziebrain" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/fuzziebrain" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-08-15T12:00:00+00:00">August 15, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

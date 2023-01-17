@@ -1,0 +1,485 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Automating OCI with Terraform">
+    
+    <meta itemprop="datePublished" content="2021-10-29T08:00:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Automating OCI with Terraform
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <picture class="aligncenter">
+                <source srcset="assets/landing-zone.png 1x" />
+                <img loading="lazy" width="400" height="400" src="assets/landing-zone.png" data-original="assets/landing-zone.png" alt="OCLOUD landing zone" title="OCLOUD landing zone" />
+            </picture>
+
+<p>Introducing Oracle Cloud Infrastructure (OCI) for service delivery allows operators to represent physical and virtual infrastructure in the form of code. System administrators ensure server uptime and service levels, responding to infrastructure monitoring alerts and resolving incidents programmatically. Adopting <a href="https://youtu.be/h970ZBgKINg">“Infrastructure as Code” (IaC)</a> helps operators to connect events and state changes with automated provisioning processes.</p>
+
+<p>While requesting a resource from a cloud provider is a matter of opening the console, providing input values, and launching the server, addressing functional and non-functional requirements of an IT operation during the launch process is more complex. Provisioning plans help to determine the correct framework, reflect the operational and management tools, and configure resources according to security and compliance regulations. In OCI, we rely on <a href="https://www.terraform.io/">Terraform</a> to automate provisioning processes. The widely-adopted, open-source tool allows engineers to translate “declarative” syntax written in <a href="https://www.terraform.io/docs/internals/json-format.html">JSON</a> or <a href="https://github.com/hashicorp/hcl">Hashicorp’s Configuration Language (HCL)</a> into API calls.</p>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<p>One of the key benefits of using Terraform is that it’s orchestrator agnostic. When needed, the execution environment can be dynamically extended with <a href="https://www.terraform.io/docs/language/providers/configuration.html">hypervisor-specific interfaces</a>:</p>
+
+<ul>
+  <li>Terraform templates comprise the physical infrastructure, network functions and orchestrators for distributed systems.</li>
+  <li>Topology templates comprise configuration scripts that initiate service deployments upon the successful creation of a resource.</li>
+  <li>Terraform’s <a href="https://www.terraform.io/docs/language/resources/provisioners/local-exec.html">local-exec</a> and <a href="https://www.terraform.io/docs/language/resources/provisioners/remote-exec.html">remote-exec</a> blocks run configuration scripts that install software components for service instances.</li>
+  <li>Operators combine application code and/or binaries with virtualization and an orchestration environment of their choice into comprehensive build plans.</li>
+</ul>
+
+<p>The process of provisioning infrastructure is merged with the continuous integration and deployment chain for application code. Combining Terraform with OCI, enterprise IT departments benefit from:</p>
+
+<ul>
+  <li>
+    <p><strong>Increased flexibility and agility in operation</strong></p>
+
+    <p>Relying on automated deployment allows you to centralize topology management in code repositories. While Terraform is creating resources, state is maintained. This helps to prevent confusion among engineering teams. The desired state for all resources is compared to the current state and the delta defines the provisioning sequence for the requested changes.</p>
+
+    <p>This allows operators to launch virtual data center in more than 30 locations and rely on a single script source to maintain company-wide security and compliance standards.</p>
+  </li>
+  <li>
+    <p><strong>Integrated cloud services</strong></p>
+
+    <p>Database and application infrastructure is separated in OCI. The terraform service provider combines deployment scripts for database services with provisioning scripts for applications relying on open source orchestrators and commercial hypervisors like Kubernetes and VMWare vSphere.</p>
+
+    <p>Engineers merge cloud-native services and traditional enterprise applications into comprehensive deployment templates. Combining Oracle’s orchestrator-agnostic approach for the applications stack with separate infrastructure for multi-model databases on a native layer three network, service owners modernize existing applications incrementally and adopt cloud native services in digestible steps. Doing so, they avoid rewriting entire applications before migrating to a managed infrastructure stack.</p>
+  </li>
+  <li>
+    <p><strong>Shadow IT prevention</strong></p>
+
+    <p>Terraform separates code and execution environments and allows you to maintain security and cost-control while enabling self-service application deployments.</p>
+
+    <p>Defining resources in code allows you to define launch parameters and user credentials programmatically, take dependencies during the provisioning process into account, and define the sequence of resources that are deployed.</p>
+
+    <p>Engineers describe a target topology and terraform determines the steps required to create a resource automatically. Leveraging flags like the region argument, modules are executed in different regions and availability/security domains. This allows modules to be defined which represent services in a self-service portal, with admin expertise and configuration dependencies reflected in the predefined deployment process.</p>
+  </li>
+</ul>
+
+<p>We refer to resources that are programmatically defined as <em>custom</em> or <em>logical</em> resources. The learning curve of adding orchestrator-specific service providers to the OCI core services is not very steep, because syntax patterns that are used to code infrastructure on orchestrators remain the same.</p>
+
+<h3 id="command-line-access">Command Line Access</h3>
+
+<p>One of the quickest and easiest ways to start is to obtain an OCI account by <strong>signing up for the <a href="http://signup.oraclecloud.com/">Free Tier</a></strong>. Because Oracle assigns dedicated resources to every user, new registrations can be prevented by a lack of resources in a specific region. Selecting a different region for the registration usually helps to overcome the hurdle.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/cloud_shell.png 1x" />
+                <img loading="lazy" src="assets/cloud_shell.png" data-original="assets/cloud_shell.png" alt="OCI Free Tier" title="OCI Free Tier" />
+            </picture>
+
+<table>
+  <tbody>
+    <tr>
+      <td>After obtaining an account we log into the web console and start the <a href="https://docs.cloud.oracle.com/en-us/iaas/Content/API/Concepts/cloudshellintro.htm">Cloud Shell</a> with the **</td>
+      <td><em>&gt;_</em></td>
+      <td>** button. The cloud shell launches in the region that is active in the cloud console. For the initial setup, the home region of a tenant should be selected. When executing deployment plans, Terraform depends on the directory structure to identify files that belong to a plan.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">mkdir ~/project
+</span></code></pre></div></div>
+
+<p>In the <em>project</em> directory we create a file with the name <code class="language-plaintext highlighter-rouge">hello.tf</code>.</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">cd ~/project &amp;&amp; touch hello.tf
+</span></code></pre></div></div>
+
+<p>Terraform code is stored in a text file that ends with <em>.tf</em>. We open the file with an editor of choice. The cloud shell comes with <em>vim</em> and <em>nano</em> preinstalled.</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">nano ~/project/hello.tf
+</span></code></pre></div></div>
+
+<h3 id="hello-world">Hello World</h3>
+
+<p>Terraform uses a configuration language called HashiCorp Configuration Language (HCL) for templates that characterize components of a topology. HCL is a declarative language and instructions are stored in blocks. The syntax of HCL looks as follows:</p>
+
+<div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">&lt;</span><span class="nx">BLOCK</span> <span class="nx">TYPE</span><span class="err">&gt;</span> <span class="s2">"&lt;BLOCK project&gt;"</span> <span class="p">{</span>
+ <span class="err">&lt;</span><span class="nx">IDENTIFIER</span><span class="err">&gt;</span> <span class="p">=</span> <span class="err">&lt;</span><span class="nx">EXPRESSION</span><span class="err">&gt;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Infrastructure components are defined adopting an input-output model. [Input parameter][Input] are passed to a build plan, resources definitions describe the provision process and [output parameters][Output] return the results.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/iomodel.png 1x" />
+                <img loading="lazy" src="assets/iomodel.png" data-original="assets/iomodel.png" alt="HCL Syntax" title="HCL Syntax" />
+            </picture>
+
+<p>This principle can be explained using a simple “Hello World” example. First we define an input variable. The input block contains type constraints as arguments for interpretation. Simple <a href="https://www.terraform.io/docs/language/expressions/types.html">types</a> are <code class="language-plaintext highlighter-rouge">string</code>, <code class="language-plaintext highlighter-rouge">number</code>, and <code class="language-plaintext highlighter-rouge">bool</code>, while complex types are <code class="language-plaintext highlighter-rouge">list</code> and <code class="language-plaintext highlighter-rouge">object</code>. The resource block remains empty for now, because we’re not aiming to provision any resources. The output block returns the execution results. Referring to an output variable instructs Terraform to execute the referenced block, so the sequence inside the code isn’t actually relevant.</p>
+
+<div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Input</span>
+<span class="k">variable</span> <span class="s2">"input"</span> <span class="p">{</span>
+  <span class="nx">type</span>        <span class="p">=</span> <span class="nx">string</span>
+  <span class="nx">default</span>     <span class="p">=</span> <span class="s2">"Hello World"</span>
+<span class="p">}</span>
+
+<span class="c1"># Function</span>
+<span class="k">resource</span> <span class="s2">"null_resource"</span> <span class="s2">"nothing"</span> <span class="p">{}</span>
+
+<span class="c1"># Output</span>
+<span class="k">output</span> <span class="s2">"greeting"</span> <span class="p">{</span> <span class="nx">value</span> <span class="p">=</span> <span class="kd">var</span><span class="p">.</span><span class="nx">input</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>Since HCL scripts don’t include a shebang, we need to call terraform explicitly. We store the file as <code class="language-plaintext highlighter-rouge">~/project/hello.tf</code> and run the terraform command. Before executing terraform, we need to initialize the working directory:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">cd ~/project &amp;&amp; terraform init
+</span></code></pre></div></div>
+
+<p>The command allows for additional subcommands using the format:</p>
+
+<blockquote>
+  <p><em>terraform &lt;subcommand&gt; -options</em></p>
+</blockquote>
+
+<p>The <code class="language-plaintext highlighter-rouge">-auto-approve</code> option forces terraform to execute the command without further confirmation:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">terraform apply -auto-approve
+</span></code></pre></div></div>
+
+<p>The command only returns with an output of the variable:</p>
+
+<div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">greeting</span> <span class="err">=</span> <span class="nx">Hello</span> <span class="nx">World</span>
+</code></pre></div></div>
+
+<blockquote class="notice">
+  <p><strong>Note:</strong> After this example, the <code class="language-plaintext highlighter-rouge">~/project/hello.tf</code> is no longer needed.</p>
+</blockquote>
+
+<h2 id="provider-configuration">Provider Configuration</h2>
+
+<p>In order to create resources in OCI, we need to configure terraform. We can do this by creating a basic configuration file:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">rm ~/project/hello.tf &amp;&amp; nano ~/project/config.tf
+
+</span></code></pre></div></div>
+
+<p>The first block is the <a href="https://www.terraform.io/docs/language/providers/configuration.html">provider block</a> used to load the latest service provider. A [service provider][oci_terraform] is a plugin for the provisioning API and translates <a href="https://github.com/terraform-providers/terraform-provider-oci">HCL code into API calls</a>. Since the API is continuously evolving, adding a provider block forces terraform to load the latest version before executing any scripts. In the cloud shell, an empty block is sufficient since all of the necessary arguments are stored as the default parameter.</p>
+
+<div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Setup the oci service provider</span>
+<span class="k">provider</span> <span class="s2">"oci"</span> <span class="p">{</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>Next, we instruct terraform to address a specific account, referring to the <a href="https://docs.oracle.com/en-us/iaas/Content/GSG/Concepts/settinguptenancy.htm">Oracle Cloud Resource Identifier (OCID)</a>. We define the <code class="language-plaintext highlighter-rouge">tenancy_ocid</code> as an empty input parameter and retrieve the OCID from the command line.</p>
+
+<div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Input parameter to request the unique identifier for an account</span>
+<span class="k">variable</span> <span class="s2">"tenancy_ocid"</span> <span class="p">{</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>With that, the communication is established and we can use the cloud controller as data source. A <a href="https://www.terraform.io/docs/configuration/data-sources.html">data block</a> sends a request to the controller and returns <a href="https://registry.terraform.io/providers/hashicorp/oci/latest/docs/data-sources/identity_tenancy">account specific information</a> in JSON format.</p>
+
+<div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Retrieve meta data for tenant</span>
+<span class="k">data</span> <span class="s2">"oci_identity_tenancy"</span> <span class="s2">"account"</span> <span class="p">{</span>
+  <span class="nx">tenancy_id</span> <span class="p">=</span> <span class="kd">var</span><span class="p">.</span><span class="nx">tenancy_ocid</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Here, we’ll define an output block by setting the result as a parameter and echoing it to the console:</p>
+
+<div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Output tenancy details</span>
+<span class="k">output</span> <span class="s2">"tenancy"</span> <span class="p">{</span>
+  <span class="nx">value</span> <span class="p">=</span> <span class="k">data</span><span class="p">.</span><span class="nx">oci_identity_tenancy</span><span class="p">.</span><span class="nx">account</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Now, we close the file and test the integration with the <code class="language-plaintext highlighter-rouge">plan</code> command.  Because we left the input variable for the tenancy ID empty, we need to refer to a environment setting. The unix command [printenv][linux_printenv] unveils the respective environment variable:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">printenv | grep TENANCY
+</span></code></pre></div></div>
+
+<p>With the <code class="language-plaintext highlighter-rouge">-var</code> argument, we provide the expected input and run terraform:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">cd ~/project &amp;&amp; terraform init &amp;&amp; terraform plan -var tenancy_ocid=$</span>OCI_TENANCY
+</code></pre></div></div>
+
+<h3 id="home-region">Home Region</h3>
+
+<p>OCI is available in multiple regions, with every region representing one or more a physical data centers. Multi-data-center regions like FRA, PHX, IAD, and LHR are managed as a single resource pool with multiple availability domains (AD). All regions are managed through a single API, which makes global service roll-outs simple. We can target a specific region using the region argument inside a block. In the console, the active region is shown in the upper-right corner, and in the cloud shell the command prompt shows the active region.</p>
+
+<p><img src="https://docs.cloud.oracle.com/en-us/iaas/Content/Resources/Images/cloud-shell-region-location-prompt.png" alt="Cloud Shell" title="OCI Console" /></p>
+
+<p>Some resources like compartments are defined once and replicated into every region. These are referred to as global resources. Global resources should be created in the [“home” region][blog_home]. We use the <em>locals block</em> to define a function that determines the <a href="https://docs.cloud.oracle.com/en-us/iaas/Content/Identity/Tasks/managingregions.htm">home region</a> for a tenant:</p>
+
+<div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Create a region map</span>
+<span class="nx">locals</span> <span class="p">{</span>
+  <span class="nx">region_map</span> <span class="p">=</span> <span class="p">{</span>
+    <span class="nx">for</span> <span class="nx">city</span> <span class="nx">in</span> <span class="k">data</span><span class="p">.</span><span class="nx">oci_identity_regions</span><span class="p">.</span><span class="nx">global</span><span class="p">.</span><span class="nx">regions</span> <span class="err">:</span>
+    <span class="nx">city</span><span class="p">.</span><span class="nx">key</span> <span class="p">=</span><span class="err">&gt;</span> <span class="nx">city</span><span class="p">.</span><span class="nx">name</span>
+  <span class="p">}</span>
+  <span class="nx">home_region</span> <span class="p">=</span> <span class="nx">lookup</span><span class="p">(</span>
+    <span class="kd">local</span><span class="p">.</span><span class="nx">region_map</span><span class="p">,</span>
+    <span class="k">data</span><span class="p">.</span><span class="nx">oci_identity_tenancy</span><span class="p">.</span><span class="nx">account</span><span class="p">.</span><span class="nx">home_region_key</span>
+  <span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><a href="https://docs.cloud.oracle.com/en-us/iaas/Content/General/Concepts/regions.htm">Region identifiers</a> in OCI are provided either in a long format that includes the AD (e.g., <em>eu-frankfurt-1</em>) or as a simple three-letter key (e.g., <em>FRA</em>.) Even though HCL is a templating language, <a href="https://www.terraform.io/docs/language/expressions/index.html">expressions</a> allow us to use <a href="https://www.terraform.io/docs/language/expressions/for.html">scripts</a> as primitives. We use this functionality in a <a href="https://www.terraform.io/docs/configuration/locals.html">local block</a> to construct the right input format:</p>
+
+<div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Get the list of regions</span>
+<span class="k">data</span> <span class="s2">"oci_identity_regions"</span> <span class="s2">"global"</span> <span class="p">{</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">oci_identity_tenancy</code> block in <code class="language-plaintext highlighter-rouge">setting.tf</code> delivers the home-region key that we match with the long format in <a href="https://www.oracle.com/cloud/architecture-and-regions.html">map</a> that contains all OCI regions. The map is retrieved as a “global” data block. The result is an identifier we can use as argument in the provider block.</p>
+
+<h2 id="terraform-workflow">Terraform Workflow</h2>
+
+<p>Executing a build plan is reflected in a sequence of terraform commands which validate block definitions and quantify and provision the required resources. The steps in the Terraform workflow are closely related to the lifecycle of resources on cloud platforms. As you recall from earlier, these steps are orchestrator-agnostic, meaning that the commands are valid for creating, updating, and destroying resources on any given orchestrator.</p>
+
+<picture class="aligncenter">
+                <source srcset="assets/workflow.png 1x" />
+                <img loading="lazy" src="assets/workflow.png" data-original="assets/workflow.png" alt="Initial Command Sequence" title="Initial Command Sequence" />
+            </picture>
+
+<h3 id="validate"><code class="language-plaintext highlighter-rouge">validate</code></h3>
+
+<p>Before executing terraform commands, we validate the HCL and JSON syntax. <code class="language-plaintext highlighter-rouge">Terraform validate</code> is a parser that checks the syntax structure for obvious errors:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">terraform validate
+</span></code></pre></div></div>
+
+<h3 id="init"><code class="language-plaintext highlighter-rouge">init</code></h3>
+
+<p>When the code is error free, we run the <code class="language-plaintext highlighter-rouge">init</code> command to instruct terraform to check and load the referenced service provider plug-ins from the <a href="https://www.terraform.io/docs/language/providers/configuration.html">provider registry</a> and store the plugin in the <code class="language-plaintext highlighter-rouge">.terraform</code> sub directory. Third party service providers can be added by defining additional provider blocks:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">terraform init
+</span></code></pre></div></div>
+
+<h3 id="plan"><code class="language-plaintext highlighter-rouge">plan</code></h3>
+
+<p>After that, we run a <code class="language-plaintext highlighter-rouge">plan</code> command to check the list of resource changes before executing a deployment plan. The <code class="language-plaintext highlighter-rouge">plan</code> command indicates which resources will be created, updated, or deleted in order to adjust the current architecture to match the desired architecture. The <code class="language-plaintext highlighter-rouge">-out config.tfplan</code> extension instructs terraform to store the execution plan for a later <code class="language-plaintext highlighter-rouge">apply</code>:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">terraform plan -var tenancy_ocid=$</span>OCI_TENANCY <span class="nt">-out</span> config.tfplan
+</code></pre></div></div>
+
+<h3 id="apply"><code class="language-plaintext highlighter-rouge">apply</code></h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">apply</code> command executes the script. We are not provisioning any resources yet and so use the <code class="language-plaintext highlighter-rouge">-auto-approve</code> flag to skip the explicit confirmation:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">terraform apply "config.tfplan" -auto-approve
+</span></code></pre></div></div>
+
+<p>Executing the script instructs Terraform to provision the required resources and to return the output variables in the shell. Once confirmed, it takes a few seconds to complete the creation of the resources on OCI. The completion of the command is indicated with the output messages.</p>
+
+<h2 id="state-management">State Management</h2>
+
+<p>Terraform is a state-aware deployment tool, meaning it generates a file with the <code class="language-plaintext highlighter-rouge">apply</code> command that reflects the deployment status. The state file allows operators to track the current state of their resources. State information is maintained in syntax similar to JSON. The file is located in a hidden folder <strong><code class="language-plaintext highlighter-rouge">.terraform/terraform.tfstate</code></strong>. Editing the state file directly is <em>not</em> recommended.</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">cat ~/training/terraform.tfstate
+</span></code></pre></div></div>
+
+<p>This file captures terraform the results of every deployment process. State awareness sets Terraform apart from most configuration management systems used for cloud deployments, because it allows for “declarative” deployments. The admin only defines the desired architecture in the build plan and when Terrafrom is executed, the program automatically determines the difference between the as-is and to-be architecture, either deploying or destroying the required resources.</p>
+
+<p><strong><code class="language-plaintext highlighter-rouge">Terraform.tfstate</code> file example:</strong></p>
+
+<div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Terraform.tfstate file example</span>
+
+<span class="p">{</span>
+    <span class="s2">"version"</span><span class="err">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s2">"terraform_version"</span><span class="err">:</span> <span class="s2">"0.11.8"</span><span class="p">,</span>
+    <span class="s2">"lineage"</span><span class="err">:</span> <span class="s2">"35a9fcf6-c658-3697-9d74-480408535ce6"</span><span class="p">,</span>
+    <span class="s2">"modules"</span><span class="err">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                    <span class="s2">"path"</span><span class="err">:</span> <span class="p">[</span><span class="s2">"root"</span><span class="p">],</span>
+                    <span class="err">……………………………………</span>
+                    <span class="s2">"depends_on"</span><span class="err">:</span> <span class="p">[]</span>
+            <span class="p">}</span>
+    <span class="p">]</span><span class="err">&amp;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Terraform provides the <code class="language-plaintext highlighter-rouge">show</code> command for operators to review the current state. This command retrieves all information captured in the state file. Specifying the <code class="language-plaintext highlighter-rouge">-json</code> option transfers the data into a valid <a href="https://www.terraform.io/docs/internals/json-format.html">json format</a>:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">terraform show -json
+</span></code></pre></div></div>
+
+<p>With a JSON parser like <a href="https://stedolan.github.io/jq/">jq</a> we can filter infrastructure information for further use. In case of an error, the [json validator][json_valid] allows us to check the JSON structure and the <a href="https://jqplay.org/">jq playground</a> to develop the filter syntax before applying it:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">terraform show -json | jq .values.outputs.tenancy.value.home_region_key -r
+</span></code></pre></div></div>
+
+<p>This example shows how to use jq to filter the home region of your tenant from json output. It returns the three letter value, e.g., <em>FRA</em> for the home region.</p>
+
+<h2 id="output">Output</h2>
+
+<p>With <code class="language-plaintext highlighter-rouge">terraform output</code> will retrieve the defined output parameter from the state file. Adding the name of a particular block, the response returns only the data of a specific block:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">terraform output home
+</span></code></pre></div></div>
+
+<p>We can use this command to analyze an existing tenancy from the command line (i.e, resources can only be deployed in regions that have been activated by the account owner). One option is to leverage the <a href="https://docs.oracle.com/en-us/iaas/tools/oci-cli/latest/oci_cli_docs/">OCI command line interface</a> to retrieve a list of regions have already been activated:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">oci iam region-subscription list --query 'data[*]'
+</span></code></pre></div></div>
+
+<p>Terraform allows operators to use the same API but provide a list of regions in <a href="https://www.terraform.io/docs/internals/json-format.html">JSON</a> format. We create a small module in a subdirectory. This modules creates a JSON output containing all regions that a tenancy has subscribed to:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">mkdir ~/project/subscriptions &amp;&amp; nano ~/project/subscriptions/region.tf
+</span></code></pre></div></div>
+
+<p>The method <code class="language-plaintext highlighter-rouge">oci_identity_region_subscriptions</code> retrieves the list of activated regions form the service provider. With the output block we reformat the list into a list of provider arguments:</p>
+
+<div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">variable</span> <span class="s2">"tenancy_ocid"</span> <span class="p">{</span> <span class="p">}</span>
+
+<span class="k">output</span> <span class="s2">"subscriptions"</span> <span class="p">{</span>
+  <span class="nx">value</span> <span class="p">=</span> <span class="p">[</span>
+     <span class="nx">for</span> <span class="nx">subscription</span> <span class="nx">in</span> <span class="k">data</span><span class="p">.</span><span class="nx">oci_identity_region_subscriptions</span><span class="p">.</span><span class="nx">activated</span><span class="p">.</span><span class="nx">region_subscriptions</span><span class="err">:</span><span class="p">{</span>
+        <span class="s2">"alias"</span> <span class="p">=</span> <span class="nx">subscription</span><span class="p">.</span><span class="nx">region_key</span>
+        <span class="s2">"region"</span>  <span class="p">=</span> <span class="nx">subscription</span><span class="p">.</span><span class="nx">region_name</span>
+     <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+
+<span class="k">data</span> <span class="s2">"oci_identity_region_subscriptions"</span> <span class="s2">"activated"</span> <span class="p">{</span> <span class="nx">tenancy_id</span> <span class="p">=</span> <span class="kd">var</span><span class="p">.</span><span class="nx">tenancy_ocid</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>After an initial <code class="language-plaintext highlighter-rouge">apply</code>, we use the <code class="language-plaintext highlighter-rouge">terraform output -json</code> command and parse the list with [jq][ref_jq] to create a terraform input file. In this example, the list contains a set of regional providers. We then use a bash command to transfer the result into <code class="language-plaintext highlighter-rouge">~/project/provider.tf.json</code> file:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">terraform output -json | jq '[{provider: {oci: .providers.value[]}}]' &gt;</span><span class="w"> </span>p <span class="o">&amp;&amp;</span> <span class="nb">mv</span> ./p ../provider.tf.json
+</code></pre></div></div>
+
+<p>Next up, the <a href="getting-started-with-oci-step-2-base">Service Delivery Framework</a>.</p>
+
+<!--- Links -->
+
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/open-source">open-source</a>
+            <a class="animated-link tag" href="/topics/terraform">terraform</a>
+            <a class="animated-link tag" href="/topics/iac">iac</a>
+            <a class="animated-link tag" href="/topics/devops">devops</a>
+            <a class="animated-link tag" href="/topics/get-started">get-started</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Malte Menkhoff</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Malte is a passioned solution architect and is supporting customers in the DACH region in migrating to OCI.</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="mailto:malte.menkhoff@oracle.com">
+            <meta itemprop="email" content="malte.menkhoff@oracle.com" />
+            <i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/kubemen" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-10-29T08:00:00+00:00">October 29, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

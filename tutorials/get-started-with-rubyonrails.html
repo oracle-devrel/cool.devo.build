@@ -1,0 +1,472 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Get started with Ruby on Rails on Oracle Cloud">
+    
+    <meta itemprop="datePublished" content="2022-04-27T09:00:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Get started with Ruby on Rails on Oracle Cloud
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <picture class="">
+                <source srcset="assets/rails-logo.png 1x" />
+                <img loading="lazy" src="assets/rails-logo.png" data-original="assets/rails-logo.png" alt="Ruby on Rails Logo" title="Ruby on Rails Logo" />
+            </picture>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Ruby on Rails is a rapid development framework. It’s used by over a million websites, including Airbnb, Bloomberg, GitHub, GitLab, CouchSurfing, and many more.</p>
+
+<p>The Ruby language is easy to understand as it’s close to English, making it great for beginners. In this tutorial we’ll show you how to get started with a new Ruby on Rails project and how to bring your existing Ruby on Rails application to Oracle Cloud Infrastructure (OCI).</p>
+
+<h2 id="set-up-environment-automatically">Set up environment automatically</h2>
+
+<p>Don’t have time to read the whole article? Use the “Deploy Button” to provision the Ruby on Rails environment with a few clicks. In this environment you can build a new application or bring your existing Ruby on Rails application to OCI.</p>
+
+<p><a href="https://cloud.oracle.com/resourcemanager/stacks/create?region=home&amp;zipUrl=https://github.com/haj/oci-arch-rubyonrails-mds/archive/refs/tags/latest.zip"><img src="https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg" alt="Deploy to Oracle Cloud" /></a></p>
+
+<p>The button takes you to Oracle Resource Manager which runs Terraform code that will provision the full Ruby on Rails environment.</p>
+
+<p>The following resources will be created:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th style="text-align: center">Service Name</th>
+      <th style="text-align: right">Additional Info</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td style="text-align: center">Virtual Cloud Network</td>
+      <td style="text-align: right"> </td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td style="text-align: center">Public subnet</td>
+      <td style="text-align: right"> </td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td style="text-align: center">Private subnet</td>
+      <td style="text-align: right"> </td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td style="text-align: center">VM - Ubuntu</td>
+      <td style="text-align: right">1 OCPU, 8 Gb Memory 1 OCPU. can be scaled up to 1024 GB Memory and 128 OCPUs</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td style="text-align: center">MySQL Database Service</td>
+      <td style="text-align: right">can be scaled up to run in HA with up to 3 nodes</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td style="text-align: center">Bastion Host</td>
+      <td style="text-align: right">can optionally be replaced with bastion service</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td style="text-align: center">Load balancer 10 mpbs</td>
+      <td style="text-align: right">flex loadbalancer upto 4000 mbps</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The public subnet will contain the following resources:</p>
+
+<ul>
+  <li>Load balancer</li>
+  <li>Bastion Host</li>
+</ul>
+
+<p>The private subnet will contain the following resources:</p>
+
+<ul>
+  <li>Ruby on Rails VM(s)</li>
+  <li>Managed MySQL Database</li>
+</ul>
+
+<p>Software packages installed on the VMs:</p>
+
+<ul>
+  <li>RBENV Package manager for ruby to make it easy to manage different ruby versions and gem packs</li>
+  <li>Node.js</li>
+</ul>
+
+<p>The bootstrap script in the GitHub repo shows how the VMs are configured and all the packages that are installed:</p>
+
+<p>You can check out <a href="https://github.com/haj/oci-arch-rubyonrails-mds/blob/main/scripts/ror_bootstrap.sh">the script on Github</a>.</p>
+
+<p>If you have deployed the environment using the deploy button, you can skip the next section. The bootstrap script has been run automatically when the VMs were provisioned.</p>
+
+<h3 id="how-to-setup-environment-automatically">How to setup environment automatically</h3>
+
+<ol>
+  <li>
+    <p>Click the “Deploy to Oracle” button below.</p>
+
+    <p><a href="https://cloud.oracle.com/resourcemanager/stacks/create?region=home&amp;zipUrl=https://github.com/haj/oci-arch-rubyonrails-mds/archive/refs/tags/latest.zip"><img src="https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg" alt="Deploy to Oracle Cloud" /></a></p>
+  </li>
+  <li>If you aren’t already signed in, when prompted, enter the tenancy and user credentials.</li>
+  <li>Review and accept the terms and conditions.</li>
+  <li>Select the region where you want to deploy the stack.</li>
+  <li>Follow the on-screen prompts and instructions to create the stack.</li>
+  <li>After creating the stack, click <strong>Terraform Actions</strong>, and select <strong>Plan</strong>.</li>
+  <li>Wait for the job to be completed, and review the plan. To make any changes, return to the Stack Details page, click <strong>Edit Stack</strong>, and make the required changes. Then, run the <strong>Plan</strong> action again.</li>
+  <li>If no further changes are necessary, return to the Stack Details page, click <strong>Terraform Actions</strong>, and select <strong>Apply</strong>.</li>
+</ol>
+
+<h2 id="how-to-setup-environment-manually">How to setup environment manually</h2>
+
+<p>If you prefer to setup the environment manually you need to provision the resources and then install the Ruby on Rails environment.</p>
+
+<p>Provisioning the VM and MySQL database is not covered in this guide.</p>
+
+<p>Once you have a VM and MySQL database ready you can proceed to the next step to install Ruby on Rails.</p>
+
+<h3 id="minimum-requirements">Minimum requirements</h3>
+
+<ul>
+  <li>VM running Ubuntu 20.04</li>
+  <li>MySQL Database</li>
+</ul>
+
+<h3 id="how-to-install-ruby-on-rails-on-ubuntu-2004-with-rbenv">How to install Ruby on Rails on Ubuntu 20.04 with rbenv</h3>
+
+<p>SSH to your VM and run the following commands. Make sure to run the command with a user that has sudo rights. On Ubuntu the <code class="language-plaintext highlighter-rouge">ubuntu</code> user is usually fine:</p>
+
+<p>Update apt:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">sudo apt update
+</span></code></pre></div></div>
+
+<p>Install ruby manager, mysql-client and other dependencies:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">sudo apt-get install -y build-essential git libsqlite3-dev libssl-dev libzlcore-dev mysql-client libmysqlclient-dev git-core zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev software-properties-common libffi-dev nodejs npm
+</span></code></pre></div></div>
+
+<p>Install yarn:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+
+sudo apt update
+sudo apt install -y yarn
+</span></code></pre></div></div>
+
+<p>Install the ruby package manager to help install and manage different ruby versions:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">cd
+git clone https://github.com/rbenv/rbenv.git ~/.rbenv
+</span><span class="gp">echo 'export PATH="$</span>HOME/.rbenv/bin:<span class="nv">$PATH</span><span class="s2">"' &gt;&gt; ~/.bash_profile
+</span><span class="gp">echo 'eval "$</span><span class="s2">(rbenv init - bash)"</span><span class="s1">' &gt;&gt; ~/.bash_profile
+</span><span class="go">source ~/.bash_profile
+
+git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
+</span><span class="gp">echo 'export PATH="$</span>HOME/.rbenv/plugins/ruby-build/bin:<span class="nv">$PATH</span><span class="s2">"' &gt;&gt; ~/.bash_profile
+</span><span class="go">source ~/.bash_profile
+</span></code></pre></div></div>
+
+<p>Now we are ready to install ruby. If you need a different version, change the version number:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">rbenv install 3.0.1
+</span></code></pre></div></div>
+
+<p>Check that the correct version of ruby is installed:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">ruby -v
+</span></code></pre></div></div>
+
+<p>Use version 3.0.1 and make it default:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">rbenv global 3.0.1
+rbenv local 3.0.1
+</span></code></pre></div></div>
+
+<p>Reload the environment variables to ensure the correct ruby binaries are run:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">source ~/.bash_profile
+</span></code></pre></div></div>
+
+<p>Let’s install Rails framework and bundler gem:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">gem install rails
+gem install bundler
+</span></code></pre></div></div>
+
+<p>Congratulations, you have now installed Ruby on Rails on your VM!</p>
+
+<h2 id="create-your-ruby-on-rails-application">Create your Ruby on Rails application</h2>
+
+<p>In this section we will create a rails application using the built-in scaffolding methods of rails. We will connect the rails app to the database provisioned.</p>
+
+<p>Let’s create a directory where our app will reside and make the <code class="language-plaintext highlighter-rouge">ubuntu</code> user the owner of the directory:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">sudo mkdir /opt/apps
+sudo chown ubuntu:ubuntu /opt/apps
+</span></code></pre></div></div>
+
+<p>Create a new app that is preconfigured with a mysql adapter:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">cd /opt/apps
+rails new myapp -d mysql
+</span></code></pre></div></div>
+
+<p>Open up port 8080 for incoming HTTP requests:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 8080 -j ACCEPT
+</span><span class="gp">#</span>SAVE STATE
+</code></pre></div></div>
+
+<p>Edit the database config file and add your MySQL username and MySQL database name and MySQL host URL:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">nano /opt/apps/myapp/config/database.yml
+</span></code></pre></div></div>
+
+<p>Create a database schema. If you have already created a database schema you can skip this:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">rake db:create
+</span></code></pre></div></div>
+
+<p>Run all migration scripts to create the tables in the DB. This step needs to run every time you makes change to table definitions:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">rake db:migrate
+</span></code></pre></div></div>
+
+<p>Start the rails server as a background process, listen on port 8080, bind all interfaces, and send log output to startup.log:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">rails s -p 8080 -b 0.0.0.0 &gt;</span><span class="o">&gt;</span> ./log/startup.log &amp;
+</code></pre></div></div>
+
+<h3 id="accessing-the-application">Accessing the application</h3>
+
+<p>If you configured your VM manually you should now be able to access your new rails application at <code class="language-plaintext highlighter-rouge">http://my-vm-public.ip:8080</code>.</p>
+
+<p>If you provisioned your environment automatically using the “Deploy Button” you can access the application through the load balancer, e.g. <code class="language-plaintext highlighter-rouge">http://my-load-balancer-ip</code>.</p>
+
+<p>Check Oracle Resource Manager output for the IP or check the load balancer page.</p>
+
+<p>The load balancer is configured to listen on port 80 and forwards all traffic to the VM where the Ruby on Rails application is running.</p>
+
+<p>The load balancer will forward traffic to all the VMs if you provisioned more than one VM.</p>
+
+<h3 id="summary">Summary</h3>
+
+<ul>
+  <li>A new Rails App is created in the directory <code class="language-plaintext highlighter-rouge">/opt/apps/myapp</code>.</li>
+  <li>A database schema is created on the MySQL server.
+    <ul>
+      <li>Database schema name: <code class="language-plaintext highlighter-rouge">myapp</code></li>
+    </ul>
+  </li>
+  <li>The app is configured to connect to the database. Configuration can be found in <code class="language-plaintext highlighter-rouge">/opt/apps/app/config/database.yml</code>.</li>
+</ul>
+
+<h2 id="how-to-deploy-your-existing-application">How to deploy your existing application</h2>
+
+<ol>
+  <li>
+    <p>Before deleting the app we will take a backup of the database.yml file. We’ll need it later.</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> cp /opt/apps/myapp/config/database.yml /opt/apps/bck_database.yml
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Delete the existing vanilla Ruby on Rails app created in <code class="language-plaintext highlighter-rouge">/opt/apps/myapp</code></p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> rm -rf /opt/apps/myapp
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Copy your application to the server using scp</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> scp myapp.zip ubuntu@server-ip:/opt/apps/
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Unpack the application</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> unzip myapp.zip ./myapp/
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Copy the generated database config file</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> cp /opt/apps/bck_database.yml ./myapp/config/database.yml
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Or edit the existing database config file (<code class="language-plaintext highlighter-rouge">database.yml</code>)</p>
+
+    <div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="na">username</span><span class="pi">:</span> 
+ <span class="na">password</span><span class="pi">:</span> 
+ <span class="na">url</span><span class="pi">:</span> 
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Migrate your data to the MySQL Database</p>
+  </li>
+  <li>
+    <p>Install dependencies</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> bundle install
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Run Rails migrations</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> rake db:migrate 
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Start the server</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> rails s -b 0.0.0.0 -p 8080
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<h2 id="how-to-change-ruby-version">How to change Ruby version</h2>
+
+<p>The default ruby version installed is 3.0.1. If you need a different ruby version simply run:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">rbenv install 3.0.2
+</span></code></pre></div></div>
+
+<p>You can see available Ruby version by running:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">rbenv install list 
+</span></code></pre></div></div>
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/ruby">ruby</a>
+            <a class="animated-link tag" href="/topics/rails">rails</a>
+            <a class="animated-link tag" href="/topics/mysql">MySQL</a>
+            <a class="animated-link tag" href="/topics/rubyonrails">RubyOnRails</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Hassan Ajan</h3>
+    
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/hassanajan" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-04-27T09:00:00+00:00">April 27, 2022</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

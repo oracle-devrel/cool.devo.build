@@ -1,0 +1,1025 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar has-slides" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="How to Deploy a Python Flask Application in a Kubernetes cluster">
+    
+    <meta itemprop="datePublished" content="2021-10-11T01:00:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">How to Deploy a Python Flask Application in a Kubernetes cluster
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+        <!-- <aside class="sidebar__right sticky">
+          <nav class="slides-nav"><ul><li class="active" data-target-slide="0"><a href="javascript:cool.slides.goToSlide(0)">Intro</a></li>
+<li data-target-slide="1"><a href="javascript:cool.slides.goToSlide(1)">Before You Begin</a></li>
+<li data-target-slide="2"><a href="javascript:cool.slides.goToSlide(2)">Prepare</a></li>
+<li data-target-slide="3"><a href="javascript:cool.slides.goToSlide(3)">Set Up a Cluster</a></li>
+<li data-target-slide="4"><a href="javascript:cool.slides.goToSlide(4)">Build your Docker Application</a></li>
+<li data-target-slide="5"><a href="javascript:cool.slides.goToSlide(5)">Deploy Your Docker Image</a></li>
+<li data-target-slide="6"><a href="javascript:cool.slides.goToSlide(6)">What's Next</a></li></ul></nav>
+        </aside> -->
+      
+
+        <div class="slides" id="slideshow">
+
+  <div class="slide active" id="slide-0">
+
+    <h2 class="slide__title"><span class="slide__num">1</span> Introduction</h2>
+
+    <p>In this tutorial, you use an Oracle Cloud Infrastructure (OCI) account to set up a Kubernetes cluster. Then, you create a Python application with a Flask framework. Finally, you’ll deploy your application to your cluster using Cloud Shell.</p>
+
+    <p>Key tasks include how to:</p>
+
+    <ul>
+      <li>Create a Compartment</li>
+      <li>Set up a Kubernetes cluster on OCI</li>
+      <li>Build a Python application in a Flask framework</li>
+      <li>Create a Docker image</li>
+      <li>Push your image to OCI Container Registry</li>
+      <li>Use Cloud Shell to deploy your Docker application to your cluster</li>
+      <li>Connect to your application from the internet
+<img src="assets/flask-shell-diagram.png" alt="A diagram of the components needed to run a Flask app on Kubernetes cluster, on Oracle Cloud Infrastructure" /></li>
+    </ul>
+
+    <p>For additional information, see:</p>
+
+    <ul>
+      <li><a href="https://kubernetes.io/docs/home/">More on Kubernetes</a></li>
+      <li><a href="https://docs.oracle.com/iaas/Content/ContEng/Concepts/contengoverview.htm">OCI Container Engine</a></li>
+      <li><a href="https://docs.oracle.com/iaas/Content/Registry/Concepts/registryoverview.htm">OCI Container Registry</a></li>
+      <li><a href="https://docs.oracle.com/iaas/Content/API/Concepts/cloudshellintro.htm">Cloud Shell</a></li>
+    </ul>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)" class="slides__btn--begin">Begin &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-1">
+
+    <h2 class="slide__title"><span class="slide__num">2</span> Before You Begin</h2>
+
+    <p>To successfully perform this tutorial, you’ll need the following:</p>
+
+    <h3 id="requirements">Requirements</h3>
+
+    <ul>
+      <li>A <strong>Free trial</strong> or a <strong>paid</strong> OCI account. You can sign up <a href="https://signup.cloud.oracle.com/?language=en&amp;sourceType=:ow:de:te::::RC_WWMK210625P00048:Free&amp;intcmp=:ow:de:te::::RC_WWMK210625P00048:Free">here</a>.</li>
+      <li>Cloud Shell or the following
+        <ul>
+          <li>JDK 8+</li>
+          <li>Python 3.6.8+</li>
+          <li>Kubectl 1.18.10+</li>
+          <li>Apache Maven 3.5+</li>
+          <li>Docker 19.0.11+</li>
+        </ul>
+      </li>
+    </ul>
+
+    <blockquote class="notice">
+      <p>The advantage of using Cloud Shell is all the required tools to manage your application are already installed and ready to use.</p>
+    </blockquote>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(0)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(2)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-2">
+
+    <h2 class="slide__title"><span class="slide__num">3</span> Prepare</h2>
+
+    <p>Prepare your environment to create and deploy your application.</p>
+
+    <h3 id="check-your-service-limits">Check your Service Limits</h3>
+
+    <ol>
+      <li>Log in to the Oracle Cloud Infrastructure <strong>Console</strong>.</li>
+      <li>Open the navigation menu, and click Governance and Administration. Under Governance, click Limits, Quotas and Usage.</li>
+      <li>Find your service limit for <strong>Regions</strong>:
+        <ul>
+          <li><strong>Filter</strong> for the following options:
+            <ul>
+              <li><strong>Service:</strong> Regions</li>
+              <li><strong>Scope:</strong> Tenancy</li>
+              <li><strong>Resource:</strong> Subscribed region count</li>
+              <li><strong>Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-name&gt;</code> (root)</li>
+            </ul>
+          </li>
+          <li>Find service limit:
+            <ul>
+              <li><strong>Limit Name:</strong> <code class="language-plaintext highlighter-rouge">subscribed-region-count</code></li>
+              <li><strong>Service Limit:</strong> minimum 2</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>Find your available <strong>Compute</strong> <strong>core count</strong> for the <strong>VM.Standard.E2.1</strong> shape:
+        <ul>
+          <li><strong>Filter</strong> for the following options:
+            <ul>
+              <li><strong>Service:</strong> Compute</li>
+              <li><strong>Scope:</strong> <code class="language-plaintext highlighter-rouge">&lt;first-availability-domain&gt;</code>. Example: <code class="language-plaintext highlighter-rouge">EMlr:US-ASHBURN-AD-1</code></li>
+              <li><strong>Resource:</strong> <strong>Cores</strong> for Standard.E2 based VM and BM Instances</li>
+              <li><strong>Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-name&gt;</code> (root)</li>
+            </ul>
+          </li>
+          <li>Find available core count:
+            <ul>
+              <li><strong>Limit Name:</strong> <code class="language-plaintext highlighter-rouge">standard-e2-core-count</code></li>
+              <li><strong>Available:</strong> minimum 1</li>
+            </ul>
+          </li>
+          <li>Repeat for <strong>Scope:</strong> <code class="language-plaintext highlighter-rouge">&lt;second-availability-domain&gt;</code> and <code class="language-plaintext highlighter-rouge">&lt;third-availability-domain&gt;</code>. Each region must have at least one core available for this shape.</li>
+        </ul>
+      </li>
+      <li>Find out if you have <strong>50 GB</strong> of <strong>Block Volume</strong> available:
+        <ul>
+          <li><strong>Filter</strong> for the following options:
+            <ul>
+              <li><strong>Service:</strong> Block Volume</li>
+              <li><strong>Scope:</strong> <code class="language-plaintext highlighter-rouge">&lt;first-availability-domain&gt;</code>. Example: <code class="language-plaintext highlighter-rouge">EMlr:US-ASHBURN-AD-1</code></li>
+              <li><strong>Resource</strong> Volume Size (GB)</li>
+              <li><strong>Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-name&gt;</code> (root)</li>
+            </ul>
+          </li>
+          <li>Find available core count:
+            <ul>
+              <li><strong>Limit Name:</strong> <code class="language-plaintext highlighter-rouge">total-storage-gb</code></li>
+              <li><strong>Available:</strong> minimum 50</li>
+            </ul>
+          </li>
+          <li>Repeat for <strong>Scope:</strong> <code class="language-plaintext highlighter-rouge">&lt;second-availability-domain&gt;</code> and <code class="language-plaintext highlighter-rouge">&lt;third-availability-domain&gt;</code>. Each region must have at least 50 GB of block volume available.</li>
+        </ul>
+      </li>
+      <li>Find out how many <strong>Flexible Load Balancers</strong> are available:
+        <ul>
+          <li><strong>Filter</strong> for the following options:
+            <ul>
+              <li><strong>Service:</strong> LBaaS</li>
+              <li><strong>Scope:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-region&gt;</code>. Example: <code class="language-plaintext highlighter-rouge">us-ashburn-1</code></li>
+              <li><strong>Resource:</strong> <blank></blank></li>
+              <li><strong>Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-name&gt;</code> (root)</li>
+            </ul>
+          </li>
+          <li>Find the count for the following shapes
+            <ul>
+              <li><strong>Limit Name:</strong> <code class="language-plaintext highlighter-rouge">lb-flexible-bandwidth-count</code></li>
+              <li><strong>Available:</strong> minimum 1</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ol>
+
+    <blockquote class="notice">
+      <p>This tutorial creates three compute instances with a <strong>VM.Standard.E2.1</strong> shape for the cluster nodes. To use another shape, filter for its <strong>core count</strong>. For example, filter <strong>VM.Standard2.4</strong> for <strong>Cores for Standard2 based VM and BM Instances</strong>, and get the <strong>count</strong>.</p>
+      <ul>
+        <li>For a list of all shapes, see <a href="https://docs.oracle.com/iaas/Content/Compute/References/computeshapes.htm#vmshapes__vm-standard">VM Standard Shapes</a>.</li>
+      </ul>
+    </blockquote>
+
+    <blockquote class="notice">
+      <p>This tutorial creates a load balancer with a <strong>flexible</strong> shape. To use another bandwidth, filter its <strong>count</strong>. For example <strong>100-Mbps bandwidth</strong> or <strong>400-Mbps bandwidth</strong>.</p>
+    </blockquote>
+
+    <h3 id="create-an-authorization-token">Create an Authorization Token</h3>
+
+    <ol>
+      <li>In the Console’s top navigation bar, click the <strong>Profile</strong> menu (your avatar).</li>
+      <li>Click your username.</li>
+      <li>Click Auth Tokens.</li>
+      <li>Click Generate Token.</li>
+      <li>Give it a description.</li>
+      <li>Click Generate Token.</li>
+      <li>Copy the token and <strong>save</strong> it.</li>
+      <li>
+        <p>Click <strong>Close</strong>.</p>
+
+        <blockquote class="notice">
+          <p>Ensure that you save your token right after you create it. You have no access to it later.</p>
+        </blockquote>
+      </li>
+    </ol>
+
+    <h3 id="gather-required-information">Gather Required Information</h3>
+
+    <ol>
+      <li>
+        <p>Collect the following credential information from the Oracle Cloud Infrastructure Console:</p>
+
+        <ul>
+          <li><strong>Tenancy name:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-name&gt;</code>
+            <ul>
+              <li>Click your <strong>Profile</strong> menu (your avatar) and find your **Tenancy:<tenancy-name>**.</tenancy-name></li>
+            </ul>
+          </li>
+          <li><strong>Tenancy namespace:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-namespace&gt;</code>
+            <ul>
+              <li>Click your <strong>Profile</strong> menu (your avatar).</li>
+              <li>Click **Tenancy: <tenancy-name>**.</tenancy-name></li>
+              <li>Copy the value for <strong>Object Storage Namespace</strong>.</li>
+            </ul>
+          </li>
+        </ul>
+
+        <blockquote class="notice">
+          <p>For some accounts, the <strong>tenancy name</strong> and <strong>namespace</strong> values differ. Ensure that you use namespace in this tutorial.</p>
+        </blockquote>
+
+        <ul>
+          <li><strong>Tenancy OCID:</strong> <code class="language-plaintext highlighter-rouge">&lt;tenancy-ocid&gt;</code>
+            <ul>
+              <li>Click your <strong>Profile</strong> menu (your avatar), then click **Tenancy:<tenancy-name>**, and copy OCID.</tenancy-name></li>
+            </ul>
+          </li>
+          <li><strong>Username:</strong> <code class="language-plaintext highlighter-rouge">&lt;user-name&gt;</code>
+            <ul>
+              <li>Click your <strong>Profile</strong> menu (your avatar).</li>
+            </ul>
+          </li>
+          <li><strong>User OCID:</strong> <code class="language-plaintext highlighter-rouge">&lt;user-ocid&gt;</code>
+            <ul>
+              <li>Click your <strong>Profile</strong> menu (your avatar), then click <strong>User Settings</strong>, and copy OCID.</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <p>Find your region information.</p>
+
+        <ul>
+          <li><strong>Region:</strong> <code class="language-plaintext highlighter-rouge">&lt;region-identifier&gt;</code>
+            <ul>
+              <li>In the Console’s top navigation bar, find your region. Example: <strong>US East (Ashburn)</strong>.</li>
+              <li>Find your <strong>Region Identifier</strong> from the table in <a href="https://docs.oracle.com/iaas/Content/General/Concepts/regions.htm">Regions and Availability Domains</a>.</li>
+              <li>Example: <code class="language-plaintext highlighter-rouge">us-ashburn-1</code>.</li>
+            </ul>
+          </li>
+          <li><strong>Region Key:</strong> <code class="language-plaintext highlighter-rouge">&lt;region-key&gt;</code>
+            <ul>
+              <li>Find your <strong>Region Key</strong> from the table in <a href="https://docs.oracle.com/iaas/Content/General/Concepts/regions.htm">Regions and Availability Domains</a>.</li>
+              <li>Example: <code class="language-plaintext highlighter-rouge">iad</code></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <p>Copy your authentication token from the <strong>Create an Authentication Token</strong> section.</p>
+
+        <ul>
+          <li><strong>Auth Token:</strong> <code class="language-plaintext highlighter-rouge">&lt;auth-token&gt;</code></li>
+        </ul>
+      </li>
+    </ol>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(1)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(3)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-3">
+
+    <h2 class="slide__title"><span class="slide__num">4</span> Set Up a Cluster</h2>
+
+    <p>Install and configure management options for your Kubernetes cluster. Later, deploy your application to this cluster.</p>
+
+    <h3 id="add-compartment-policy">Add Compartment Policy</h3>
+
+    <p>If your username is in the Administrators group, then skip this section. Otherwise, have your administrator add the following policy to your tenancy:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>allow group &lt;the-group-your-username-belongs&gt; to manage compartments in tenancy
+</code></pre></div>    </div>
+
+    <p>With this privilege, you can create a compartment for all the resources in your tutorial.</p>
+
+    <h3 id="steps-to-add-the-policy">Steps to Add the Policy</h3>
+
+    <ol>
+      <li>In the Console’s top navigation bar, open the <strong>Profile</strong> menu (your avatar).</li>
+      <li>Click your username.</li>
+      <li>In the left pane, click <strong>Groups</strong>.</li>
+      <li>In a notepad, copy the <strong>Group Name</strong> that your username belongs.</li>
+      <li>Open the navigation menu and click <strong>Identity &amp; Security</strong>. Under <strong>Identity</strong>, click <strong>Policies</strong>.</li>
+      <li>Click Create Policy.</li>
+      <li>
+        <p>Fill in the following information:</p>
+
+        <ul>
+          <li><strong>Name:</strong> <code class="language-plaintext highlighter-rouge">manage-compartments</code></li>
+          <li><strong>Description:</strong> <code class="language-plaintext highlighter-rouge">Allow the group &lt;the-group-your-username-belongs&gt; to list, create, update, delete and recover compartments in the tenancy.</code></li>
+          <li><strong>Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-tenancy&gt;(root)</code></li>
+        </ul>
+      </li>
+      <li>For <strong>Policy Builder</strong>, click Show Manual Editor.</li>
+      <li>Paste in the following policy:</li>
+    </ol>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>allow group &lt;the-group-your-username-belongs&gt; to manage compartments in tenancy
+</code></pre></div>    </div>
+
+    <ol>
+      <li>Click <strong>Create</strong>.</li>
+    </ol>
+
+    <p><strong>Reference</strong></p>
+
+    <p>The <code class="language-plaintext highlighter-rouge">compartments</code> resource-type in <a href="https://docs.oracle.com/iaas/Content/Identity/Reference/iampolicyreference.htm#Identity">Verbs + Resource-Type Combinations for IAM</a></p>
+
+    <h3 id="create-a-compartment">Create a Compartment</h3>
+
+    <p>Create a compartment for the resources that you’ll create in this tutorial.</p>
+
+    <ol>
+      <li>Log in to the Oracle Cloud Infrastructure <strong>Console</strong>.</li>
+      <li>Open the navigation menu and click <strong>Identity &amp; Security</strong>. Under <strong>Identity</strong>, click <strong>Compartments</strong>.</li>
+      <li>Click <strong>Create Compartment</strong>.</li>
+      <li>Fill in the following information:
+        <ul>
+          <li><strong>Name:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-compartment-name&gt;</code></li>
+          <li><strong>Description:</strong> <code class="language-plaintext highlighter-rouge">Compartment for &lt;your-description&gt;.</code></li>
+          <li><strong>Parent Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-tenancy&gt;(root)</code></li>
+        </ul>
+      </li>
+      <li>Click <strong>Create Compartment</strong>.</li>
+    </ol>
+
+    <p><strong>Reference:</strong> <a href="https://docs.oracle.com/iaas/Content/Identity/Tasks/managingcompartments.htm#To">Create a compartment</a></p>
+
+    <h3 id="add-resource-policy">Add Resource Policy</h3>
+
+    <p>If your username is in the <strong>Administrators</strong> group, then skip this section. Otherwise, have your administrator add the following policy to your tenancy:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>allow group &lt;the-group-your-username-belongs&gt; to manage all-resources in compartment &lt;your-compartment-name&gt;
+</code></pre></div>    </div>
+
+    <p>With this privilege, you can manage all the resources in your compartment, essentially giving you administrative rights in that compartment.</p>
+
+    <h3 id="steps-to-add-the-policy-1">Steps to Add the Policy</h3>
+
+    <ol>
+      <li>Open the navigation menu and click <strong>Identity &amp; Security</strong>. Under <strong>Identity</strong>, click <strong>Policies</strong>.</li>
+      <li>Select your compartment from the Compartment list.</li>
+      <li>Click Create Policy.</li>
+      <li>
+        <p>Fill in the following information:</p>
+
+        <ul>
+          <li><strong>Name:</strong> <code class="language-plaintext highlighter-rouge">manage-&lt;your-compartment-name&gt;-resources</code></li>
+          <li><strong>Description:</strong> <code class="language-plaintext highlighter-rouge">Allow users to list, create, update, and delete resources in &lt;your-compartment-name&gt;.</code></li>
+          <li><strong>Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-tenancy&gt;(root)</code></li>
+        </ul>
+      </li>
+      <li>
+        <p>For <strong>Policy Builder</strong>, select the following choices:</p>
+
+        <ul>
+          <li><strong>Policy use cases:</strong> <code class="language-plaintext highlighter-rouge">Compartment Management</code></li>
+          <li><strong>Common policy templates:</strong> <code class="language-plaintext highlighter-rouge">Let compartment admins manage the compartment</code></li>
+          <li><strong>Groups:</strong> <code class="language-plaintext highlighter-rouge">&lt;the-group-your-username-belongs&gt;</code></li>
+          <li><strong>Location:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-tenancy&gt;(root)</code></li>
+        </ul>
+      </li>
+      <li>Click <strong>Create</strong>.</li>
+    </ol>
+
+    <p><strong>Reference</strong></p>
+
+    <p><a href="https://docs.oracle.com/iaas/Content/Identity/Concepts/commonpolicies.htm">Common Policies</a></p>
+
+    <h3 id="create-a-cluster-with-quick-create">Create a Cluster with “Quick Create”</h3>
+
+    <p>Create a cluster with default settings and new network resources through the ‘Quick Create’ workflow.</p>
+
+    <ol>
+      <li>Sign in to the Oracle Cloud Infrastructure <strong>Console</strong>.</li>
+      <li>Open the navigation menu and click <strong>Developer Services</strong>. Under <strong>Containers &amp; Artifacts</strong>, click<strong>Kubernetes Clusters (OKE)</strong>.</li>
+      <li>Click <strong>Create Cluster</strong>.</li>
+      <li>Select <strong>Quick Create</strong>.</li>
+      <li>Click <strong>Launch Workflow</strong>.</li>
+      <li>
+        <p>The Create Cluster dialog is displayed. Fill in the following information.</p>
+
+        <ul>
+          <li><strong>Name:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-cluster-name&gt;</code></li>
+          <li><strong>Compartment:</strong> <code class="language-plaintext highlighter-rouge">&lt;your-compartment-name&gt;</code></li>
+          <li><strong>Kubernetes Version:</strong> <code class="language-plaintext highlighter-rouge">&lt;take-default&gt;</code></li>
+          <li><strong>Kubernetes API Endpoint:</strong> Public Endpoint 
+ The Kubernetes cluster is hosted in a public subnet with an auto-assigned public IP address.</li>
+          <li>
+            <p><strong>Kubernetes Worker Nodes:</strong> Private Workers 
+ The Kubernetes worker nodes are hosted in a private subnet.</p>
+          </li>
+          <li><strong>Shape:</strong> VM.Standard.E2.1</li>
+          <li><strong>Number of Nodes:</strong> 3</li>
+          <li><strong>Specify a custom boot volume size:</strong> Clear the check box.</li>
+        </ul>
+      </li>
+      <li>
+        <p>Click <strong>Next</strong>.
+  All your choices are displayed. Review them to ensure that everything is configured correctly.</p>
+      </li>
+      <li>
+        <p>Click <strong>Create Cluster</strong>.
+  The services set up for your cluster are displayed.</p>
+      </li>
+      <li>Click <strong>Close</strong>.</li>
+      <li>Get a cup of coffee. It takes a few minutes for the cluster to be created.</li>
+    </ol>
+
+    <p>You have successfully created a Kubernetes cluster.</p>
+
+    <h3 id="configure-cloud-shell-to-access-to-your-cluster">Configure Cloud Shell to Access to Your Cluster</h3>
+
+    <p>After you create a Kubernetes cluster, set up your local system to access the cluster.</p>
+
+    <ol>
+      <li>Sign in to the Oracle Cloud Infrastructure <strong>Console</strong>.</li>
+      <li>Open the navigation menu and click <strong>Developer Services</strong>. Under <strong>Containers &amp; Artifacts</strong>, click<strong>Kubernetes Clusters (OKE)</strong>.</li>
+      <li>Click the link to <strong><code class="language-plaintext highlighter-rouge">&lt;your-cluster&gt;</code></strong>.</li>
+    </ol>
+
+    <p>The information about your cluster is displayed.</p>
+
+    <ol>
+      <li>Click Access Cluster.</li>
+      <li>Click Cloud Shell Access. Follow the steps in the dialog. The following steps are provided for your reference.</li>
+      <li>From the main menu, click the Cloud Shell icon (<img src="https://docs.oracle.com/en-us/iaas/developer-tutorials/tutorials/common/k8s-cs/images/cloud_shell_icon.png" alt="" />) and start a session.</li>
+      <li>
+        <p>Check your <code class="language-plaintext highlighter-rouge">oci</code> CLI version and verify that Cloud Shell is working.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> oci -v
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Create your <code class="language-plaintext highlighter-rouge">.kube</code> directory if it doesn’t exist.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> mkdir -p $</span>HOME/.kube
+</code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Create kubeconfig file for your setup. Use the information from the Access Your Cluster dialog.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oci ce cluster create-kubeconfig &lt;use data from dialog&gt;</span><span class="w">
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Test your cluster configuration with the following command.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">  kubectl get service
+</span></code></pre></div>        </div>
+      </li>
+    </ol>
+
+    <blockquote class="notice">
+      <p>If the <code class="language-plaintext highlighter-rouge">config</code> file is not stored in its default location (<code class="language-plaintext highlighter-rouge">~/.kube/config</code>), you must export the<code class="language-plaintext highlighter-rouge">KUBECONFIG</code> environment variable to point to the location.</p>
+
+      <p>_export KUBECONFIG=$HOME/<new-location>/config_</new-location></p>
+    </blockquote>
+
+    <blockquote class="notice">
+      <p>When working with more than one cluster, you specify a specific config file on the command line.
+Example:
+   kubectl –kubeconfig=&lt;/path/to/config/file&gt; <some-command></some-command></p>
+    </blockquote>
+
+    <p>With your cluster access setup, you are now ready to prepare your application for deployment.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(2)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(4)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-4">
+
+    <h2 class="slide__title"><span class="slide__num">5</span> Build your Docker Application</h2>
+
+    <p>Next, set up the Flask framework on Cloud Shell. Then, create and run a Python application.</p>
+
+    <h3 id="create-a-local-application">Create a Local Application</h3>
+
+    <p>Create your Flask application.</p>
+
+    <ol>
+      <li>
+        <p>Install Flask.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> pip3 install --user Flask
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Create a directory for your application.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> mkdir python-hello-app
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Change to the <code class="language-plaintext highlighter-rouge">python-hello-app</code> directory.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> cd python-hello-app
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Create a “Hello, World!” application.</p>
+        <ul>
+          <li>Create the file:</li>
+        </ul>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> vi hello.py
+</span></code></pre></div>        </div>
+      </li>
+    </ol>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>In the file, input the following text:
+  
+  ```python
+  from flask import Flask
+  app = Flask(__name__)
+
+  @app.route('/')
+  def hello_world():
+      return '&lt;h1&gt;Hello World from Flask!&lt;/h1&gt;'
+
+  if __name__ == "__main__":
+      app.run(host="0.0.0.0", port=int("5000"), debug=True)
+  ```
+</code></pre></div>    </div>
+
+    <ol>
+      <li>Save the file.</li>
+    </ol>
+
+    <h3 id="run-the-local-application">Run the Local Application</h3>
+
+    <p>Run your Flask application.</p>
+
+    <ol>
+      <li>
+        <p>Run the Python program.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> export FLASK_APP=hello.py
+ export FLASK_ENV=development
+ python3 hello.py
+</span></code></pre></div>        </div>
+
+        <p>This produces the following output:</p>
+
+        <ul>
+          <li>Serving Flask app ‘hello’ (lazy loading)</li>
+          <li>Environment: development</li>
+          <li>Debug mode: on</li>
+          <li>Running on all addresses.
+ WARNING: This is a development server. Do not use it in a production deployment.</li>
+          <li>Running on http://x.x.x.x:5000/ (Press CTRL+C to quit)</li>
+          <li>Restarting with stat</li>
+          <li>Debugger is active!</li>
+          <li>Debugger PIN: xxx-xxx-xxx</li>
+        </ul>
+      </li>
+      <li>
+        <p>Move the app to the background.</p>
+
+        <ul>
+          <li>Input <strong>ctrl-z</strong>.</li>
+          <li>Enter the following command: <code class="language-plaintext highlighter-rouge">bg</code></li>
+        </ul>
+      </li>
+      <li>
+        <p>Test the app using <code class="language-plaintext highlighter-rouge">curl</code>.</p>
+
+        <p>In the  Cloud Shell terminal, enter the following code:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> curl -X GET http://localhost:5000
+</span></code></pre></div>        </div>
+        <p>Output:</p>
+
+        <div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nt">&lt;h1&gt;</span>Hello World from Flask!<span class="nt">&lt;/h1&gt;</span>
+</code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Stop the running application.</p>
+
+        <p>When you’re done testing, get the process ID for your application.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> ps -ef
+</span></code></pre></div>        </div>
+        <p>Stop the process.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> kill &lt;your-pid&gt;</span><span class="w">
+</span></code></pre></div>        </div>
+      </li>
+    </ol>
+
+    <p>You have successfully created a local Python application with the Flask framework.</p>
+
+    <p><strong>References:</strong></p>
+
+    <p>For more information on Flask, check out the <a href="https://flask.palletsprojects.com/">Flask Documentation</a>.</p>
+
+    <h3 id="build-a-docker-image">Build a Docker Image</h3>
+
+    <p>Next, you’ll need to create a Docker image for your Flask application.</p>
+
+    <ol>
+      <li>First, ensure you’re in the <code class="language-plaintext highlighter-rouge">python-hello-app</code> directory.</li>
+      <li>
+        <p>Create the configuration file <code class="language-plaintext highlighter-rouge">Dockerfile</code>:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> vi Dockerfile
+</span></code></pre></div>        </div>
+
+        <p>In the file, input the following text and save the file:</p>
+
+        <div class="language-dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code> FROM python:3.9-slim-buster
+ ADD hello.py /
+ COPY . /app
+ WORKDIR /app
+ RUN pip3 install Flask
+ EXPOSE 5000
+ CMD [ "python3", "./hello.py" ]
+</code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Build a Docker image:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> docker build -t python-hello-app .
+</span></code></pre></div>        </div>
+
+        <p>You get a success message.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> [INFO] BUILD SUCCESS
+ Successfully tagged python-hello-app:latest
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Run the Docker image:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> docker run --rm -p 5000:5000 python-hello-app:latest &amp;
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Test the application using the <code class="language-plaintext highlighter-rouge">curl</code> command:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> curl -X GET http://localhost:5000
+</span></code></pre></div>        </div>
+
+        <p>If you see <code class="language-plaintext highlighter-rouge">&lt;h1&gt;Hello World from Flask!&lt;/h1&gt;</code>, then the Docker image is running. You can now push the image to Container Registry.</p>
+      </li>
+      <li>
+        <p>Stop the running application.
+ When you are done testing, get the process ID for your application.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> ps -ef
+</span></code></pre></div>        </div>
+
+        <p>Stop the process.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> kill &lt;your-pid&gt;</span><span class="w">
+</span></code></pre></div>        </div>
+      </li>
+    </ol>
+
+    <p>Congratulations! You have successfully created a Python Flask Docker image.</p>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(3)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(5)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-5">
+
+    <h2 class="slide__title"><span class="slide__num">6</span> Deploy Your Docker Image</h2>
+
+    <p>With your Python image created, now you can deploy it.</p>
+
+    <h3 id="create-a-docker-repository">Create a Docker Repository</h3>
+
+    <ol>
+      <li>Open the navigation menu and click <strong>Developer Services</strong>. Under <strong>Containers &amp; Artifacts</strong>, click<strong>Container Registry</strong>.</li>
+      <li>In the left navigation, select <code class="language-plaintext highlighter-rouge">&lt;your-compartment-name&gt;</code>.</li>
+      <li>Click <strong>Create Repository</strong>.</li>
+      <li>
+        <p>Create a private repository with your choice of repo name:</p>
+
+        <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> &lt;repo-name&gt; = &lt;image-path-name&gt;/&lt;image-name&gt;
+</code></pre></div>        </div>
+
+        <p>Example: <code class="language-plaintext highlighter-rouge">flask-apps/python-hello-app</code></p>
+      </li>
+    </ol>
+
+    <p>You are now ready to push your local image to Container Registry.</p>
+
+    <blockquote class="notice">
+      <p>Before you can push a Docker image into a registry repository, <strong>the repository must exist in your compartment</strong>. If the repository does not exist, the Docker push command does not work correctly.
+The slash in a repository name <strong>does not represent a hierarchical directory structure</strong>. The optional <code class="language-plaintext highlighter-rouge">&lt;image-path-name&gt;</code> helps to organize your repositories.</p>
+    </blockquote>
+
+    <h3 id="push-your-local-image">Push Your Local Image</h3>
+
+    <p>With your local Docker image created, push the image to the Container Registry.</p>
+
+    <p>Follow these steps.</p>
+
+    <ol>
+      <li>Open a terminal window.</li>
+      <li>
+        <p>Log in to Container Registry:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> docker login &lt;region-key&gt;</span>.ocir.io
+</code></pre></div>        </div>
+
+        <p>You are prompted for your login name and password.</p>
+
+        <ul>
+          <li><strong>Username:</strong>  <code class="language-plaintext highlighter-rouge">&lt;tenancy-namespace&gt;/&lt;user-name&gt;</code></li>
+          <li><strong>Password:</strong> <code class="language-plaintext highlighter-rouge">&lt;auth-token&gt;</code></li>
+        </ul>
+      </li>
+      <li>
+        <p>List your local Docker images:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> docker images
+</span></code></pre></div>        </div>
+
+        <p>The Docker images on your system are displayed. Identify the image you created in the last section: <code class="language-plaintext highlighter-rouge">python-hello-app</code></p>
+      </li>
+      <li>
+        <p>Tag your local image with the <strong>URL for the registry</strong> plus the <strong>repo name</strong>, so you can push it to that repo.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> docker tag &lt;your-local-image&gt;</span><span class="w"> </span>&lt;repo-url&gt;/&lt;repo-name&gt;
+</code></pre></div>        </div>
+
+        <p>Replace <code class="language-plaintext highlighter-rouge">&lt;repo-url&gt;</code> with:</p>
+
+        <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> &lt;region-key&gt;.ocir.io/&lt;tenancy-namespace&gt;/
+</code></pre></div>        </div>
+
+        <p>Replace <code class="language-plaintext highlighter-rouge">&lt;repo-name&gt;</code> with <code class="language-plaintext highlighter-rouge">&lt;image-folder-name&gt;/&lt;image-name&gt;</code> from the <em>Create a Docker Repository</em> section.</p>
+
+        <p>Here is an example after combining both:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> docker tag python-hello-app iad.ocir.io/my-namespace/flask-apps/python-hello-app
+</span></code></pre></div>        </div>
+
+        <p>In this example, the components are:</p>
+
+        <ul>
+          <li><strong>Repo URL:</strong> <code class="language-plaintext highlighter-rouge">iad.ocir.io/my-namespace/</code></li>
+          <li><strong>Repo name:</strong> <code class="language-plaintext highlighter-rouge">flask-apps/python-hello-app</code></li>
+        </ul>
+
+        <blockquote class="notice">
+          <p>OCI Container Registry now supports creating a registry repo in any compartment rather than only in the root compartment (tenancy). To push the image to the repo you created, combine the registry URL with the exact repo name. OCI Container Registry matches based on the unique repo name and pushes your image.</p>
+        </blockquote>
+      </li>
+      <li>
+        <p>Check your Docker images to ensure that the image is <strong>copied</strong>.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> docker images
+</span></code></pre></div>        </div>
+
+        <ul>
+          <li>The tagged or the <strong>copied image</strong> has <strong>the same image ID</strong> as your local image.</li>
+          <li>The <strong>copied image name</strong> is:</li>
+        </ul>
+
+        <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> &lt;region-key&gt;.ocir.io/&lt;tenancy-namespace&gt;/&lt;image-folder-name&gt;/&lt;image-name&gt;
+</code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Push the image to Container Registry.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp"> docker push **&lt;copied-image-name&gt;</span><span class="k">**</span>:latest
+</code></pre></div>        </div>
+
+        <p>Example:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> docker push iad.ocir.io/my-namespace/flask-apps/python-hello-app:latest
+</span></code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Open the navigation menu and click <strong>Developer Services</strong>. Under <strong>Containers &amp; Artifacts</strong>, then click<strong>Container Registry</strong>.</p>
+
+        <p>Find your image in Container Registry after the push command is complete.</p>
+      </li>
+    </ol>
+
+    <h3 id="deploy-the-image">Deploy the Image</h3>
+
+    <p>With your image in Container Registry, you can now deploy your image and app.</p>
+
+    <ol>
+      <li>
+        <p>Create a registry secret for your application. This secret authenticates your image when you deploy it to your cluster.</p>
+
+        <p>To create your secret, fill in the information in this template .</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">kubectl create secret docker-registry ocirsecret \
+</span><span class="gp">  --docker-server=&lt;region-key&gt;</span>.ocir.io  <span class="se">\</span>
+<span class="gp">  --docker-username='&lt;tenancy-namespace&gt;</span>/&lt;user-name&gt;<span class="s1">' \
+</span><span class="gp">  --docker-password='&lt;auth-token&gt;</span><span class="s1">'</span>  <span class="se">\</span>
+<span class="gp">  --docker-email='&lt;email-address&gt;</span><span class="s1">'
+</span></code></pre></div>        </div>
+
+        <p>After the command runs, you get a message similar to: <code class="language-plaintext highlighter-rouge">secret/ocirsecret created</code>.</p>
+      </li>
+      <li>
+        <p>Verify that the secret is created. Issue the following command:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">kubectl get secret ocirsecret --output=yaml
+</span></code></pre></div>        </div>
+
+        <p>The output includes information about your secret in the yaml format.</p>
+      </li>
+      <li>
+        <p>Determine the host URL to your registry image using the following template:</p>
+
+        <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;region-code&gt;.ocir.io/&lt;tenancy-namespace&gt;/&lt;repo-name&gt;/&lt;image-name&gt;:&lt;tag&gt;
+</code></pre></div>        </div>
+
+        <p>Example:</p>
+
+        <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>iad.ocir.io/my-namespace/flask-apps/python-hello-app:latest
+</code></pre></div>        </div>
+      </li>
+      <li>
+        <p>On your system, create a file called <code class="language-plaintext highlighter-rouge">app.yaml</code> with the following text:</p>
+
+        <p>Replace the following place holders:
+    * <code class="language-plaintext highlighter-rouge">&lt;your-image-url&gt;</code>
+    * <code class="language-plaintext highlighter-rouge">&lt;your-secret-name&gt;</code></p>
+
+        <div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Deployment</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">app</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">app</span>
+  <span class="na">replicas</span><span class="pi">:</span> <span class="m">3</span>
+  <span class="na">template</span><span class="pi">:</span>
+    <span class="na">metadata</span><span class="pi">:</span>
+      <span class="na">labels</span><span class="pi">:</span>
+        <span class="na">app</span><span class="pi">:</span> <span class="s">app</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">app</span>
+        <span class="na">image</span><span class="pi">:</span> <span class="s">&lt;your-image-url&gt;</span>
+        <span class="na">imagePullPolicy</span><span class="pi">:</span> <span class="s">Always</span>
+        <span class="na">ports</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">app</span>
+          <span class="na">containerPort</span><span class="pi">:</span> <span class="m">5000</span>
+          <span class="na">protocol</span><span class="pi">:</span> <span class="s">TCP</span>
+      <span class="na">imagePullSecrets</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">&lt;your-secret-name&gt;</span>
+<span class="nn">---</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">app-lb</span>
+  <span class="na">labels</span><span class="pi">:</span>
+    <span class="na">app</span><span class="pi">:</span> <span class="s">app</span>
+  <span class="na">annotations</span><span class="pi">:</span>
+    <span class="na">service.beta.kubernetes.io/oci-load-balancer-shape</span><span class="pi">:</span> <span class="s2">"</span><span class="s">flexible"</span>
+    <span class="na">service.beta.kubernetes.io/oci-load-balancer-shape-flex-min</span><span class="pi">:</span> <span class="s2">"</span><span class="s">10"</span>
+    <span class="na">service.beta.kubernetes.io/oci-load-balancer-shape-flex-max</span><span class="pi">:</span> <span class="s2">"</span><span class="s">100"</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">LoadBalancer</span>
+  <span class="na">ports</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">port</span><span class="pi">:</span> <span class="m">5000</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">app</span><span class="pi">:</span> <span class="s">app</span>
+</code></pre></div>        </div>
+      </li>
+      <li>
+        <p>Deploy your application with the following command.</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">kubectl create -f app.yaml
+</span></code></pre></div>        </div>
+
+        <p>Output:</p>
+
+        <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>deployment.apps/app created
+</code></pre></div>        </div>
+
+        <blockquote class="notice">
+          <p>In the <code class="language-plaintext highlighter-rouge">app.yaml</code> file, the code after the dashes adds a flexible load balancer.</p>
+        </blockquote>
+      </li>
+    </ol>
+
+    <h3 id="test-your-app">Test Your App</h3>
+
+    <p>After you deploy your app, it might take the load balancer a few seconds to load.</p>
+
+    <ol>
+      <li>
+        <p>Check if the load balancer is live:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> kubectl get service
+</span></code></pre></div>        </div>
+
+        <p>Repeat the command until the load balancer is assigned an IP address.</p>
+
+        <blockquote class="notice">
+          <p>While waiting for the load balancer to deploy, you can check the status of your cluster with these commands:</p>
+          <ul>
+            <li>Get each pods status: <code class="language-plaintext highlighter-rouge">kubectl get pods</code></li>
+            <li>Get app status: <code class="language-plaintext highlighter-rouge">kubectl get deployment</code></li>
+          </ul>
+        </blockquote>
+      </li>
+      <li>
+        <p>Use the load balancer IP address to connect to your app in a browser:</p>
+
+        <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> http://&lt;load-balancer-IP-address&gt;:5000
+</code></pre></div>        </div>
+
+        <p>The browser displays: <code class="language-plaintext highlighter-rouge">&lt;h1&gt;Hello World from Flask!&lt;/h1&gt;</code></p>
+      </li>
+      <li>
+        <p>Undeploy your application from the cluster. <em><strong>(Optional)</strong></em> To remove your application run this command:</p>
+
+        <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go"> kubectl delete -f app.yaml
+</span></code></pre></div>        </div>
+
+        <p>Output:</p>
+
+        <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> deployment.apps/python-hello-app deleted
+ service "python-hello-app-lb" deleted
+</code></pre></div>        </div>
+
+        <p>Your application is now removed from your cluster.</p>
+      </li>
+    </ol>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(4)">&laquo; Back</a> <a href="javascript:cool.slides.goToSlide(6)">Continue &raquo;</a></div>
+
+  </div>
+
+  <div class="slide" id="slide-6">
+
+    <h2 class="slide__title"><span class="slide__num">7</span> What's Next</h2>
+
+    <p>You have successfully created a Hello World Python application, deployed it to a Kubernetes cluster, and made it accessible on the internet using the Flask framework.</p>
+
+    <p>Check out these resources to explore more information about development with Oracle products:</p>
+
+    <ul>
+      <li><a href="https://developer.oracle.com/">Oracle Developers Portal</a></li>
+      <li><a href="https://www.oracle.com/cloud/">Oracle Cloud Infrastructure</a></li>
+    </ul>
+
+    <div class="slide__nav"><a href="javascript:cool.slides.goToSlide(5)">&laquo; Back</a></div>
+
+  </div>
+
+</div>
+
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/flask">flask</a>
+            <a class="animated-link tag" href="/topics/kubernetes">kubernetes</a>
+            <a class="animated-link tag" href="/topics/oci">oci</a>
+            <a class="animated-link tag" href="/topics/open-source">open-source</a>
+            <a class="animated-link tag" href="/topics/python">python</a>
+            </span>
+    </p> -->
+  
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-10-11T01:00:00+00:00">October 11, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+

@@ -1,0 +1,260 @@
+<div class="initial-content">
+  <div id="main" role="main">
+
+  <article class="page has-sidebar" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Deploy Moodle on OCI with MDS">
+    
+    <meta itemprop="datePublished" content="2021-10-27T09:12:00+00:00">
+    
+
+
+    <header>
+      <h1 id="page-title" class="page__title" itemprop="headline">Deploy Moodle on OCI with MDS
+</h1>
+      
+
+
+    </header>
+
+    <section class="page__content" itemprop="text">
+      
+
+        <p><a href="https://moodle.org/">Moodle</a> is the world’s most popular learning management system. Moodle is Open Source and of course it’s compatible with the most popular Open Source Database : MySQL!</p>
+
+<p>I’ve already posted <a href="https://lefred.be/content/using-oci-to-install-moodle-with-mysql-8-0/">an article addressing how to install Moodle</a> before we released MySQL Database Service. In this article we will see how to deploy Moodle very easily in OCI and using MDS.</p>
+
+<p>Once again we will use the easiest way to deploy an complete architecture on OCI: Resource Manager.</p>
+
+<p>We will then use a stack I’ve created that is available on <a href="https://github.com/lefred/oci-moodle-mds">GitHub</a> This stack includes Terraform code allowing to deploy different architectures that we can use for Moodle. I’ve tried to cover the main possible architecture directly in the stack. It’s also possible to just download the Terraform code and modify it if you need. You also have the possibility to generate again a stack from your modified code.</p>
+
+<p>I’ve already multiple stacks you can deploy directly on OCI that allows you to deploy the same architectures as I cover in this article but for other solutions directly from this page: <a href="https://lefred.be/deploy-to-oci/">Deploy to OCI</a>.</p>
+
+<p>Let’s have a look at some of the possible architectures we can deploy directly by clicking on the “deploy to OCI” button.</p>
+
+<h2 id="simplest-deployment">Simplest Deployment</h2>
+
+<p><img src="assets/OCI-avail-domain-1.png" alt="Network chart with Moodle in the public subnet, inside the VCN" /></p>
+
+<p>This deployment, is the most simple to deploy. One single MySQL Database Service Instance and one compute instance as the Moodle Web Server.</p>
+
+<p>The architecture is composed by the following components:</p>
+
+<ul>
+  <li><strong>Availability domains:</strong> Availability domains are standalone, independent data centers within a region. The physical resources in each availability domain are isolated from the resources in the other availability domains, which provides fault tolerance. Availability domains don’t share infrastructure such as power or cooling, or the internal availability domain network. So, a failure at one availability domain is unlikely to affect the other availability domains in the region.</li>
+  <li><strong>Virtual cloud network (VCN) and subnets:</strong> a VCN is a customizable, software-defined network that you set up in an Oracle Cloud Infrastructure region. Like traditional data center networks, VCNs give you complete control over your network environment. A VCN can have multiple non-overlapping CIDR blocks that you can change after you create the VCN. You can segment a VCN into subnets, which can be scoped to a region or to an availability domain. Each subnet consists of a contiguous range of addresses that don’t overlap with the other subnets in the VCN. You can change the size of a subnet after creation. A subnet can be public or private.</li>
+  <li><strong>Internet gateway:</strong> the <a href="https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/managingIGs.htm">internet gateway</a> allows traffic between the public subnets in a VCN and the public internet.</li>
+  <li><strong>Network security group (NSG):</strong> NSGs act as virtual firewalls for your cloud resources. With the zero-trust security model of Oracle Cloud Infrastructure, all traffic is denied, and you can control the network traffic inside a VCN. An NSG consists of a set of ingress and egress security rules that apply to only a specified set of VNICs in a single VCN.</li>
+  <li><strong>MySQL Database Service (MDS):</strong> <a href="https://docs.oracle.com/en-us/iaas/mysql-database/index.html">MySQL Database Service</a> is a fully managed Oracle Cloud Infrastructure (OCI) database service that lets developers quickly develop and deploy secure, cloud native applications. Optimized for and exclusively available in OCI, MySQL Database Service is 100% built, managed, and supported by the OCI and MySQL engineering teams.</li>
+  <li><strong>Compute Instance:</strong> <a href="https://docs.oracle.com/en-us/iaas/Content/Compute/Concepts/computeoverview.htm">OCI Compute service</a> enables you provision and manage compute hosts in the cloud. You can launch compute instances with shapes that meet your resource requirements (CPU, memory, network bandwidth, and storage). After creating a compute instance, you can access it securely, restart it, attach and detach volumes, and terminate it when you don’t need it. Apache, PHP and Moodle are installed on the compute instance.</li>
+</ul>
+
+<p>Let’s see the different steps to deploy this architecture directly from <a href="https://lefred.be/deploy-to-oci/">here</a>:</p>
+
+<p><img src="assets/deploy-to-oci-callout.png" alt="A dashboard where you can you deploy different services, including Moodle" /></p>
+
+<p>You will redirected the OCI’s dashboard create <a href="https://docs.oracle.com/en/cloud/paas/cloud-stack-manager/csmug/oracle-cloud-stack-manager.htm">stack</a> page:</p>
+
+<p><img src="assets/oci-flow-create-stack-w-callout.png" alt="OCI's Create Stack page, with a callout highlighting to the user to accept Oracle's terms of use" /></p>
+
+<p>As soon as you accept the Oracle Terms of Use, the form will be pre-filled by some default values.</p>
+
+<p>You can of course decide in which <a href="https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/managingcompartments.htm">compartment</a> you want to deploy the architecture:</p>
+
+<p><img src="assets/oci-flow-create-compartment-sandbox-highlight.png" alt="The welcome page, displaying stack information including a callout to choose which sandbox to deploy to" /></p>
+
+<p>The second screen of the wizard the most important form where we need to fill all the required variables and also change the architecture as we will see later:</p>
+
+<p><img src="assets/oci-flow-required variables.png" alt="The required variables window, including password, username, and MySQL schema fields " /></p>
+
+<p>The second part of the form looks like this. Note that we can enable <a href="https://blogs.oracle.com/mysql/mysql-database-service-with-high-availability">High Availability for MDS</a>, use multiple Web Server Instances or use existing infrastructure. This means that we have the possibility to use an existing VCN, subnets, etc…</p>
+
+<p><img src="assets/oci-flow-webservers-shapes-fields.png" alt="Additional fields to complete, including webservers, shapes, and the option to use existing infrasctructure" /></p>
+
+<p>And of course we can also specify the Shapes for the compute instances (from a dropdown list of the available shapes in your tenancy and compartment) and for the MDS instance (this one needs to be entered manually).</p>
+
+<p>When we click next, we reach the last screen which summarize the choices and we can click on “Create.” By default the Architecture will be automatically applied (meaning all necessary resources will be deployed):</p>
+
+<p><img src="assets/oci-flow-review-step-create-callout.png" alt="OCI deployment final screen, reviewing particulars before clicking the Create button" /></p>
+
+<p>Now we need to be a little bit of patience while everything is deployed.</p>
+
+<p><img src="assets/stack-with-banner-partial-logs.png" alt="Stack dashboard with a banner communicating that things are still running and only partial logs are avaialable" /></p>
+
+<h2 id="other-possible-architectures">Other Possible Architectures</h2>
+
+<p>As we could see earlier on the second screen of the stack’s creation wizard, we could also specify the use of multiple Web Servers. Then we have the possibility to deploy them on different Fault Domains (default) or use different Availability Domains:</p>
+
+<p><img src="assets/oci-webservers-with-domain-fields.png" alt="Webservers screen with fields where you can determine which domains to run from" /></p>
+
+<p>It’s possible to also specify if all Moodle servers will use their own database and user or share the same schema in case we want to use a load balancer in front of all the web servers and spread the load for the same site/application.</p>
+
+<p>The default architecture with three web servers looks like this:</p>
+
+<p><img src="assets/oci-moodle-mysql-in-fault-domains.png" alt="Network chart displaying MySQL's loaction in the first of three fault domains" /></p>
+
+<p>And if you want to enable High Availability for the MDS instance, you just need to check the box:</p>
+
+<p><img src="assets/oci-high-availability-for-mds-toggle.png" alt="Checkbox verifying the configuration of a High Availability for the MDS instance" /></p>
+
+<p>And you will have an architecture like this:</p>
+
+<p><img src="assets/oci-chart-moodle-mds-all-domains.png" alt="Network chart with MDS and Moodle in all three availability domains" /></p>
+
+<p>## Finishing Moodle’s Installation</p>
+
+<p>When the deployment using the stack is finished, you will the a nice large green square with “SUCCEEDED” and in the log you will also see some important information.</p>
+
+<p><img src="assets/oci-stack-deployment-success-log-msg.png" alt="Log message displaying message of successful stack deployment" /></p>
+
+<p>This information is also available in the Output section on the left:</p>
+
+<p><img src="assets/oci-stack-deployment-outputs-selected.png" alt="An alternative way to ensure successful stack deployment: click 'Outputs'" /></p>
+
+<p>Now, we just need to open a web browser and enter that public ip to finish the installation of Moodle:</p>
+
+<p><img src="assets/moodle-select-language.png" alt="Moodle installation screen with language dropdown. English populated in field." /></p>
+
+<p>And we follow the wizard until the database configuration section:</p>
+
+<p><img src="assets/moodle-database-dropdown.png" alt="Moodle installation screen with database dropdown. Improved MySQL populated in field." /></p>
+
+<p><img src="assets/moodle-database-settings.png" alt="Moodle installation flow. Database fields for configuration." /></p>
+
+<p>On the screen above, we use the information that we can find in the Stack’s output section.</p>
+
+<p>Then we continue the installation process until it’s completed and finally we can enjoy our new Moodle deployment:</p>
+
+<p><img src="assets/moodle-deployment-dashboard.png" alt="Moodle deployment dashboard" /></p>
+
+
+          <div class="sidebar sticky">
+    <!-- <p><strong>Tags:</strong> <span class="tags">
+
+            
+            <a class="animated-link tag" href="/topics/oci">oci</a>
+            <a class="animated-link tag" href="/topics/mysql">mysql</a>
+            </span>
+    </p> -->
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <a href="https:/lefred.be/"><h3 class="author__name" itemprop="name">Frédéric Descamps</h3></a>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>@lefred has been consulting OpenSource and MySQL for 20+ years. After graduating in Management Information Technology, Frédéric started his career as a developer for an ERP under HPUX.</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/lefred" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/freddescamps" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/lefred" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </ul>
+  </div>
+</div>
+
+  
+  
+  
+
+  </div>
+
+
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-10-27T09:12:00+00:00">October 27, 2021</time></p>
+
+
+      </footer>
+    </div>
+
+  </article>
+</div>
+
+</div>
+
