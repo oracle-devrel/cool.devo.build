@@ -77,7 +77,12 @@ module Jekyll
       end
 
       def border(msg)
-        width = $stdout.winsize[1]
+        begin
+          width = $stdout.winsize[1]
+        rescue ENOTTY
+          width = 80
+        end
+
         ['-' * width, msg.strip, '-' * width].join("\n")
       end
     end
